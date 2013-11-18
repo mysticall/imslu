@@ -1,0 +1,1198 @@
+# English translations for PACKAGE package.
+# Copyright (C) 2013 IMSLU Developers
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: IMSLU 0.1-alpha\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-16 22:33+0200\n"
+"PO-Revision-Date: 2013-11-16 22:33+0200\n"
+"Last-Translator: Fahri Hasan <fahri_hasan@hotmail.com>\n"
+"Language-Team: IMSLU Developers\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-Basepath: ../../\n"
+
+#: user_payments.php:189 user_payments.php:310
+#, php-format
+msgid "%s Days"
+msgstr "%s Days"
+
+#: payments.php:87 user_payments.php:336
+#, php-format
+msgid "%s days"
+msgstr "%s days"
+
+#: user_edit.php:340 user_info.php:208
+msgid "Active until"
+msgstr "Active until"
+
+#: user_edit.php:236
+msgid "Add IP address"
+msgstr "Add IP address"
+
+#: freeradius_groups.php:138 freeradius_groups.php:173
+#: freeradius_groups.php:313 freeradius_groups.php:393 user_edit.php:628
+msgid "Add attribute"
+msgstr "Add attribute"
+
+#: freeradius_sqlippool.php:126 static_ippool.php:132
+msgid "Add new IP address or IP address range"
+msgstr "Add new IP address or IP address range"
+
+#: user_edit.php:276 user_info.php:146 user_new.php:219
+msgid "Address"
+msgstr "Address"
+
+#: include/menu.php:120
+msgid "Administration"
+msgstr "Administration"
+
+#: include/config.inc.php:67
+msgid "Administrators"
+msgstr "Administrators"
+
+#: operators.php:97 operators.php:248 profile.php:80
+msgid "Alias"
+msgstr "Alias"
+
+#: operators_apply.php:82 operators_apply.php:162 profile_apply.php:56
+msgid "Alias cannot empty."
+msgstr "Alias cannot empty."
+
+#: include/network.inc.php:105 include/network.inc.php:372
+#, php-format
+msgid "All rules for IP address %s are deleted."
+msgstr "All rules for IP address %s are deleted."
+
+#: audit.php:326 include/menu.php:140
+msgid "Audit"
+msgstr "Audit"
+
+#: audit.php:86 login_attempts.php:86
+#, php-format
+msgid "Backup of table %s failed"
+msgstr "Backup of table %s failed"
+
+#: audit.php:86 login_attempts.php:86
+#, php-format
+msgid "Backup of table %s success."
+msgstr "Backup of table %s success."
+
+#: operators_apply.php:105 operators_apply.php:174 profile_apply.php:77
+msgid "Both passwords must be equal."
+msgstr "Both passwords must be equal."
+
+#: include/config.inc.php:59
+msgid "Bulgarian (bg_BG)"
+msgstr "Bulgarian (bg_BG)"
+
+#: include/config.inc.php:65 operators.php:48
+msgid "Cashiers"
+msgstr "Cashiers"
+
+#: freeradius_sqlippool_apply.php:239 static_ippool_apply.php:337
+msgid "Change Pool name for IP address or IP address range"
+msgstr "Change Pool name for IP address or IP address range"
+
+#: static_ippool_apply.php:383
+msgid "Change network type"
+msgstr "Change network type"
+
+#: static_ippool_apply.php:378
+msgid "Change network type for IP address or IP address range"
+msgstr "Change network type for IP address or IP address range"
+
+#: freeradius_groups_apply.php:305 freeradius_nas_apply.php:59
+#: freeradius_nas_apply.php:145 freeradius_sqlippool_apply.php:67
+#: freeradius_sqlippool_apply.php:105 operators_apply.php:62
+#: operators_apply.php:136 operators_apply.php:148 payments.php:78
+#: static_ippool_apply.php:68 static_ippool_apply.php:106
+#: static_ippool_apply.php:138 traffic_control_apply.php:112
+#: user_edit_apply.php:66 user_edit_apply.php:161 user_location_apply.php:58
+#: user_location_apply.php:87
+msgid "Changes are applied successfully."
+msgstr "Changes are applied successfully."
+
+#: administration.php:70
+msgid "Check for VLAN, MAC"
+msgstr "Check for VLAN, MAC"
+
+#: user_info.php:115 user_payments.php:267 user_pppoe_sessions.php:79
+msgid "Edit"
+msgstr "Edit"
+
+#: static_ippool_apply.php:464
+msgid "Edit IP address"
+msgstr "Edit IP address"
+
+#: traffic_control.php:175
+msgid "Edit tariff plan"
+msgstr "Edit tariff plan"
+
+#: user_location.php:121
+msgid "Edit the location"
+msgstr "Edit the location"
+
+#: freeradius_groups.php:427
+msgid "Empty attributes will be deleted!"
+msgstr "Empty attributes will be deleted!"
+
+#: user_edit_apply.php:273 user_edit_apply.php:340 user_edit_apply.php:493
+#: user_payments_apply.php:140 user_payments_apply.php:189
+#: user_payments_apply.php:238 user_payments_apply.php:291
+#, php-format
+msgid "Enabling internet access for IP address %s is failed"
+msgstr "Enabling internet access for IP address %s is failed"
+
+#: freeradius_sqlippool_apply.php:160 static_ippool_apply.php:253
+msgid "End IP Address must be larger!"
+msgstr "End IP Address must be larger!"
+
+#: freeradius_sqlippool.php:151 static_ippool.php:157
+msgid "End IP address"
+msgstr "End IP address"
+
+#: include/config.inc.php:60
+msgid "English (en_US)"
+msgstr "English (en_US)"
+
+#: user_edit_apply.php:191 user_new_apply.php:64
+msgid "Enter PPPoE username and password."
+msgstr "Enter PPPoE username and password."
+
+#: user_payments.php:150
+msgid "Expires"
+msgstr "Expires"
+
+#: user_edit.php:252 user_info.php:120 user_new.php:193
+msgid "First name Surname"
+msgstr "First name Surname"
+
+#: freeradius_groups.php:133 freeradius_groups.php:308
+msgid "For more information about attributes"
+msgstr "For more information about attributes"
+
+#: static_ippool_apply.php:510 user_edit.php:406 user_edit.php:483
+#: user_info.php:253 user_new.php:293
+msgid "Free MAC"
+msgstr "Free MAC"
+
+#: user_edit.php:320 user_info.php:188 user_new.php:259
+msgid "Free internet access"
+msgstr "Free internet access"
+
+#: include/menu.php:92
+msgid "FreeRADIUS"
+msgstr "FreeRADIUS"
+
+#: freeradius_sqlippool.php:186
+msgid "FreeRADIUS IP Pool"
+msgstr "FreeRADIUS IP Pool"
+
+#: freeradius_nas.php:303
+msgid "FreeRADIUS NAS"
+msgstr "FreeRADIUS NAS"
+
+#: user_edit.php:537 user_edit.php:636 user_info.php:371 user_new.php:327
+msgid "FreeRADIUS group"
+msgstr "FreeRADIUS group"
+
+#: freeradius_groups.php:477
+msgid "FreeRADIUS groups"
+msgstr "FreeRADIUS groups"
+
+#: include/menu.php:152
+msgid "FreeRADIUS logs"
+msgstr "FreeRADIUS logs"
+
+#: user_edit.php:658
+msgid "Generate"
+msgstr "Generate"
+
+#: freeradius_groups.php:300 operators.php:199 operators.php:349
+msgid "Group"
+msgstr "Group"
+
+#: include/menu.php:112
+msgid "Groups"
+msgstr "Groups"
+
+#: audit.php:350 freeradius_nas.php:315 freeradius_sqlippool.php:76
+#: freeradius_sqlippool.php:77 freeradius_sqlippool.php:199 operators.php:387
+#: static_ippool.php:80 static_ippool.php:81 static_ippool.php:214
+#: traffic_control.php:280 user_location.php:180 user_payments.php:330
+msgid "ID"
+msgstr "ID"
+
+#: audit.php:122 audit.php:244 audit.php:355 freeradius_sqlippool.php:201
+#: login_attempts.php:240 static_ippool.php:217 user_edit.php:384
+#: user_edit.php:467 user_info.php:234 user_new.php:275
+#: user_pppoe_sessions.php:88
+msgid "IP address"
+msgstr "IP address"
+
+#: freeradius_sqlippool_apply.php:194 static_ippool_apply.php:291
+#, php-format
+msgid "IP address %s is added successfully."
+msgstr "IP address %s is added successfully."
+
+#: include/network.inc.php:161 include/network.inc.php:428
+#, php-format
+msgid "IP address %s is free from MAC."
+msgstr "IP address %s is free from MAC."
+
+#: freeradius_sqlippool_apply.php:129 static_ippool_apply.php:222
+msgid "IP address cannot empty."
+msgstr "IP address cannot empty."
+
+#: freeradius_sqlippool_apply.php:194 static_ippool_apply.php:291
+#, php-format
+msgid "IP address range %s - %s is added successfully."
+msgstr "IP address range %s - %s is added successfully."
+
+#: include/menu.php:106
+msgid "IP addresses"
+msgstr "IP addresses"
+
+#: freeradius_groups.php:232 freeradius_groups.php:243
+msgid "If empty, shaper will not work!"
+msgstr "If empty, shaper will not work!"
+
+#: user_edit.php:363 user_info.php:216
+msgid "Included in"
+msgstr "Included in"
+
+#: user_edit.php:246 user_payments.php:266 user_pppoe_sessions.php:78
+msgid "Info"
+msgstr "Info"
+
+#: traffic_control.php:123 traffic_control.php:222
+msgid "International IN"
+msgstr "International IN"
+
+#: traffic_control.php:134 traffic_control.php:233
+msgid "International OUT"
+msgstr "International OUT"
+
+#: user_edit_apply.php:273 user_edit_apply.php:340 user_edit_apply.php:493
+#: user_payments_apply.php:140 user_payments_apply.php:189
+#: user_payments_apply.php:238 user_payments_apply.php:291
+#, php-format
+msgid "Internet access for IP address %s is enabled."
+msgstr "Internet access for IP address %s is enabled."
+
+#: user_edit_apply.php:283 user_edit_apply.php:350 user_edit_apply.php:500
+#, php-format
+msgid "Internet access for IP address %s is stopped."
+msgstr "Internet access for IP address %s is stopped."
+
+#: operators.php:131 operators.php:289 profile.php:114
+msgid "Language"
+msgstr "Language"
+
+#: traffic_control.php:101 traffic_control.php:200
+msgid "Local IN"
+msgstr "Local IN"
+
+#: traffic_control_apply.php:66 traffic_control_apply.php:136
+msgid "Local IN cannot empty."
+msgstr "Local IN cannot empty."
+
+#: traffic_control.php:112 traffic_control.php:211
+msgid "Local OUT"
+msgstr "Local OUT"
+
+#: traffic_control_apply.php:72 traffic_control_apply.php:142
+msgid "Local OUT cannot empty."
+msgstr "Local OUT cannot empty."
+
+#: include/menu.php:146 login_attempts.php:216
+msgid "Login attempts"
+msgstr "Login attempts"
+
+#: include/menu.php:58
+msgid "Logout"
+msgstr "Logout"
+
+#: freeradius_sqlippool.php:203 static_ippool.php:220 user_edit.php:416
+#: user_edit.php:491 user_info.php:263 user_new.php:301
+#: user_pppoe_sessions.php:87
+msgid "MAC"
+msgstr "MAC"
+
+#: include/network.inc.php:231
+#, php-format
+msgid "MAC and Free MAC for IP address %s are updated."
+msgstr "MAC and Free MAC for IP address %s are updated."
+
+#: include/network.inc.php:161 include/network.inc.php:428
+#, php-format
+msgid "MAC for IP address %s are deleted."
+msgstr "MAC for IP address %s are deleted."
+
+#: include/network.inc.php:142 include/network.inc.php:409
+#, php-format
+msgid "MAC for IP address %s are updated."
+msgstr "MAC for IP address %s are updated."
+
+#: static_ippool.php:221
+msgid "MAC info"
+msgstr "MAC info"
+
+#: static_ippool_apply.php:474 static_ippool_apply.php:485
+#: static_ippool_apply.php:496
+#, php-format
+msgid "Mandatory or rules for IP address %s will be ignored!"
+msgstr "Mandatory or rules for IP address %s will be ignored!"
+
+#: static_ippool_apply.php:474 static_ippool_apply.php:485
+#, php-format
+msgid "Mandatory, otherwise the rules for IP address %s will be deleted!"
+msgstr "Mandatory, otherwise the rules for IP address %s will be deleted!"
+
+#: include/menu.php:51 include/menu.php:190
+msgid "Map"
+msgstr "Map"
+
+#: include/menu.php:44 include/menu.php:183
+msgid "Monitoring"
+msgstr "Monitoring"
+
+#: freeradius_nas.php:197 include/menu.php:100
+msgid "NAS"
+msgstr "NAS"
+
+#: freeradius_sqlippool.php:202 user_pppoe_sessions.php:81
+msgid "NAS IP address"
+msgstr "NAS IP address"
+
+#: freeradius_nas.php:148 freeradius_nas.php:254 freeradius_nas.php:322
+msgid "NAS SNMP community"
+msgstr "NAS SNMP community"
+
+#: freeradius_nas.php:156 freeradius_nas.php:262 freeradius_nas.php:323
+msgid "NAS description"
+msgstr "NAS description"
+
+#: freeradius_nas.php:96 freeradius_nas.php:202 freeradius_nas.php:316
+msgid "NAS name"
+msgstr "NAS name"
+
+#: freeradius_sqlippool.php:206
+msgid "NAS port"
+msgstr "NAS port"
+
+#: freeradius_nas.php:124 freeradius_nas.php:230 freeradius_nas.php:319
+msgid "NAS ports"
+msgstr "NAS ports"
+
+#: freeradius_nas.php:132 freeradius_nas.php:238 freeradius_nas.php:320
+msgid "NAS secret"
+msgstr "NAS secret"
+
+#: freeradius_nas.php:140 freeradius_nas.php:246 freeradius_nas.php:321
+msgid "NAS server"
+msgstr "NAS server"
+
+#: freeradius_nas.php:106 freeradius_nas.php:212 freeradius_nas.php:317
+msgid "NAS short name"
+msgstr "NAS short name"
+
+#: freeradius_nas_apply.php:87 freeradius_nas_apply.php:170
+msgid "NAS short name cannot empty."
+msgstr "NAS short name cannot empty."
+
+#: freeradius_nas.php:116 freeradius_nas.php:222 freeradius_nas.php:318
+msgid "NAS type"
+msgstr "NAS type"
+
+#: freeradius_groups.php:119 operators.php:107 operators.php:259
+#: profile.php:90 user_location.php:78 user_location.php:126
+msgid "Name"
+msgstr "Name"
+
+#: freeradius_groups_apply.php:318 freeradius_nas_apply.php:75
+#: freeradius_nas_apply.php:161 freeradius_sqlippool_apply.php:121
+#: operators_apply.php:95 static_ippool_apply.php:214
+#: traffic_control_apply.php:54 traffic_control_apply.php:124
+#: user_edit_apply.php:177 user_location_apply.php:74
+#: user_location_apply.php:101 user_new_apply.php:49
+msgid "Name cannot empty."
+msgstr "Name cannot empty."
+
+#: freeradius_sqlippool_apply.php:81 static_ippool_apply.php:82
+msgid "Name cannot empty. Re-select IP addresses!"
+msgstr "Name cannot empty. Re-select IP addresses!"
+
+#: include/config.inc.php:66 operators.php:49
+msgid "Network technicians"
+msgstr "Network technicians"
+
+#: static_ippool_apply.php:526 static_ippool.php:167
+msgid "Network type"
+msgstr "Network type"
+
+#: freeradius_groups.php:114
+msgid "New FreeRADIUS group"
+msgstr "New FreeRADIUS group"
+
+#: freeradius_nas.php:91
+msgid "New NAS"
+msgstr "New NAS"
+
+#: user_location.php:73
+msgid "New location"
+msgstr "New location"
+
+#: operators.php:243
+msgid "New operator"
+msgstr "New operator"
+
+#: traffic_control.php:76
+msgid "New tariff plan"
+msgstr "New tariff plan"
+
+#: include/menu.php:168 user_new.php:188
+msgid "New user"
+msgstr "New user"
+
+#: include/network.inc.php:61 include/network.inc.php:121
+#: include/network.inc.php:329 include/network.inc.php:388
+#, php-format
+msgid "No changes were made to IP address %s."
+msgstr "No changes were made to IP address %s."
+
+#: include/network.inc.php:275 include/network.inc.php:472
+#, php-format
+msgid "No changes were made to IP address %s. Before change something, first change tariff plan."
+msgstr "No changes were made to IP address %s. Before change something, first change tariff plan."
+
+#: include/network.inc.php:283 include/network.inc.php:480
+#, php-format
+msgid "No changes were made to IP address %s. First exempt the IP address from the user to which is added."
+msgstr "No changes were made to IP address %s. First exempt the IP address from the user to which is added."
+
+#: freeradius_sqlippool_apply.php:137 freeradius_sqlippool_apply.php:149
+#: static_ippool_apply.php:230 static_ippool_apply.php:242
+msgid "Not a valid IP address!"
+msgstr "Not a valid IP address!"
+
+#: user_edit.php:330 user_info.php:198 user_new.php:267
+msgid "Not excluding"
+msgstr "Not excluding"
+
+#: static_ippool_apply.php:542 user_edit.php:292 user_edit.php:425
+#: user_edit.php:499 user_info.php:162 user_info.php:272 user_new.php:235
+#: user_payments.php:181
+msgid "Notes"
+msgstr "Notes"
+
+#: user_payments.php:134 user_payments.php:197 user_payments.php:312
+msgid "Obligation"
+msgstr "Obligation"
+
+#: include/menu.php:128 operators.php:380
+msgid "Operators"
+msgstr "Operators"
+
+#: audit.php:123
+msgid "PPPoE"
+msgstr "PPPoE"
+
+#: user_edit_apply.php:184
+msgid "PPPoE username and password cannot empty."
+msgstr "PPPoE username and password cannot empty."
+
+#: operators.php:115 operators.php:267 profile.php:98
+msgid "Password"
+msgstr "Password"
+
+#: operators.php:123 operators.php:278 profile.php:106
+msgid "Password (once again)"
+msgstr "Password (once again)"
+
+#: user_edit.php:310 user_info.php:178 user_new.php:251
+msgid "Pay"
+msgstr "Pay"
+
+#: user_payments.php:129 user_payments.php:142 user_payments.php:314
+#: user_payments.php:364 user_payments.php:375 user_payments.php:400
+#: user_payments.php:411
+msgid "Payment"
+msgstr "Payment"
+
+#: include/menu.php:37 include/menu.php:176 user_edit.php:245
+#: user_info.php:114 user_pppoe_sessions.php:77
+msgid "Payments"
+msgstr "Payments"
+
+#: user_payments.php:265
+#, php-format
+msgid "Payments of %s"
+msgstr "Payments of %s"
+
+#: user_edit.php:284 user_info.php:154 user_new.php:227
+msgid "Phone number"
+msgstr "Phone number"
+
+#: user_edit.php:458 user_new.php:108
+msgid "Please contact your system administrator. Not added static IP addresses in the \"Static IP addresses\""
+msgstr "Please contact your system administrator. Not added static IP addresses in the \"Static IP addresses\""
+
+#: user_edit.php:120 user_new.php:135
+msgid "Please contact your system administrator. Not created FreeRADIUS group in the \"Groups\""
+msgstr "Please contact your system administrator. Not created FreeRADIUS group in the \"Groups\""
+
+#: user_edit.php:93 user_new.php:83
+msgid "Please contact your system administrator. Not created tariff plan in the \"Traffic control\""
+msgstr "Please contact your system administrator. Not created tariff plan in the \"Traffic control\""
+
+#: operators_apply.php:174
+msgid "Please enter a password."
+msgstr "Please enter a password."
+
+#: user_edit_apply.php:578
+msgid "Please enter valid MAC"
+msgstr "Please enter valid MAC"
+
+#: include/network.inc.php:142 include/network.inc.php:231
+#: include/network.inc.php:409
+#, php-format
+msgid "Please enter valid MAC for IP address %s."
+msgstr "Please enter valid MAC for IP address %s."
+
+#: administration.php:87
+msgid "Please wait the system checking for VLAN, MAC"
+msgstr "Please wait the system checking for VLAN, MAC"
+
+#: freeradius_groups.php:78
+msgid "Please, first add IP addresses for FreeRADIUS in the \"IP addresses\"."
+msgstr "Please, first add IP addresses for FreeRADIUS in the \"IP addresses\"."
+
+#: freeradius_sqlippool_apply.php:244 freeradius_sqlippool.php:131
+#: static_ippool_apply.php:342 static_ippool_apply.php:518
+#: static_ippool.php:137
+msgid "Pool name"
+msgstr "Pool name"
+
+#: traffic_control.php:91 traffic_control.php:190
+msgid "Price"
+msgstr "Price"
+
+#: traffic_control_apply.php:60 traffic_control_apply.php:130
+msgid "Price cannot empty."
+msgstr "Price cannot empty."
+
+#: include/menu.php:65 operators.php:89 profile.php:72
+msgid "Profile"
+msgstr "Profile"
+
+#: user_new_apply.php:56
+msgid "Select IP address or use PPPoE."
+msgstr "Select IP address or use PPPoE."
+
+#: static_ippool_apply.php:480
+msgid "Shaper ID"
+msgstr "Shaper ID"
+
+#: operators.php:173 operators.php:323 profile.php:156
+msgid "Some of locales for the languages are not installed on the web server."
+msgstr "Some of locales for the languages are not installed on the web server."
+
+#: freeradius_sqlippool_apply.php:159 static_ippool_apply.php:252
+msgid "Start IP Address must be less!"
+msgstr "Start IP Address must be less!"
+
+#: freeradius_sqlippool.php:141 static_ippool.php:147
+msgid "Start IP address"
+msgstr "Start IP address"
+
+#: administration_apply.php:45
+msgid "Started searching for VLAN, MAC."
+msgstr "Started searching for VLAN, MAC."
+
+#: include/menu.php:76 static_ippool.php:199
+msgid "Static IP addresses"
+msgstr "Static IP addresses"
+
+#: user_edit_apply.php:283 user_edit_apply.php:350 user_edit_apply.php:500
+#, php-format
+msgid "Stopping internet access for IP address %s is failed"
+msgstr "Stopping internet access for IP address %s is failed"
+
+#: user_payments.php:173
+msgid "Sum"
+msgstr "Sum"
+
+#: user_edit.php:268 user_info.php:136 user_new.php:211
+msgid "Switch"
+msgstr "Switch"
+
+#: include/config.inc.php:68
+msgid "System administrators"
+msgstr "System administrators"
+
+#: user_edit.php:300 user_info.php:170 user_new.php:243
+msgid "Tariff plan"
+msgstr "Tariff plan"
+
+#: traffic_control.php:81 traffic_control.php:180
+msgid "Tariff plan name"
+msgstr "Tariff plan name"
+
+#: audit.php:93 login_attempts.php:93
+#, php-format
+msgid "The contents of the table %s was deleted."
+msgstr "The contents of the table %s was deleted."
+
+#: include/menu.php:134 user_edit.php:260 user_info.php:128
+#: user_location.php:168 user_new.php:203
+msgid "The location"
+msgstr "The location"
+
+#: freeradius_nas_apply.php:214
+msgid "The new NAS is added successfully."
+msgstr "The new NAS is added successfully."
+
+#: include/network.inc.php:193
+#, php-format
+msgid "The new VLAN and MAC for IP address %s are added."
+msgstr "The new VLAN and MAC for IP address %s are added."
+
+#: include/network.inc.php:193
+#, php-format
+msgid "The new VLAN for IP address %s are added. Please enter valid MAC."
+msgstr "The new VLAN for IP address %s are added. Please enter valid MAC."
+
+#: freeradius_groups_apply.php:399
+msgid "The new group is added successfully."
+msgstr "The new group is added successfully."
+
+#: include/network.inc.php:83 include/network.inc.php:350
+#, php-format
+msgid "The new rules for IP address %s are added."
+msgstr "The new rules for IP address %s are added."
+
+#: include/network.inc.php:83 include/network.inc.php:350
+#, php-format
+msgid "The new rules for IP address %s are added. Please enter valid MAC."
+msgstr "The new rules for IP address %s are added. Please enter valid MAC."
+
+#: user_new_apply.php:281
+#, php-format
+msgid "The new user %s is added successfully."
+msgstr "The new user %s is added successfully."
+
+#: operators_apply.php:115
+#, php-format
+msgid "The password on %s is changed."
+msgstr "The password on %s is changed."
+
+#: administration_apply.php:54
+msgid "The process has stopped."
+msgstr "The process has stopped."
+
+#: include/network.inc.php:485
+msgid "The system does not support the changes, who want you to apply! The function comparison_ip_changes() in network.inc.php need to develop."
+msgstr "The system does not support the changes, who want you to apply! The function comparison_ip_changes() in network.inc.php need to develop."
+
+#: include/network.inc.php:288
+msgid "The system does not support the changes, who want you to apply! The function comparison_ip_vlan_changes() in network.inc.php need to develop."
+msgstr "The system does not support the changes, who want you to apply! The function comparison_ip_vlan_changes() in network.inc.php need to develop."
+
+#: include/network.inc.php:265 include/network.inc.php:462
+#, php-format
+msgid "The tariff plan for IP address %s is changed."
+msgstr "The tariff plan for IP address %s is changed."
+
+#: operators.php:183 operators.php:333 profile.php:166
+msgid "Theme"
+msgstr "Theme"
+
+#: include/menu.php:84
+msgid "Traffic control"
+msgstr "Traffic control"
+
+#: traffic_control.php:268
+msgid "Traffic control - Price"
+msgstr "Traffic control - Price"
+
+#: operators.php:191 operators.php:341 profile.php:174
+msgid "URL (after login)"
+msgstr "URL (after login)"
+
+#: user_edit.php:529 user_edit.php:553 user_info.php:291 user_info.php:303
+#: user_new.php:317
+msgid "Use PPPoE"
+msgstr "Use PPPoE"
+
+#: user_new_apply.php:57
+msgid "Use PPPoE or select IP address."
+msgstr "Use PPPoE or select IP address."
+
+#: user_edit.php:244 user_info.php:113
+msgid "User"
+msgstr "User"
+
+#: static_ippool_apply.php:469
+msgid "User ID"
+msgstr "User ID"
+
+#: user_payments.php:323
+msgid "User is exempt from payments!"
+msgstr "User is exempt from payments!"
+
+#: static_ippool_apply.php:534 user_edit.php:644 user_info.php:379
+msgid "Username"
+msgstr "Username"
+
+#: include/menu.php:30 include/menu.php:160 users.php:44 users.php:143
+msgid "Users"
+msgstr "Users"
+
+#: static_ippool.php:219 user_edit.php:398 user_edit.php:475 user_info.php:245
+#: user_new.php:285
+msgid "VLAN"
+msgstr "VLAN"
+
+#: include/network.inc.php:215
+#, php-format
+msgid "VLAN and MAC for IP address %s are deleted."
+msgstr "VLAN and MAC for IP address %s are deleted."
+
+#: static_ippool_apply.php:552
+msgid "Warning, the changes will be applied directly!"
+msgstr "Warning, the changes will be applied directly!"
+
+#: user_edit_apply.php:125 user_edit_apply.php:198
+msgid "You can not delete IP address and PPPoE account simultaneously."
+msgstr "You can not delete IP address and PPPoE account simultaneously."
+
+#: audit.php:151 audit.php:224 audit.php:344 audit.php:351
+#: freeradius_groups.php:484 freeradius_nas.php:310
+#: freeradius_sqlippool.php:95 freeradius_sqlippool.php:194
+#: login_attempts.php:234 operators.php:383 payments.php:345
+#: static_ippool.php:102 static_ippool.php:208 traffic_control.php:275
+#: user_location.php:175
+msgid "action"
+msgstr "action"
+
+#: audit.php:113
+msgid "add"
+msgstr "add"
+
+#: freeradius_sqlippool.php:82 static_ippool.php:88
+msgid "add IP pool"
+msgstr "add IP pool"
+
+#: freeradius_groups.php:481
+msgid "add group"
+msgstr "add group"
+
+#: operators.php:382
+msgid "add operator"
+msgstr "add operator"
+
+#: users.php:151
+msgid "address"
+msgstr "address"
+
+#: login_attempts.php:243 operators.php:387
+msgid "alias"
+msgstr "alias"
+
+#: login_attempts.php:241
+msgid "attempts"
+msgstr "attempts"
+
+#: audit.php:332 audit.php:340 login_attempts.php:222
+msgid "backup"
+msgstr "backup"
+
+#: audit.php:333 login_attempts.php:223
+msgid "backup and delete"
+msgstr "backup and delete"
+
+#: static_ippool.php:204
+msgid "change network type"
+msgstr "change network type"
+
+#: freeradius_sqlippool.php:191 static_ippool.php:205
+msgid "change pool name"
+msgstr "change pool name"
+
+#: include/func.inc.php:6
+msgctxt "day short"
+msgid "d"
+msgstr "d"
+
+#: audit.php:239 audit.php:354 login_attempts.php:242
+msgid "date"
+msgstr "date"
+
+#: audit.php:115 freeradius_groups.php:419 freeradius_groups.php:435
+#: freeradius_nas.php:270 freeradius_nas.php:283 operators.php:207
+#: operators.php:221 user_edit.php:755 user_location.php:136
+#: user_location.php:149 user_payments.php:207 user_payments.php:226
+msgid "delete"
+msgstr "delete"
+
+#: user_edit.php:732
+msgid "delete PPPoE"
+msgstr "delete PPPoE"
+
+#: audit.php:334 freeradius_sqlippool.php:190 login_attempts.php:224
+#: static_ippool.php:203
+msgid "delete selected"
+msgstr "delete selected"
+
+#: user_edit.php:743
+msgid "delete user"
+msgstr "delete user"
+
+#: audit.php:249 audit.php:356
+msgid "details"
+msgstr "details"
+
+#: freeradius_sqlippool.php:73 freeradius_sqlippool.php:75
+#: freeradius_sqlippool.php:77 static_ippool.php:77 static_ippool.php:79
+#: static_ippool.php:81 static_ippool.php:83
+msgid "down"
+msgstr "down"
+
+#: user_pppoe_sessions.php:86
+msgid "download"
+msgstr "download"
+
+#: payments.php:372 user_payments.php:279 user_payments.php:333
+msgid "expires"
+msgstr "expires"
+
+#: freeradius_sqlippool.php:74 freeradius_sqlippool.php:75
+#: freeradius_sqlippool.php:204
+msgid "expiry time"
+msgstr "expiry time"
+
+#: static_ippool.php:222
+msgid "free MAC"
+msgstr "free MAC"
+
+#: users.php:153
+msgid "free access"
+msgstr "free access"
+
+#: users.php:52
+msgid "free internet access"
+msgstr "free internet access"
+
+#: audit.php:154 login_attempts.php:139 payments.php:126
+msgid "from date"
+msgstr "from date"
+
+#: operators.php:387
+msgid "group"
+msgstr "group"
+
+#: include/func.inc.php:5
+msgctxt "hour short"
+msgid "h"
+msgstr "h"
+
+#: traffic_control.php:285
+msgid "international IN"
+msgstr "international IN"
+
+#: traffic_control.php:286
+msgid "international OUT"
+msgstr "international OUT"
+
+#: operators.php:387
+msgid "language"
+msgstr "language"
+
+#: traffic_control.php:283
+msgid "local IN"
+msgstr "local IN"
+
+#: traffic_control.php:284
+msgid "local OUT"
+msgstr "local OUT"
+
+#: audit.php:111
+msgid "login"
+msgstr "login"
+
+#: audit.php:112
+msgid "logout"
+msgstr "logout"
+
+#: administration.php:146
+msgid "logs"
+msgstr "logs"
+
+#: include/func.inc.php:4
+msgctxt "minute short"
+msgid "min"
+msgstr "min"
+
+#: users.php:87
+msgid "more"
+msgstr "more"
+
+#: freeradius_groups.php:489 freeradius_sqlippool.php:91
+#: freeradius_sqlippool.php:200 operators.php:387 payments.php:369
+#: static_ippool.php:82 static_ippool.php:83 static_ippool.php:97
+#: static_ippool.php:223 traffic_control.php:281 users.php:149
+msgid "name"
+msgstr "name"
+
+#: static_ippool.php:76 static_ippool.php:77 static_ippool.php:98
+#: static_ippool.php:224
+msgid "network type"
+msgstr "network type"
+
+#: freeradius_nas.php:307
+msgid "new NAS"
+msgstr "new NAS"
+
+#: user_location.php:172
+msgid "new location"
+msgstr "new location"
+
+#: traffic_control.php:272
+msgid "new tariff plan"
+msgstr "new tariff plan"
+
+#: audit.php:260 audit.php:358
+msgid "new value"
+msgstr "new value"
+
+#: static_ippool_apply.php:456 user_info.php:192 user_info.php:202
+#: user_info.php:257 user_info.php:294 users.php:163 users.php:164
+msgid "no"
+msgstr "no"
+
+#: users.php:53 users.php:154
+msgid "not excluding"
+msgstr "not excluding"
+
+#: payments.php:373 user_payments.php:301 user_payments.php:335
+msgid "notes"
+msgstr "notes"
+
+#: users.php:152
+msgid "number"
+msgstr "number"
+
+#: payments.php:370 user_payments.php:331 user_payments.php:337
+msgid "obligation"
+msgstr "obligation"
+
+#: payments.php:86
+msgid "obligations"
+msgstr "obligations"
+
+#: user_edit.php:379 user_edit.php:596 user_info.php:229 user_info.php:343
+msgid "offline"
+msgstr "offline"
+
+#: audit.php:254 audit.php:357
+msgid "old value"
+msgstr "old value"
+
+#: user_edit.php:379 user_edit.php:595 user_info.php:229 user_info.php:342
+#: user_pppoe_sessions.php:105
+msgid "online"
+msgstr "online"
+
+#: audit.php:120 audit.php:153 audit.php:234 audit.php:353 payments.php:125
+msgid "operator"
+msgstr "operator"
+
+#: freeradius_sqlippool.php:92 static_ippool.php:99
+msgid "order by"
+msgstr "order by"
+
+#: include/config.inc.php:74
+msgid "original blue"
+msgstr "original blue"
+
+#: payments.php:371 user_payments.php:332
+msgid "payment"
+msgstr "payment"
+
+#: audit.php:126
+msgid "payments"
+msgstr "payments"
+
+#: static_ippool.php:78 static_ippool.php:79
+msgid "pool name"
+msgstr "pool name"
+
+#: traffic_control.php:282
+msgid "price"
+msgstr "price"
+
+#: freeradius_sqlippool_apply.php:216 static_ippool_apply.php:314
+#: static_ippool.php:43
+msgid "private"
+msgstr "private"
+
+#: freeradius_sqlippool_apply.php:216 static_ippool_apply.php:314
+#: static_ippool.php:43
+msgid "public"
+msgstr "public"
+
+#: payments.php:85
+msgid "reported"
+msgstr "reported"
+
+#: payments.php:342
+msgid "reporting of selected"
+msgstr "reporting of selected"
+
+#: login_attempts.php:221 login_attempts.php:230
+msgid "reset selected"
+msgstr "reset selected"
+
+#: audit.php:152 audit.php:229 audit.php:352
+msgid "resource"
+msgstr "resource"
+
+#: freeradius_groups.php:254 freeradius_groups.php:434 freeradius_nas.php:167
+#: freeradius_nas.php:282 freeradius_sqlippool_apply.php:258
+#: freeradius_sqlippool.php:165 operators.php:220 operators.php:360
+#: profile.php:186 static_ippool_apply.php:356 static_ippool_apply.php:395
+#: static_ippool_apply.php:557 static_ippool.php:178 traffic_control.php:149
+#: traffic_control.php:249 user_edit.php:754 user_edit.php:769
+#: user_location.php:91 user_location.php:148 user_new.php:343
+#: user_payments.php:223
+msgid "save"
+msgstr "save"
+
+#: include/func.inc.php:3
+msgctxt "second short"
+msgid "sec"
+msgstr "sec"
+
+#: user_pppoe_sessions.php:84
+msgid "session time"
+msgstr "session time"
+
+#: user_edit.php:616 user_info.php:360
+msgid "sessions"
+msgstr "sessions"
+
+#: static_ippool.php:216
+msgid "shaper ID"
+msgstr "shaper ID"
+
+#: audit.php:183 freeradius_sqlippool.php:94 login_attempts.php:168
+#: payments.php:155 static_ippool.php:101 users.php:89
+msgid "show"
+msgstr "show"
+
+#: administration.php:71 ping_arping.php:125
+msgid "start"
+msgstr "start"
+
+#: user_pppoe_sessions.php:82
+msgid "start time"
+msgstr "start time"
+
+#: audit.php:124
+msgid "static IP addresses"
+msgstr "static IP addresses"
+
+#: administration.php:88
+msgid "stop"
+msgstr "stop"
+
+#: user_pppoe_sessions.php:83
+msgid "stop time"
+msgstr "stop time"
+
+#: static_ippool.php:218
+msgid "subnet"
+msgstr "subnet"
+
+#: payments.php:374 user_payments.php:277 user_payments.php:334
+msgid "sum"
+msgstr "sum"
+
+#: audit.php:119
+msgid "system"
+msgstr "system"
+
+#: include/config.inc.php:73
+msgid "system default"
+msgstr "system default"
+
+#: user_location.php:181 users.php:86 users.php:150
+msgid "the location"
+msgstr "the location"
+
+#: audit.php:168 login_attempts.php:153 payments.php:140
+msgid "to date"
+msgstr "to date"
+
+#: audit.php:325 freeradius_groups.php:476 freeradius_nas.php:302
+#: freeradius_sqlippool.php:185 login_attempts.php:215 operators.php:379
+#: payments.php:361 static_ippool.php:198 traffic_control.php:267
+#: user_location.php:167 user_payments.php:264 user_pppoe_sessions.php:74
+#: users.php:142
+msgid "total"
+msgstr "total"
+
+#: payments.php:451 user_payments.php:428
+msgid "total sum"
+msgstr "total sum"
+
+#: payments.php:84 payments.php:110
+msgid "unreported"
+msgstr "unreported"
+
+#: freeradius_sqlippool.php:72 freeradius_sqlippool.php:74
+#: freeradius_sqlippool.php:76 static_ippool.php:76 static_ippool.php:78
+#: static_ippool.php:80 static_ippool.php:82
+msgid "up"
+msgstr "up"
+
+#: audit.php:114
+msgid "update"
+msgstr "update"
+
+#: user_pppoe_sessions.php:85
+msgid "upload"
+msgstr "upload"
+
+#: audit.php:121
+msgid "user"
+msgstr "user"
+
+#: static_ippool.php:215
+msgid "user ID"
+msgstr "user ID"
+
+#: freeradius_sqlippool.php:72 freeradius_sqlippool.php:73
+#: freeradius_sqlippool.php:205 static_ippool.php:225
+#: user_pppoe_sessions.php:75
+msgid "username"
+msgstr "username"
+
+#: include/page_header.php:41
+msgid "version"
+msgstr "version"
+
+#: static_ippool_apply.php:456 user_edit.php:230 user_edit.php:556
+#: user_info.php:192 user_info.php:202 user_info.php:257 user_info.php:306
+#: user_new.php:180 users.php:163 users.php:164
+msgid "yes"
+msgstr "yes"

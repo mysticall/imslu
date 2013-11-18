@@ -1,0 +1,64 @@
+
+	Copyright © 2013 MSIUL Developers
+	
+	This program is free software; you can redistribute it and/or modify it 
+	under the terms of the GNU General Public License as published by the 
+	Free Software Foundation; either version 2 of the License, or (at you option) 
+	any later version.
+
+	This program is distributed in the hope that it will be useful, but 
+	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+	for more details.
+
+	You should have received a copy of the GNU General Public License along 
+	with this program; if not, write to the Free Software Foundation, Inc., 
+	59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+
+  * PHP Code:
+	Fahri Hasan
+	fahri_hasan@hotmail.com
+
+
+  * Python Code:
+	Fahri Hasan
+
+
+  * Design:
+	Fahri Hasan
+
+          
+  * HTML, JavaScript, CSS:
+	Fahri Hasan        
+
+          
+  * Images:
+               
+
+          
+  * Web Page & Documentation:
+	Fahri Hasan
+
+          
+  * Beta testing:
+	Fahri Hasan          
+
+
+
+	MSIUL uses elements of other software:
+		- http://www.zabbix.com/
+		- http://www.zabbix.com/rn2.0.4.php
+		- http://www.wikihow.com/Create-a-Secure-Login-Script-in-PHP-and-MySQL
+		- http://www.wikihow.com/Create-a-Secure-Session-Managment-System-in-PHP-and-MySQL
+		- http://pajhome.org.uk/crypt/md5/sha512.html - BSD License
+	   
+	Used selected content or guides:
+		- (russian) http://habrahabr.ru/post/111399/
+		- (en) Linux Advanced Routing & Traffic Control HOWTO - http://www.lartc.org/lartc.html
+		- (bugarian) http://myfreesoft.net/phpBB2/viewtopic.php?t=751
+		- (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=364103812
+		- (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=386924398
+		- Debian advanced router for ISP – firewall, traffic shaping, smp_affinity, taskset, sysctl and more … http://itservice-bg.net/?p=1122
+		- (russian) http://linuxsnippets.net/ru/node/268
+		
