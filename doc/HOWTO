@@ -34,7 +34,10 @@ __________________________________________________________________
 		2.9 FreeRadius client
 		
 	3 Scripts
-__________________________________________________________________
+
+	4 User Interface
+
+___________________________________________________
 
 
 Chapter 1. Intro
@@ -113,9 +116,9 @@ __________________________________________________________________
 Chapter 2 Installation and configuration
 
    #################################
-  #								  #	
- #		2.1 Requirements		 #
-#								#
+  #	                              #	
+ #       2.1 Requirements        #
+#	                            #
 ################################
 
 	* OS - Linux, yet is fully compatible with Debian Wheezy
@@ -155,16 +158,17 @@ Chapter 2 Installation and configuration
 
 
    #################################
-  #								  #	
- #	2.2 Download and install	 #
-#								#
+  #	                              #	
+ #   2.2 Download and install    #
+#                               #
 ################################
 
 Download from:
 https://sourceforge.net/projects/imslu/
 tar -zxvf imslu_0.1-alpha.tar.gz
 
-OR LAST VERSION
+OR
+Get the latest development version.
 git clone https://github.com/mysticall/imslu.git
 
 cd imslu
@@ -183,9 +187,9 @@ cp conf/cron/imslu /etc/cron.d/
 
 
    #################################
-  #								  #	
- #		2.3	INSTALL MariaDB		 #
-#								#
+  #	                              #	
+ #       2.3 INSTALL MariaDB     #
+#	                            #
 ################################
 
 nano /etc/apt/sources.list.d/MariaDB.list
@@ -236,9 +240,9 @@ mysql -D imslu -u imslu -pimslu_password < 05_freeradius_example.sql
 mysql -D imslu -u imslu -pimslu_password < 06_freeradius_example_ippool.sql
 
    #################################
-  #								  #	
- #		2.4 Apache2 and PHP5	 #
-#								#
+  #	                              #	
+ #      2.4 Apache2 and PHP5     #
+#	                            #
 ################################
 
 apt-get install libapache2-mod-php5 php5-mysql subversion
@@ -275,9 +279,9 @@ ln -s /etc/imslu/apache.conf /etc/apache2/conf.d/imslu.conf
 /etc/init.d/apache2 restart
 
   #################################
-  #								  #	
- #		2.5 System settings		 #
-#								#
+  #	                              #	
+ #      2.5 System settings      #
+#	                            #
 ################################
 
 Change to:
@@ -394,9 +398,9 @@ iface eth1 inet manual
 
 
    #################################
-  #								  #	
- #			2.6 bind9			 #
-#								#
+  #	                              #	
+ #          2.6 bind9            #
+#	                            #
 ################################
 https://wiki.debian.org/Bind9
 
@@ -450,9 +454,9 @@ echo "\$AddUnixListenSocket /var/bind9/chroot/dev/log" > /etc/rsyslog.d/bind-chr
 
 
    #########################################
-  #								  		  #	
- # 	2.7 Roaring Penguin PPPoE server	 #
-#										#
+  #	                                      #	
+ #    2.7 Roaring Penguin PPPoE server   #
+#	                                    #
 ########################################
 
 apt-get install ppp
@@ -692,9 +696,9 @@ chmod +x /etc/ppp/ip-down.d/0001shaper
 
 
    #################################
-  #								  #	
- #		2.8 FreeRadius server	 #
-#								#
+  #	                              #	
+ #     2.8 FreeRadius server     #
+#	                            #
 ################################
 
 
@@ -1048,9 +1052,9 @@ chmod 755 /var/log/freeradius
 
 
    #################################
-  #								  #	
- #		2.9 FreeRadius client	 #
-#								#
+  #	                              #	
+ #     2.9 FreeRadius client     #
+#	                            #
 ################################
 
 apt-get install radiusclient1
@@ -1112,9 +1116,9 @@ ATTRIBUTE       Acct-Interim-Interval            85     integer
 
 
    #################################
-  #								  #	
- #			3 Scripts			 #
-#								#
+  #	                              #	
+ #          3 Scripts            #
+#	                            #
 ################################
 
 Install system tools:
@@ -1169,5 +1173,16 @@ nano /etc/rsyslog.d/ip_status.conf
 /etc/init.d/rsyslog restart
 
 
+   #################################
+  #	                              #	
+ #       User Interface          #
+#	                            #
+################################
 
+Group:    System administrators
+User:     sadmin
+Password: sadmin
 
+Group:    Administrators
+User:     admin
+Password: admin
