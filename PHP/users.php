@@ -162,13 +162,14 @@ if (isset($_GET['show'])) {
 
             $free_access = ($rows[$i]['free_access'] == 1) ? _('yes') : _('no');
             $not_excluding = ($rows[$i]['not_excluding'] == 1) ? _('yes') : _('no');
+            $user_location = (!empty($location[$rows[$i]['locationid']])) ? $location[$rows[$i]['locationid']] : '';
 
             if ($i % 2 == 0) {
 
                 $form .= 
 "          <tr class=\"even_row\">
             <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
-            <td>{$location[$rows[$i]['locationid']]}</td>
+            <td>$user_location</td>
             <td>".chars($rows[$i]['address'])."</td>
             <td>".chars($rows[$i]['phone_number'])."</td>
             <td>$free_access</td>
@@ -181,7 +182,7 @@ if (isset($_GET['show'])) {
                 $form .= 
 "          <tr class=\"odd_row\">
             <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
-            <td>{$location[$rows[$i]['locationid']]}</td>
+            <td>$user_location</td>
             <td>".chars($rows[$i]['address'])."</td>
             <td>".chars($rows[$i]['phone_number'])."</td>
             <td>$free_access</td>
