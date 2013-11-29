@@ -1,0 +1,49 @@
+body, form, table {
+	background-color: #E0E9EE;
+}
+
+.top_container {
+	background-color: #CEE3EE;
+	border: 1px solid #94D4F3;
+	border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	border-width: 3px 1px 1px 1px;
+	font-weight: bold;
+}
+
+.right_container {
+	background-color: #CEE3EE;
+	border: 1px solid #94D4F3;
+}
+
+.msg {
+	background-color: #CEE3EE;
+	border: 1px solid #94D4F3;
+}
+
+table, tr, td, th {
+	border: 1px solid #94D4F3;
+}
+
+.tableinfo tr.header_top {
+	background-color: #CEE3EE;
+}
+
+.tableinfo tr.header {
+	background-color: #CEE3EE;
+}
+
+.tableinfo tr.even_row { }
+.tableinfo tr.odd_row {
+	background-color:#CEE3EE;
+}
+
+.tableinfo tr td.left_select:hover, tr td.left_select:active {
+	background-color:#CEE3EE;
+}
+
+.menu_right ul li ul li a:hover {
+	background-color: #C8E4F1;
+}

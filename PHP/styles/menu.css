@@ -27,13 +27,6 @@
 		.menu_top ul li.profile { float: right; }
 		.menu_top ul li.logout { float: right; }
 		.menu_top ul li a { display: block; text-decoration: none; color: #2F2F2F; margin: 5px auto; }
-		
-			.menu_top ul li ul { position: absolute; display: none; width:160px; }
-			
-			.menu_top ul li ul li a { display: block; width: 140px;}
-			
-	.menu_top li:hover ul, .menu_top li a:hover ul { display: block; top: 33px; left: 0px; background-color: #cef3d1; border: 1px solid #a4e6c3; }
-	.menu_top ul li ul li a:hover { background-color: #d9f8dc; }
 
 /* RIGHT MENU */
 

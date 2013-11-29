@@ -207,7 +207,10 @@ table {
 	border-collapse: collapse;
 }
 
-table, tr, td, th { padding: 0px 5px; border: 1px solid #a4e6c3; }
+table, tr, td, th { 
+	padding: 0px 5px; 
+	border: 1px solid #a4e6c3; 
+}
 
 /* table info */
 .tableinfo {

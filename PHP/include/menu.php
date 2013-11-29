@@ -27,41 +27,13 @@ $admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
 
 $menu_top = array (
 	1 =>	array (
-			'name'		=> 	_('Users'),
-			'class'		=> 	'#',
-			'link'		=> 	'users.php',
-			'img'		=>	'user.png',
-			'check_anyright'=>	FALSE,
-			),	
-	2 =>	array (
-			'name'		=> 	_('Payments'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'payment.gif',
-			'check_anyright'=>	FALSE,
-			),
-	3 =>	array (
-			'name'		=> 	_('Monitoring'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'utilities-system-monitor.png',
-			'check_anyright'=>	FALSE,
-			),
-	4 =>	array (
-			'name'		=> 	_('Map'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'applications-internet.png',
-			'check_anyright'=>	FALSE,
-			),
-	5 =>	array (
 			'name'		=> 	_('Logout'),
 			'class'		=> 	'logout',
 			'link'		=> 	'logout.php',
 			'img'		=>	'log-out.png',
 			'check_anyright'=>	TRUE,
 			),				
-	6 =>	array (
+	2 =>	array (
 			'name'		=> 	_('Profile'),
 			'class'		=> 	'profile',
 			'link'		=> 	'profile.php',
