@@ -31,7 +31,7 @@ logging.basicConfig(filename = log_file,
                     format='%(asctime)s %(name)s %(message)s',
                     datefmt='%b %d %H:%M:%S')
 
-logger = logging.getLogger('global-rules:')
+logger = logging.getLogger('functions:')
 
 """ !!! WARNING all funcions tested on Debian Wheezy with arp-scan verison 1.8.1!!!
     !!! If arp-scan output format are change the functions will not work. Please see: !!!
