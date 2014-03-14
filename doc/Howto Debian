@@ -178,6 +178,7 @@ cp -r PHP/* /usr/share/imslu
 
 mkdir /etc/imslu
 cp -r conf/debian/* /etc/imslu/
+chmod +x /etc/imslu/scripts/*
 
 mkdir /etc/imslu/backup
 chown www-data:www-data /etc/imslu/backup
@@ -204,7 +205,7 @@ gpg --keyserver keys.gnupg.net --recv-keys CBCB082A1BB943DB
 gpg -a --export CBCB082A1BB943DB | apt-key add -
 
 apt-get update
-apt-get install mariadb-server libmysqlclient18=5.5.33a+maria-1~wheezy
+apt-get install mariadb-server libmysqlclient18=5.5.36+maria-1~wheezy
 
 Hold MariaDB Client version on current:
 echo libmysqlclient18 hold | dpkg --set-selections
@@ -290,15 +291,15 @@ nano /etc/sysctl.conf
 kernel.pid_max = 65536
 kernel.randomize_va_space = 1
 
-net.core.wmem_max = 11534336
-net.core.rmem_max = 11534336
+net.core.wmem_max = 8388608
+net.core.rmem_max = 8388608
 
 net.ipv4.tcp_synack_retries = 3
 net.ipv4.tcp_syncookies = 1
 net.ipv4.tcp_max_syn_backlog = 2048
 
-net.ipv4.tcp_wmem = 4096 87380 11534336
-net.ipv4.tcp_rmem = 4096 87380 11534336
+net.ipv4.tcp_wmem = 4096 87380 8388608
+net.ipv4.tcp_rmem = 4096 87380 8388608
 
 #net.netfilter.nf_conntrack_expect_max = 4096
 #net.ipv4.netfilter.ip_conntrack_generic_timeout = 600
@@ -318,7 +319,7 @@ net.ipv4.tcp_rmem = 4096 87380 11534336
 #net.ipv4.netfilter.ip_conntrack_udp_timeout = 10
 #net.ipv4.netfilter.ip_conntrack_udp_timeout_stream = 180
 #net.ipv4.netfilter.ip_conntrack_icmp_timeout = 10
-#net.ipv4.netfilter.ip_conntrack_max = 16777216
+#net.ipv4.netfilter.ip_conntrack_max = 131072
 
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv4.conf.all.rp_filter = 1
@@ -353,9 +354,12 @@ nano /etc/rc.local
 #modprobe ip_conntrack
 sysctl -p
 # change hashsize on the fly
-#echo 4194304 > /sys/module/nf_conntrack/parameters/hashsize
+# https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
+#echo 32768 > /sys/module/nf_conntrack/parameters/hashsize
+
 # check current hashsize
 #cat /sys/module/nf_conntrack/parameters/hashsize
+
 # check current tracked connections
 #cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 
@@ -407,6 +411,7 @@ https://wiki.debian.org/Bind9
 apt-get install bind9 
 
 nano /etc/bind/named.conf.options 
+Add after "listen-on-v6 { any; };"
 --------------------------------------------------------------------------------
         listen-on { 127.0.0.1; 10.111.2.1; };
 
@@ -416,11 +421,6 @@ nano /etc/bind/named.conf.options
 
         // Do not make public version of BIND
         version none;
---------------------------------------------------------------------------------
-
-nano named.conf.local
---------------------------------------------------------------------------------
-include "/etc/bind/zones.rfc1918";
 --------------------------------------------------------------------------------
 
 Bind Chroot
@@ -1171,6 +1171,18 @@ nano /etc/rsyslog.d/ip_status.conf
 & ~
 --------------------------------------------------------------------------------
 /etc/init.d/rsyslog restart
+
+
+   #################################
+  #	                              #	
+ #       3.1 config.py           #
+#	                            #
+################################
+
+Edit config files:
+- /etc/imslu/scripts/config.py
+- /etc/imslu/config.php
+- /etc/imslu/database_config.php
 
 
    #################################

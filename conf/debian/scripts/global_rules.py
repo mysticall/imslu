@@ -234,9 +234,9 @@ for v in cmd:
 
 
 """Create a MASQUERADE rules. Not recommended for networks with many IP addresses!"""
+masq = ipmark[:]
 logger.info('Create a IPTABLES MASQUERADE rule for networks '+ str(masq) +'.')
 
-masq = ipmark[:]
 for v in masq:
 
     cmd = IPTABLES +' -t nat -A POSTROUTING -s '+ v +' -o '+ IFACE_EXTERNAL +' -j MASQUERADE'
