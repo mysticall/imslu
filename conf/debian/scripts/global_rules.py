@@ -105,17 +105,18 @@ for v in cmd:
 logger.info('Add IP addresses to internal interface.')
 
 cmd = []
+cmd += [IP +' link set dev '+ IFACE_INTERNAL +' up']
+
 for gw_ip in ST_NETWORKS:
     cmd += [IP +' address add '+ gw_ip.rsplit('.', 1)[0] +'.1/32 dev '+ IFACE_INTERNAL]
-    cmd += [IP +' link set dev '+ IFACE_INTERNAL +' up']
 
 for v in cmd:
-        p = subprocess.Popen(v, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
+    p = subprocess.Popen(v, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
 
-        if err:
-            msg = 'Failed: \"'+ str(v) +'\" \"'+ str(err[0:-2]) +'\"'
-            logger.info(msg)
+    if err:
+        msg = 'Failed: \"'+ str(v) +'\" \"'+ str(err[0:-2]) +'\"'
+        logger.info(msg)
 
 
 """Create a rules for EXPIRED Users."""

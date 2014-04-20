@@ -37,9 +37,10 @@ logger = logging.getLogger('admin-tools:')
 args = [logger, subprocess, ipcalc, IFACE_INTERNAL, IFACE_EXTERNAL, LOG_DIR, IPTABLES, IP, TC, ARP_SCAN, IFACE_INTERNAL_VLANS, IFACE_EXTERNAL_VLANS]
 
 def add_ip_rules(ip=None, vlan=None, mac=None, free_mac='0', donw_speed=None, up_speed=None, *args):
-    print"proba"
+    
     # If you use VLANs
     if USE_VLANS and ip and vlan and donw_speed and up_speed:
+        
         cmd = []
         cmd += [IP +' route replace '+ ip +'/32 dev '+ vlan +' src '+ ip.rsplit('.', 1)[0] +'.1']
         
@@ -76,6 +77,8 @@ def add_ip_rules(ip=None, vlan=None, mac=None, free_mac='0', donw_speed=None, up
     if USE_VLANS == False and ip and donw_speed and up_speed:
         
         cmd = []
+        cmd += [IP +' route replace '+ ip +'/32 dev '+ IFACE_INTERNAL +' src '+ ip.rsplit('.', 1)[0] +'.1']
+        
         if mac and free_mac == '0':
             cmd += [IP +' neighbor replace '+ ip +' lladdr '+ mac +' dev '+ IFACE_INTERNAL +' nud permanent']
         

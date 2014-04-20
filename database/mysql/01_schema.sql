@@ -15,7 +15,7 @@ CREATE TABLE `operators` (
 	`salt`			char(128)		DEFAULT ''			NOT NULL,
 	`url`			varchar(255)	DEFAULT '' 			NOT NULL,
 	`lang`			varchar(5)		DEFAULT 'en_US' 	NOT NULL,
-	`theme`			varchar(128)    DEFAULT 'originalgeen'	NOT NULL,
+	`theme`			varchar(128)    DEFAULT 'originalgreen'	NOT NULL,
 	`refresh`		int(4)			DEFAULT '30'		NOT NULL,
 	`type`			int(4)			UNSIGNED			NULL,
   PRIMARY KEY (operid)

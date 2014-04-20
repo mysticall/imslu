@@ -213,13 +213,6 @@ echo libmysqlclient18 hold | dpkg --set-selections
 If need to update MariaDB Client version:
 echo libmysqlclient18 install | dpkg --set-selections
 
-nano /etc/mysql/my.cnf
-add 
---------------------------------------------------------------------------------
-default-storage-engine=innodb
-in the [mysqld] section
---------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------
 CREATE IMSLU Database
 --------------------------------------------------------------------------------
@@ -235,10 +228,11 @@ cd database/mysql
 
 mysql -D imslu -u imslu -pimslu_password < 01_schema.sql
 mysql -D imslu -u imslu -pimslu_password < 02_data.sql
-mysql -D imslu -u imslu -pimslu_password < 03_freeradius_schema.sql
-mysql -D imslu -u imslu -pimslu_password < 04_freeradius_data.sql
-mysql -D imslu -u imslu -pimslu_password < 05_freeradius_example.sql
-mysql -D imslu -u imslu -pimslu_password < 06_freeradius_example_ippool.sql
+mysql -D imslu -u imslu -pimslu_password < 03_example_static_ip-addresses.sql
+mysql -D imslu -u imslu -pimslu_password < 04_freeradius_schema.sql
+mysql -D imslu -u imslu -pimslu_password < 05_freeradius_data.sql
+mysql -D imslu -u imslu -pimslu_password < 06_freeradius_example.sql
+mysql -D imslu -u imslu -pimslu_password < 07_freeradius_example_ippool.sql
 
    #################################
   #	                              #	
