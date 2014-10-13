@@ -41,7 +41,7 @@ $ctable = new CTable();
 	// PAGE HEADER
 ###################################################################################################
 
-$page['title'] = _('Users');
+$page['title'] = 'Users';
 $page['file'] = 'users.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
@@ -124,7 +124,7 @@ if (isset($_GET['show'])) {
     $sth = $db->dbh->prepare($sql);
 
     if ($_location) {
-	   $sth->bindValue(':locationid', $location, PDO::PARAM_INT);
+	   $sth->bindValue(':locationid', $locationid, PDO::PARAM_INT);
     }
     if ($_more) {
        $sth->bindValue(':more', 1, PDO::PARAM_INT);
