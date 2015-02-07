@@ -389,8 +389,8 @@ if (!empty($_GET['userid'])) {
 
 			$form .=
 "              $ip_status
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?userid=$userid&resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?userid=$userid&resource=arping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ arping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=arping&ipaddress={$ip_info[$i]['ipaddress']}&vlan={$ip_info[$i]['vlan']}'\">[ arping ]</label>
             </td>
           </tr>
           <tr>
@@ -600,7 +600,7 @@ if (!empty($_GET['userid'])) {
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['framedipaddress']} : <span style=\"color: #ff0000;\">{$acct_info[$i]['callingstationid']}</span> @ {$acct_info[$i]['nasipaddress']}:{$acct_info[$i]['nasportid']}</label>" : 
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['acctstarttime']} -> {$acct_info[$i]['acctstoptime']}</label>";
                         $ping = ($status) ? 
-                                "<label class=\"link\" onClick=\"location.href='ping_arping.php?userid=$userid&resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
+                                "<label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
                         $framedipaddress = ($status) ? 
                                 "<input class=\"input\" type=\"hidden\" name=\"freeradius[framedipaddress][{$acct_info[$i]['framedipaddress']}]\" value=\"{$acct_info[$i]['framedipaddress']}\">" : "";
 
