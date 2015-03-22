@@ -24,23 +24,25 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']);
-$admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+$admin_rights = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 if ($sysadmin_rights || $admin_rights) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
+	$db = new PDOinstance();
+	$ctable = new Table();
 
 
 ###################################################################################################
@@ -347,7 +349,7 @@ END";
 		$ctable->checkbox = true;
 		$ctable->onclick_id = true;
 		$ctable->th_array = array(
-			1 => _('ID'),
+			1 => _('id'),
 			2 => _('action'),
 			3 => _('resource'),
 			4 => _('operator'),

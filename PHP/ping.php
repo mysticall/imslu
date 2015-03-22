@@ -24,43 +24,47 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
     header('Location: index.php');
     exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 $page['title'] = 'Ping - Arping';
-$page['file'] = 'ping_arping.php';
+$page['file'] = 'ping.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 settype($_GET['packetsize'], "integer");
-$packetsize = ($_GET['packetsize'] > 0 && $_GET['packetsize'] < 1025) ? $_GET['packetsize'] : 1024;
+$packetsize = ($_GET['packetsize'] > 0 && $_GET['packetsize'] < 11025) ? $_GET['packetsize'] : 1024;
 
 settype($_GET['count'], "integer");
-$count = ($_GET['count'] > 0 && $_GET['count'] < 26) ? $_GET['count'] : 5;
+$count = ($_GET['count'] > 0 && $_GET['count'] < 26) ? $_GET['count'] : 15;
 
-$ipaddress = (!empty($_GET['ipaddress']) && filter_var($_GET['ipaddress'], FILTER_VALIDATE_IP)) ? $_GET['ipaddress'] : "8.8.8.8";
+$ipaddress = (!empty($_GET['ipaddress'])) ? $_GET['ipaddress'] : '';
+$_GET['resource'] = (!empty($_GET['resource'])) ? $_GET['resource'] : '';
 
-if (!empty($_GET['resource']) && $_GET['resource'] == 'ping') {
-
-    $resource = array('ping' => 'ping', 'arping' => 'arping');
-
-    $cmd = "$PING -s $packetsize -c $count $ipaddress 2>&1";
+switch($_GET['resource']) {
+	case "ping":
+		$resource = array('ping' => 'ping', 'arping' => 'arping');
+		$cmd = "$PING -s $packetsize -c $count $ipaddress 2>&1";
+		break;
+	case "arping":
+		$resource = array('arping' => 'arping', 'ping' => 'ping');
+		$iface = ($USE_VLANS && !empty($_GET['vlan'])) ? $_GET['vlan'] : $IFACE_INTERNAL;
+		$cmd = "$SUDO $ARPING -i $iface -c $count $ipaddress 2>&1";
+		break;
+	case "":
+		$resource = array('ping' => 'ping', 'arping' => 'arping');
+		$cmd = '';
+		break;
 }
-else {
-
-    $resource = array('arping' => 'arping', 'ping' => 'ping');
-    $iface = ($USE_VLANS && !empty($_GET['vlan'])) ? $_GET['vlan'] : $IFACE_INTERNAL;
-
-    $cmd = "$SUDO $ARPING -i $iface -c $count $ipaddress 2>&1";
-}
-
 
     echo
 "    <form method=\"get\">
@@ -70,10 +74,10 @@ else {
             <th>
               <label style=\"margin: 1px 3px 1px;\">".combobox('input select', 'resource', null, $resource)."</label>
               <label style=\"margin: 1px 3px 1px;\">
-               <input class=\"input\" type=\"text\" name=\"packetsize\" value=\"1024\" maxlength=\"3\" size=\"5\">
+               <input class=\"input\" type=\"text\" name=\"packetsize\" value=\"$packetsize\" maxlength=\"5\" size=\"5\">
               </label>
               <label style=\"margin: 1px 3px 1px;\">
-               <input class=\"input\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"2\" size=\"3\">
+               <input class=\"input\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"3\" size=\"3\">
               </label>
                <input class=\"input\" type=\"text\" name=\"ipaddress\" value=\"$ipaddress\">
               <input type=\"submit\" value=\""._('start')."\">
@@ -85,13 +89,12 @@ else {
       <table class=\"tableinfo\">
           <tr class=\"header_top\">
             <th>
-              <label>".chars($_GET['ipaddress'])."</label>
+              <label> </label>
             </th>
           </tr>
           <tr>
             <td>
               <textarea style=\"margin-top:10px; margin-left:17%; width: 64%; height: 270px;\">\n";
-
 
 $descriptorspec = array(
     0 => array("pipe", "r"),   // stdin is a pipe that the child will read from
@@ -103,21 +106,22 @@ $cwd = '/tmp';
 $process = proc_open($cmd, $descriptorspec, $pipes, $cwd, array());
 
 if (is_resource($process)) {
-        
-    flush();
+
+	ob_flush();
+	flush();
     while ($s = fgets($pipes[1])) {
 
-    echo $s;
-    ob_flush();
-    flush();
+        echo $s;
+    	ob_flush();
+    	flush();
     }
         
     fclose($pipes[0]);
     fclose($pipes[1]);
     fclose($pipes[2]);
     $return_value = proc_close($process);
+    ob_end_flush();
 }
-
 
 echo
 "              </textarea>

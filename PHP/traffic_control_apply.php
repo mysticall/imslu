@@ -21,24 +21,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
-	header('Location: index.php');
-	exit;
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //Only System Admin have acces to Static IP Addresses
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-	$db = new CPDOinstance();
+	$db = new PDOinstance();
 
 
 ###################################################################################################
@@ -63,25 +70,25 @@ if (!empty($_POST['save_edited']) && !empty($_POST['trafficid'])) {
 	}
 	if(empty($_POST['local_in'])) {
 
-		$msg['msg_local_in'] = _('Local IN cannot empty.');
+		$msg['msg_local_in'] = _('Local in cannot empty.');
 		show_error_message('trafficid', $id, null, $msg, 'traffic_control.php');
 	exit;
 	}	
 	if(empty($_POST['local_out'])) {
 
-		$msg['msg_local_out'] = _('Local OUT cannot empty.');
+		$msg['msg_local_out'] = _('Local out cannot empty.');
 		show_error_message('trafficid', $id, null, $msg, 'traffic_control.php');
 	exit;
 	}			
 /*	if(empty($_POST['int_in'])) {
 
-		$msg['msg_int_in'] = _('International IN cannot empty.');
+		$msg['msg_int_in'] = _('international in cannot empty.');
 		show_error_message('trafficid', $id, null, $msg, 'traffic_control.php');
 	exit;
 	}
 	if(empty($_POST['int_out'])) {
 
-		$msg['msg_int_out'] = _('International OUT cannot empty.');
+		$msg['msg_int_out'] = _('international out cannot empty.');
 		show_error_message('trafficid', $id, null, $msg, 'traffic_control.php');
 	exit;
 	}
@@ -133,25 +140,25 @@ if (!empty($_POST['save_new'])) {
 	}
 	if(empty($_POST['local_in'])) {
 
-		$msg['msg_local_in'] = _('Local IN cannot empty.');
+		$msg['msg_local_in'] = _('Local in cannot empty.');
 		show_error_message('action', 'new_tariff_plan', null, $msg, 'traffic_control.php');
 	exit;
 	}	
 	if(empty($_POST['local_out'])) {
 
-		$msg['msg_local_out'] = _('Local OUT cannot empty.');
+		$msg['msg_local_out'] = _('Local out cannot empty.');
 		show_error_message('action', 'new_tariff_plan', null, $msg, 'traffic_control.php');
 	exit;
 	}			
 /*	if(empty($_POST['int_in'])) {
 
-		$msg['msg_int_in'] = _('International IN cannot empty.');
+		$msg['msg_int_in'] = _('International in cannot empty.');
 		show_error_message('action', 'new_tariff_plan', null, $msg, 'traffic_control.php');
 	exit;
 	}
 	if(empty($_POST['int_out'])) {
 
-		$msg['msg_int_out'] = _('International OUT cannot empty.');
+		$msg['msg_int_out'] = _('International out cannot empty.');
 		show_error_message('action', 'new_tariff_plan', null, $msg, 'traffic_control.php');
 	exit;
 	}

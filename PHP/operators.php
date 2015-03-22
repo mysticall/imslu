@@ -24,25 +24,27 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+$check=null;
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type'])) {
+if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-	$db = new CPDOinstance();
-	$coperators = new COperator();
-	$ctable = new CTable();
-	$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']);
-	$admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+	$db = new PDOinstance();
+	$Operator = new Operator();
+	$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+	$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
-	if(!$sysadmin_rights) {
+	if(!$sysadmin_permissions) {
 
 		$OPERATOR_GROUPS = array(
 				1 => _('Cashiers'),
@@ -59,7 +61,6 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 	$page['file'] = 'operators.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
-
 
 #####################################################
 	// Display messages
@@ -78,7 +79,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 	if (empty($_POST['action']) && !empty($_POST['operid']) && $_SESSION['form_key_old'] === $_POST['form_key']) {
 
 		$operid = $_POST['operid'];
-		$get_operator = $coperators->get($db, $operid);
+		$get_operator = $Operator->get($db, $operid);
 
 	$form =
 "    <form action=\"operators_apply.php\" method=\"post\">
@@ -86,15 +87,15 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
-              <label>"._('Profile').": ".chars($get_operator['name'])."</label>
+              <label>"._('profile').": ".chars($get_operator['name'])."</label>
             </th>
           </tr>\n";
 
 	//Only System Admin can change alias
-	$form .= ($sysadmin_rights) ?
+	$form .= ($sysadmin_permissions) ?
 "          <tr>
             <td class=\"dt right\">
-              <label>"._('Alias')."</label>
+              <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"alias\" value=\"".chars($get_operator['alias'])."\"> 
@@ -104,7 +105,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 	$form .=
 "          <tr>
             <td class=\"dt right\">
-              <label>"._('Name')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($get_operator['name'])."\" >
@@ -112,7 +113,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Password')."</label>
+              <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">
@@ -120,7 +121,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Password (once again)')."</label>
+              <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">
@@ -133,54 +134,55 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
             <td class=\"dd\">
               <select class=\"input select\" name=\"lang\">\n";
 
-	// append languages to form list
-	$locales = $LOCALES;
-	$languages_unable_set = 0;
+// append languages to form list
+$array = $LOCALES;
+$languages_unable_set = 0;
 
 
-	// Search for operator languarge
-	foreach ($locales as $key => $value) {
-			
-		if ($key == $get_operator['lang']) {
+// Search for operator languarge
+foreach ($array as $key => $value) {
+            
+    if ($key == $get_operator['lang']) {
 
-			$found[$get_operator['lang']] = $value;
+        $found[$key] = $value;
 
-			unset($locales[$key]);
-			$locales_new = $found + $locales;
-		}	
-	}
+        unset($array[$key]);
+        $locales = $found + $array;
+        break;
+    }   
+}
 
-	foreach ($locales_new as $loc_id => $loc_name) {
-		// checking if this locale exists in the system. The only way of doing it is to try and set one
-		// trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
-		$locale_exists = setlocale(LC_MONETARY , locale_unix($loc_id)) || $loc_id == 'en_US' ? 'yes' : 'no';
+foreach ($locales as $key => $value) {
+    // checking if this locale exists in the system. The only way of doing it is to try and set one
+    // trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
+    $locale_exists = (setlocale(LC_MONETARY , $key.'.UTF-8') || $key == 'en_US') ? 'yes' : 'no';
 
-		if ($locale_exists != 'yes') {
+    if ($locale_exists != 'yes') {
 
-		$form .=
-"              <option value=\"$loc_id\" disabled>$loc_name</option>\n";
-		$languages_unable_set++;
-		}
-		else {
-			$form .=
-"              <option value=\"$loc_id\">$loc_name</option>\n";
-		}
-	}
+        $form .=
+"              <option value=\"{$key}\" disabled>{$value}</option>\n";
+        $languages_unable_set++;
+    }
+    else {
+        $form .=
+"              <option value=\"{$key}\">{$value}</option>\n";
+    }
+}
 
-	$form .= 
+$form .= 
 "              </select>";
 
-	$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">"._('Some of locales for the languages are not installed on the web server.')."</span>\n" : "\n";
+$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">". _('Some of locales for the languages are not installed on the web server.') ."</span> \n" : "\n";
 
-	// restoring original locale
-	setlocale(LC_MONETARY, locale_unix($get_operator['lang']));
+// restoring original locale
+setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
 
 	$form .=
 "            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Theme')."</label>
+              <label>"._('theme')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'theme', $get_operator['theme'], $THEMES)."\n
@@ -188,7 +190,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('URL (after login)')."</label>
+              <label>"._('url (after login)')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"url\" size=\"50\" maxlength=\"255\" value=\"".chars($get_operator['url'])."\">
@@ -196,7 +198,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Group')."</label>
+              <label>"._('group')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'type', $get_operator['type'], $OPERATOR_GROUPS)."\n
@@ -240,12 +242,12 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
-              <label>"._('New operator')."</label>
+              <label>"._('new operator')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Alias')."</label>
+              <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"alias\">";
@@ -256,7 +258,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Name')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\">
@@ -264,7 +266,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Password')."</label>
+              <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">";
@@ -275,7 +277,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Password (once again)')."</label>
+              <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">";
@@ -291,46 +293,40 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
             <td class=\"dd\">
               <select class=\"input select\" name=\"lang\">\n";
 
-		// append languages to form list
-		$locales = $LOCALES;
-		$languages_unable_set = 0;
+// append languages to form list
+$languages_unable_set = 0;
 
+foreach ($LOCALES as $key => $value) {
+    // checking if this locale exists in the system. The only way of doing it is to try and set one
+    // trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
+    $locale_exists = (setlocale(LC_MONETARY , $key.'.UTF-8') || $key == 'en_US') ? 'yes' : 'no';
 
-		$default_lang['en_US'] = $locales['en_US'];
-		unset($locales['en_US']);
-		$locales_new = $default_lang + $locales;
+    if ($locale_exists != 'yes') {
 
-		foreach ($locales_new as $loc_id => $loc_name) {
-			// checking if this locale exists in the system. The only way of doing it is to try and set one
-			// trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
-			$locale_exists = setlocale(LC_MONETARY , locale_unix($loc_id)) || $loc_id == 'en_US' ? 'yes' : 'no';
+        $form .=
+"              <option value=\"{$key}\" disabled>{$value}</option>\n";
+        $languages_unable_set++;
+    }
+    else {
+        $form .=
+"              <option value=\"{$key}\">{$value}</option>\n";
+    }
+}
 
-			if ($locale_exists != 'yes') {
-
-				$form .=
-"              <option value=\"$loc_id\" disabled>$loc_name</option>\n";
-				$languages_unable_set++;
-			}
-			else {
-				$form .=
-"              <option value=\"$loc_id\">$loc_name</option>\n";
-			}
-		}
-
-		$form .= 
+$form .= 
 "              </select>";
 
-		$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">". _('Some of locales for the languages are not installed on the web server.') ."</span>\n" : "\n";
+$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">". _('Some of locales for the languages are not installed on the web server.') ."</span> \n" : "\n";
 
-		// restoring original locale
-		setlocale(LC_MONETARY, locale_unix('en_US'));
+// restoring original locale
+setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
 
 		$form .=
 "            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Theme')."</label>
+              <label>"._('theme')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'theme', null, $THEMES)."\n
@@ -338,7 +334,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('URL (after login)')."</label>
+              <label>"._('url (after login)')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"url\" size=\"50\" maxlength=\"255\">
@@ -346,7 +342,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Group')."</label>
+              <label>"._('group')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'type', null, $OPERATOR_GROUPS)."\n
@@ -373,22 +369,23 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 ###################################################################################################
 
 	// Set CTable variable
-	$ctable->form_name = 'operators';
-	$ctable->table_name = 'operators';
-	$ctable->colspan = 5;
-	$ctable->info_field1 = _('total').": ";
-	$ctable->info_field2 = _('Operators');
+	$table = new Table();
+	$table->form_name = 'operators';
+	$table->table_name = 'operators';
+	$table->colspan = 5;
+	$table->info_field1 = _('total').": ";
+	$table->info_field2 = _('operators');
 
 	$items1 = array('' => '', 'addoperator' => _('add operator'));
 	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
 
-	$ctable->info_field3 = $combobox_form_submit;
-	$ctable->onclick_id = true;
-	$ctable->th_array = array(1 => _('ID'), 2 => _('alias'), 3 => _('name'), 4 => _('language'), 5 => _('group'));
-	$ctable->th_array_style = 'style="table-layout: fixed; width: 3%"';
-	$ctable->td_array = $coperators->get($db, null);
-	$ctable->form_key = $_SESSION['form_key'];
-	echo $ctable->ctable();
+	$table->info_field3 = $combobox_form_submit;
+	$table->onclick_id = true;
+	$table->th_array = array(1 => _('id'), 2 => _('alias'), 3 => _('name'), 4 => _('language'), 5 => _('group'));
+	$table->th_array_style = 'style="table-layout: fixed; width: 3%"';
+	$table->td_array = $Operator->get($db, null);
+	$table->form_key = $_SESSION['form_key'];
+	echo $table->ctable();
 
 
 	require_once dirname(__FILE__).'/include/page_footer.php';

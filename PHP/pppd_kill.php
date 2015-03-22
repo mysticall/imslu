@@ -21,15 +21,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
     header('Location: index.php');
     exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 ###################################################################################################
 // Kill PPPoE session

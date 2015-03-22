@@ -19,23 +19,21 @@
  */
 		
 /* TOP MENU */
+.top_menu { height: 99.8%; width: 99.8%; }
+	.top_menu ul { padding: 0px; margin: 0px; list-style-type: none; }
 
-.menu_top { height: 99.8%; width: 99.8%; }
-	.menu_top ul { padding: 0px; margin: 0px; list-style-type: none; }
-
-		.menu_top ul li { position: relative; float:left; padding: 0px 15px; }
-		.menu_top ul li.profile { float: right; }
-		.menu_top ul li.logout { float: right; }
-		.menu_top ul li a { display: block; text-decoration: none; color: #2F2F2F; margin: 5px auto; }
+		.top_menu ul li { position: relative; float:left; padding: 0px 15px; }
+		.top_menu ul li.profile { float: right; }
+		.top_menu ul li.logout { float: right; }
+		.top_menu ul li a { display: block; text-decoration: none; color: #2F2F2F; margin: 5px auto; }
 
 /* RIGHT MENU */
-
-.menu_right { height: 99.8%; width: 99.8%;}
-	.menu_right ul { padding: 0px; margin: 0px; list-style-type: none; }
+.right_menu { height: 99.8%; width: 99.8%;}
+	.right_menu ul { padding: 0px; margin: 0px; list-style-type: none; }
 	
-		.menu_right ul li a { display: block; text-decoration: none; color: #2F2F2F; padding: 1% 0 0 5%; }
+		.right_menu ul li a { display: block; text-decoration: none; color: #2F2F2F; padding: 1% 0 0 5%; }
 
-			.menu_right ul li ul { margin-left: 9%;}
+			.right_menu ul li ul { margin-left: 9%;}
 	
-	.menu_right li:hover ul, .menu_top li a:hover ul {  }		
-	.menu_right ul li ul li a:hover { background-color: #d9f8dc; }
+	.right_menu li:hover ul, .top_menu li a:hover ul {  }		
+	.right_menu ul li ul li a:hover { background-color: #d9f8dc; }

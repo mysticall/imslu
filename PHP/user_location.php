@@ -24,22 +24,22 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //System Admin or Admin have acces to location
-if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type'])) {
+if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-    $db = new CPDOinstance();
-    $ctable = new CTable();
-
+    $db = new PDOinstance();
 
 ###################################################################################################
 	// PAGE HEADER
@@ -70,12 +70,12 @@ if(isset($_POST['action']) && $_POST['action'] == 'newlocation') {
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('New location')."</label>
+              <label>"._('new location')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Name')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\">";
@@ -118,12 +118,12 @@ if(!empty($_POST['id'])) {
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('Edit the location').": ".chars($get_location['name'])."</label>
+              <label>"._('edit location').": ".chars($get_location['name'])."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Name')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($get_location['name'])."\">";
@@ -161,11 +161,12 @@ if(!empty($_POST['id'])) {
 ###################################################################################################
 
 	// Set CTable variable
-	$ctable->form_name = 'location';
-	$ctable->table_name = 'user_location';
-	$ctable->colspan = 2;
-	$ctable->info_field1 = _('total').": ";
-	$ctable->info_field2 = _('The location');
+	$table = new Table();
+	$table->form_name = 'location';
+	$table->table_name = 'user_location';
+	$table->colspan = 2;
+	$table->info_field1 = _('total').": ";
+	$table->info_field2 = _('the location');
 
 	$items1 = array(
 		'' => '',
@@ -174,18 +175,18 @@ if(!empty($_POST['id'])) {
 
 	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
 
-	$ctable->info_field3 = $combobox_form_submit;
-	$ctable->onclick_id = true;
-	$ctable->th_array = array(
-		1 => _('ID'),
+	$table->info_field3 = $combobox_form_submit;
+	$table->onclick_id = true;
+	$table->th_array = array(
+		1 => _('id'),
 		2 => _('the location')
 		);
 
 	$sql = 'SELECT id,name FROM location';
 	$sth = $db->dbh->prepare($sql);
 	$sth->execute();
-	$ctable->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-	echo $ctable->ctable();
+	$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
+	echo $table->ctable();
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
 

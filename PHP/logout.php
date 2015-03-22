@@ -24,39 +24,22 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-// logout
-if (isset($_POST['logout'])) {
-	
-	$db = new CPDOinstance();
-	$operator = CWebOperator::$data['alias'];
+$db = new PDOinstance();
 
-	// Add audit
-	add_audit($db, AUDIT_ACTION_LOGOUT, AUDIT_RESOURCE_SYSTEM, "$operator logout from the system.");
-	$db->destroy_session_handler();
-}
-else {
+// Add audit
+add_audit($db, AUDIT_ACTION_LOGOUT, AUDIT_RESOURCE_SYSTEM, "{$_SESSION['data']['alias']} logout from the system.");
+$db->destroy_session_handler();
 
-    $page['title'] = 'Logout';
-    $page['file'] = 'logout.php';
-
-    require_once dirname(__FILE__).'/include/page_header.php';
-
-    echo 
-"<form name=\"myform\" method=\"post\" action=\"logout.php\">
-  <input type=\"hidden\" name=\"logout\" value=\"logout\">
-  <script language=\"JavaScript\">document.myform.submit();</script>
-</form>";
-
-    require_once dirname(__FILE__).'/include/page_footer.php';
-}
 ?>

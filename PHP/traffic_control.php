@@ -24,21 +24,22 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //System Admin or Admin have acces to location
-if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type'])) {
+if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
+	$db = new PDOinstance();
 
 ###################################################################################################
 	// PAGE HEADER
@@ -73,12 +74,12 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('New tariff plan')."</label>
+              <label>"._('new service')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Tariff plan name')." *</label>
+              <label>"._('name')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\" size=\"35\" maxlength=\"255\">";
@@ -88,7 +89,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Price')." *</label>
+              <label>"._('price')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"price\">";
@@ -98,7 +99,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Local IN')." *</label>
+              <label>"._('local in')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"local_in\">
@@ -109,7 +110,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Local OUT')." *</label>
+              <label>"._('local out')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"local_out\">
@@ -120,7 +121,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('International IN')." *</label>
+              <label>"._('international in')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"int_in\" disabled>
@@ -131,7 +132,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('International OUT')." *</label>
+              <label>"._('international out')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name\"int_out\" disabled>
@@ -172,12 +173,12 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('Edit tariff plan').": ".chars($get_tariff_plan['name'])."</label>
+              <label>"._('edit service').": ".chars($get_tariff_plan['name'])."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Tariff plan name')." *</label>
+              <label>"._('name')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"name\" size=\"35\" maxlength=\"255\" value=\"".chars($get_tariff_plan['name'])."\">";
@@ -187,7 +188,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Price')." *</label>
+              <label>"._('price')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"price\" value=\"{$get_tariff_plan['price']}\">";
@@ -197,7 +198,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Local IN')." *</label>
+              <label>"._('local in')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"local_in\" value=\"{$get_tariff_plan['local_in']}\">
@@ -208,7 +209,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Local OUT')." *</label>
+              <label>"._('local out')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"local_out\" value=\"{$get_tariff_plan['local_out']}\">
@@ -219,7 +220,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('International IN')." *</label>
+              <label>"._('international in')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"int_in\" value=\"{$get_tariff_plan['int_in']}\" disabled>
@@ -230,7 +231,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('International OUT')." *</label>
+              <label>"._('international out')." *</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"int_out\" value=\"{$get_tariff_plan['int_out']}\" disabled>
@@ -261,11 +262,12 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 ###################################################################################################
 
 	// Set CTable variable
-	$ctable->form_name = 'traffic_control';
-	$ctable->table_name = 'traffic_control';
-	$ctable->colspan = 7;
-	$ctable->info_field1 = _('total').": ";
-	$ctable->info_field2 = _('Traffic control - Price');
+	$table = new Table();
+	$table->form_name = 'traffic_control';
+	$table->table_name = 'traffic_control';
+	$table->colspan = 7;
+	$table->info_field1 = _('total').": ";
+	$table->info_field2 = _('service - price');
 
 	$items1 = array(
 		'' => '',
@@ -274,23 +276,23 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 
 	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
 
-	$ctable->info_field3 = $combobox_form_submit;
-	$ctable->onclick_id = true;
-	$ctable->th_array = array(
-		1 => _('ID'),
+	$table->info_field3 = $combobox_form_submit;
+	$table->onclick_id = true;
+	$table->th_array = array(
+		1 => _('id'),
 		2 => _('name'),
 		3 => _('price'),
-		4 => _('local IN'),
-		5 => _('local OUT'),
-		6 => _('international IN'),
-		7 => _('international OUT')
+		4 => _('local in'),
+		5 => _('local out'),
+		6 => _('international in'),
+		7 => _('international out')
 		);
 
 	$sql = 'SELECT * FROM traffic';
 	$sth = $db->dbh->prepare($sql);
 	$sth->execute();
-	$ctable->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-	echo $ctable->ctable();
+	$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
+	echo $table->ctable();
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
 

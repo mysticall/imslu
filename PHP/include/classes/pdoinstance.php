@@ -21,12 +21,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
  
-require_once dirname(__FILE__).'/class.csession.php';
+require_once dirname(__FILE__).'/session.php';
 
 /**
  * Auto create new PDO istance 
  */
-class CPDOinstance {
+class PDOinstance {
 
 	/**
 	 * @param $dbh - PDO instance
@@ -134,7 +134,7 @@ class CPDOinstance {
 		
         $session_name = 'imslu_sessionid';
 
-        $session = new \CSession($this->dbh);
+        $session = new \Session($this->dbh);
 
         session_set_save_handler($session, true);
         session_register_shutdown('register shutdown');
@@ -142,25 +142,18 @@ class CPDOinstance {
         // $use_https - set to true if using https
         $use_https = false;
         $httponly = true;
-        $session_hash = 'sha512';
-
-        if (in_array($session_hash, hash_algos())) {
-			ini_set('session.hash_function', $session_hash);
-        }
-        ini_set('session.hash_bits_per_character', 5);
 
         ini_set('session.gc_probability', 100);
         ini_set('session.gc_divisor', 100);
 
         ini_set('session.use_only_cookies', 1);
 
-        $cookieParams = session_get_cookie_params(); 
-        session_set_cookie_params($cookieParams["lifetime"], $cookieParams["path"], $cookieParams["domain"], $use_https, $httponly);
+        $params = session_get_cookie_params();
+        session_set_cookie_params($params["lifetime"], $params["path"], $params["domain"], $use_https, $httponly);
 
         session_name($session_name);
 
         session_start();
-        //session_regenerate_id(true);
     }
 
 	/**
@@ -170,10 +163,9 @@ class CPDOinstance {
 		
         $session_name = 'imslu_sessionid';
 
-        $session = new \CSession($this->dbh);
+        $session = new \Session($this->dbh);
 
         session_set_save_handler($session, true);
-        session_start();
 
         $_SESSION = array();
 

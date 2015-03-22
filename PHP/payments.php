@@ -24,19 +24,21 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
+$db = new PDOinstance();
 
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 ###################################################################################################
 	// PAGE HEADER
@@ -49,7 +51,7 @@ require_once dirname(__FILE__).'/include/page_header.php';
 
 
 //Only System Admin or Admin have full access to payments
-if ($admin_rights) {
+if ($admin_permissions) {
 
 ###################################################################################################
 	// Reporting payments
@@ -111,7 +113,7 @@ else {
 		);
 
 	$operator = array(
-		CWebOperator::$data['alias'] => CWebOperator::$data['alias']
+		$_SESSION['data']['alias'] => $_SESSION['data']['alias']
 		);
 }
 
@@ -335,7 +337,7 @@ if (isset($_POST['show'])) {
 
 
 
-	if ($_POST['action'] == 'unreported' && isset($payments_info[0]) && $admin_rights) {
+	if ($_POST['action'] == 'unreported' && isset($payments_info[0]) && $admin_permissions) {
 
 		$items1 = array(
 			'' => '',

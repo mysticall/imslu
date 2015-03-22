@@ -21,7 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
  
-class CSession  implements SessionHandlerInterface {
+class Session  implements SessionHandlerInterface {
 
 	private $dbh;
 
@@ -80,7 +80,7 @@ class CSession  implements SessionHandlerInterface {
 
 		$ip = $_SERVER['REMOTE_ADDR'];
 		$browser = $_SERVER['HTTP_USER_AGENT'];
-		$login_string = hash('sha512', $ip.$browser);
+		$login_string = md5($ip.$browser);
 		$time = time(); 
 
 		$sql = 'REPLACE INTO sessions (sessionid, set_time, data, login_string)

@@ -21,29 +21,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
  
-class CMenu {
+class Menu {
 
-	public $menu_top;
-	public $menu_right;
+	public $top_menu;
+	public $right_menu;
 
 	public function __construct() {
 		
 		require_once(dirname(dirname(__FILE__))).'/menu.php';
 
-		$this->menu_top = $menu_top;
-		$this->menu_right = $menu_right;
+		$this->top_menu = $top_menu;
+		$this->right_menu = $right_menu;
 	}
 	
-	function menu_top($div_class) {
+	function top_menu($div_class) {
 
-	$menu_top = $this->build_menu($this->menu_top, $div_class);
-	return $menu_top;
+	$top_menu = $this->build_menu($this->top_menu, $div_class);
+	return $top_menu;
 	}
 
-	function menu_right($div_class) {
+	function right_menu($div_class) {
 
-	$menu_right = $this->build_menu($this->menu_right, $div_class);
-	return $menu_right;
+	$right_menu = $this->build_menu($this->right_menu, $div_class);
+	return $right_menu;
 	}
 	
 	function build_menu($menu, $div_class) {
@@ -53,7 +53,7 @@ class CMenu {
 
 		for ($i = 1; $i <= count($menu); ++$i) {
 	
-			if ($menu[$i]['check_anyright']) {
+			if ($menu[$i]['check_permissions']) {
 				
 				$out .= "        <li class=\"{$menu[$i]['class']}\"><a href=\"{$menu[$i]['link']}\">";
 				$out .= "<img src=\"images/general/{$menu[$i]['img']}\">  {$menu[$i]['name']}</a> \n";
@@ -79,7 +79,7 @@ class CMenu {
 
 		for ($i = 1; $i <= count($submenu); ++$i) {
 			
-			if ($submenu[$i]['check_anyright']){
+			if ($submenu[$i]['check_permissions']){
 				
 				$out .= "            <li><a href=\"{$submenu[$i]['link']}\">";
 				$out .= "<img src=\"images/general/{$submenu[$i]['img']}\">  {$submenu[$i]['name']}</a> \n";
@@ -93,8 +93,8 @@ class CMenu {
 
 	public function __destruct() {
 		
-		$this->menu_top = null;
-		$this->menu_right = null;
+		$this->top_menu = null;
+		$this->right_menu = null;
 	}
 }
 ?>

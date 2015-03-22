@@ -234,6 +234,12 @@ mysql -D imslu -u imslu -pimslu_password < 05_freeradius_data.sql
 mysql -D imslu -u imslu -pimslu_password < 06_freeradius_example.sql
 mysql -D imslu -u imslu -pimslu_password < 07_freeradius_example_ippool.sql
 
+--------------------------------------------------------------------------------
+APPLY pachtes
+--------------------------------------------------------------------------------
+mysql -D imslu -u imslu -pimslu_password < ../upgrades/mysql/01_patch-0.1-alpha-1.sql
+
+
    #################################
   #	                              #	
  #      2.4 Apache2 and PHP5     #

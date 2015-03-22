@@ -21,28 +21,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
     header('Location: index.php');
     exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
+
     header('Location: index.php');
     exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+$db = new PDOinstance();
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 ###################################################################################################
     // Save new User
 ###################################################################################################
 
-if (isset($_POST['savenew'])) {
+if (!empty($_POST['savenew'])) {
         
     if(empty($_POST['user_name'])) {
 
@@ -85,7 +92,7 @@ if (isset($_POST['savenew'])) {
     $sth->bindValue(':created', $created);
     $sth->bindValue(':tariff_plan', $tariff_plan, PDO::PARAM_INT);
 
-    if (!empty($_POST['pay']) && $admin_rights) {
+    if (!empty($_POST['pay']) && $admin_permissions) {
         $pay = $_POST['pay'];
         $sth->bindValue(':pay', $pay, PDO::PARAM_INT);
     }
@@ -94,14 +101,14 @@ if (isset($_POST['savenew'])) {
         $sth->bindValue(':pay', 0.00);
     }
 
-    if (!empty($_POST['free_access']) && $admin_rights) {
+    if (!empty($_POST['free_access']) && $admin_permissions) {
         $sth->bindValue(':free_access', 1, PDO::PARAM_INT);
     }
     else {
         $sth->bindValue(':free_access', 0, PDO::PARAM_INT);
     }
 
-    if (!empty($_POST['not_excluding']) && $admin_rights) {
+    if (!empty($_POST['not_excluding']) && $admin_permissions) {
         $sth->bindValue(':not_excluding', 1, PDO::PARAM_INT);
     }
     else {

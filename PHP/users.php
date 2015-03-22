@@ -24,18 +24,19 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$ctable = new CTable();
+$db = new PDOinstance();
 
 ###################################################################################################
 	// PAGE HEADER
@@ -140,7 +141,7 @@ if (isset($_GET['show'])) {
           <tr class=\"header_top\">
             <th colspan=\"6\">
               <label style=\"float: left;\">". _('total').": ".count($rows)."</label>
-              <label>". _('Users')."</label>
+              <label>". _('users')."</label>
             </th>
           </tr> \n";
 
@@ -149,7 +150,7 @@ if (isset($_GET['show'])) {
             <th>"._('name')."</th>
             <th>"._('the location')."</th>
             <th>"._('address')."</th>
-            <th>"._('number')."</th>
+            <th>"._('phone')."</th>
             <th>"._('free access')."</th>
             <th>"._('not excluding')."</th>
           </tr>

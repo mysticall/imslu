@@ -24,17 +24,19 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
+$db = new PDOinstance();
 
 $page['title'] = 'User Info';
 $page['file'] = 'user_info.php';
@@ -84,7 +86,9 @@ if (!empty($_GET['userid'])) {
 	}
 
 	// Select user IP Addresses
-	$sql = 'SELECT ipaddress, subnet, vlan, mac, mac_info, free_mac, notes FROM static_ippool WHERE userid = :userid';
+	$sql = 'SELECT ipaddress, subnet, vlan, mac, mac_info, free_mac, notes 
+			FROM static_ippool 
+			WHERE userid = :userid';
 	$sth = $db->dbh->prepare($sql);
 	$sth->bindValue(':userid', $userid, PDO::PARAM_INT);
 	$sth->execute();
@@ -110,14 +114,15 @@ if (!empty($_GET['userid'])) {
 "     <table class=\"tableinfo\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('User').": ".chars($user_info['name'])."</label>
-              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('Payments')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid'\">[ "._('Edit')." ]</label>
+              <label>"._('user').": ".chars($user_info['name'])."</label>
+              <label class=\"link\" onClick=\"location.href='user_tickets.php?userid=$userid'\">[ "._('tickets')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid'\">[ "._('edit')." ]</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('First name Surname')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <label>".chars($user_info['name'])."</label>
@@ -125,7 +130,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('The location')."</label>
+              <label>"._('the location')."</label>
             </td>
             <td class=\"dd\">
               <label>{$user_info['location_name']}</label>
@@ -133,7 +138,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Switch')."</label>
+              <label>"._('switch')."</label>
             </td>
             <td class=\"dd\">
               <label>";
@@ -143,7 +148,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Address')."</label>
+              <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
               <label>".chars($user_info['address'])."</label>
@@ -151,7 +156,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Phone number')."</label>
+              <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
               <label>".chars($user_info['phone_number'])."</label>
@@ -159,7 +164,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
               <textarea name=\"notes\" cols=\"55\" rows=\"3\" readonly>".chars($user_info['notes'])."</textarea>
@@ -167,7 +172,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Tariff plan')."</label>
+              <label>"._('tariff plan')."</label>
             </td>
             <td class=\"dd\">
               <label>".chars($user_info['traffic_name'])." - {$user_info['traffic_price']}</label>
@@ -175,7 +180,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pay')."</label>
+              <label>"._('pay')."</label>
             </td>
             <td class=\"dd\">
               <label>";
@@ -185,7 +190,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free internet access')."</label>
+              <label>"._('free internet access')."</label>
             </td>
             <td class=\"dd\">
               <label>";
@@ -195,7 +200,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Not excluding')."</label>
+              <label>"._('not excluding')."</label>
             </td>
             <td class=\"dd\">
               <label>";
@@ -205,7 +210,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Active until')."</label>
+              <label>"._('active until')."</label>
             </td>
             <td class=\"dd\">
               <label><b>{$user_info['expires']}</b></label>
@@ -213,7 +218,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Included in')."</label>
+              <label>"._('included in')."</label>
             </td>
             <td class=\"dd\">
               <label>{$user_info['created']}</label>
@@ -236,13 +241,13 @@ if (!empty($_GET['userid'])) {
             <td class=\"dd\" $expired>
               <label style=\"font-weight:bold;\">{$ip_info[$i]['ipaddress']}/{$ip_info[$i]['subnet']}</label>
               $ip_status
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=arping&ipaddress={$ip_info[$i]['ipaddress']}&vlan={$ip_info[$i]['vlan']}'\">[ arping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping.php?resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping.php?resource=arping&ipaddress={$ip_info[$i]['ipaddress']}&vlan={$ip_info[$i]['vlan']}'\">[ arping ]</label>
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('VLAN')."</label>
+              <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
               <label>".chars($ip_info[$i]['vlan'])."</label>
@@ -250,7 +255,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free MAC')."</label>
+              <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
               <label>";
@@ -260,7 +265,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('MAC')."</label>
+              <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
               <label style=\"font-weight:bold;\">{$ip_info[$i]['mac']}</label>&nbsp;&nbsp; 
@@ -269,7 +274,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
               <textarea name=\"notes\" cols=\"55\" rows=\"2\" readonly>".chars($ip_info[$i]['notes'])."</textarea>
@@ -288,7 +293,7 @@ if (!empty($_GET['userid'])) {
 			$form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label>"._('Use PPPoE')."</label>
+              <label>"._('use PPPoE')."</label>
             </td>
             <td class=\"dd\">
               <label>"._('no')."</label>
@@ -300,7 +305,7 @@ if (!empty($_GET['userid'])) {
 			$form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label>"._('Use PPPoE')."</label>
+              <label>"._('use PPPoE')."</label>
             </td>
             <td class=\"dd\">
               <label>"._('yes')."</label>
@@ -347,7 +352,7 @@ if (!empty($_GET['userid'])) {
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['framedipaddress']} : <span style=\"color: #ff0000;\">{$acct_info[$i]['callingstationid']}</span> @ {$acct_info[$i]['nasipaddress']}:{$acct_info[$i]['nasportid']}</label>" : 
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['acctstarttime']} -> {$acct_info[$i]['acctstoptime']}</label>";
                         $ping = ($status) ? 
-                                "<label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
+                                "<label class=\"link\" onClick=\"location.href='ping.php?resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
 
     				    $form .=
 "          <tr>
@@ -368,7 +373,7 @@ if (!empty($_GET['userid'])) {
                 $form .=
 "          <tr>
             <td class=\"dt right\">
-              <label>"._('FreeRADIUS group')."</label>
+              <label>"._('freeRadius group')."</label>
             </td>
             <td class=\"dd\">
               &nbsp;&nbsp;&nbsp;<label>".chars($rows[0]['groupname'])."</label>
@@ -376,7 +381,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Username')."</label>
+              <label>"._('username')."</label>
             </td>
             <td class=\"dd\">
               &nbsp;&nbsp;&nbsp;<label>".chars($rows[0]['username'])."</label>

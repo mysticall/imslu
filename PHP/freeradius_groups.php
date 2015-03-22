@@ -24,27 +24,27 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //Only System Admin have acces to Groups
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
-
+	$db = new PDOinstance();
 
 ###################################################################################################
 	// PAGE HEADER
 ###################################################################################################
-	$page['title'] = 'FreeRADIUS groups';
+	$page['title'] = 'freeRadius groups';
 	$page['file'] = 'freeradius_groups.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
@@ -111,12 +111,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('New FreeRADIUS group')."</label>
+              <label>"._('new freeRadius group')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Name')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"new_groupname\" id=\"new_groupname\" onkeyup=\"user_exists('new_groupname', 'radgroupcheck')\">
@@ -127,7 +127,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label> Radgroupcheck </label>
+              <label> radgroupcheck </label>
             </td>
             <td class=\"dd\">
               <a href=\"http://freeradius.org/rfc/attributes.html\" target=\"_blank\">"._('For more information about attributes')."</a>
@@ -163,7 +163,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <tbody id=\"tbody\">
           <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label> Radgroupreply </label>
+              <label> radgroupreply </label>
             </td>
             <td class=\"dd\">
             </td>
@@ -297,12 +297,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-				<label>"._('Group').": ".chars($group_radgroupcheck[$i]['groupname'])."</label>
+				<label>"._('group').": ".chars($group_radgroupcheck[$i]['groupname'])."</label>
             </th>
           </tr>
           <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label> Radgroupcheck </label>
+              <label> radgroupcheck </label>
             </td>
             <td class=\"dd\">
               <a href=\"http://freeradius.org/rfc/attributes.html\" target=\"_blank\">"._('For more information about attributes')."</a>
@@ -383,7 +383,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 "        <tbody id=\"tbody\">
           <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label> Radgroupreply </label>
+              <label> radgroupreply </label>
             </td>
             <td class=\"dd\">
             </td>
@@ -440,13 +440,13 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
             }
         }	
 	
-	# Show FreeRADIUS Group 
+	# Show freeRadius Group 
 	echo $form;
     }
 
 
 ###################################################################################################
-	// Set CTable variable and create dynamic html table
+	// Set Table variable and create dynamic html table
 ###################################################################################################	
 
 	//Check available groups
@@ -460,7 +460,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 		for ($i = 0; $i < count($groupname); ++$i) {
 		
-			// Set $ctable->td_array
+			// Set $table->td_array
 			$values = explode(',', $groupname[$i]['GROUP_CONCAT(value)']);
 			$groups[$i] = array('groupname' => chars($groupname[$i]['groupname'])) + array('Auth-Type' => chars($values[0])) + array('Pool-Name' => chars($values[1]));
 		}	
@@ -469,12 +469,13 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 		$groups = null;
 	}
-	
+
+    $table = new Table();
 	// Create dynamic html table
-	$ctable->form_name = 'groups';
-	$ctable->table_name = 'freeradius_groups';
-	$ctable->info_field1 = _('total').": ";
-	$ctable->info_field2 = _('FreeRADIUS groups');
+	$table->form_name = 'groups';
+	$table->table_name = 'freeradius_groups';
+	$table->info_field1 = _('total').": ";
+	$table->info_field2 = _('freeRadius groups');
 	
 	$items1 = array(
 		'' => '',
@@ -483,17 +484,17 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
 
-	$ctable->info_field3 = $combobox_form_submit;
-	$ctable->onclick_id = true;
-	$ctable->th_array = array(
+	$table->info_field3 = $combobox_form_submit;
+	$table->onclick_id = true;
+	$table->th_array = array(
 		1 => _('name'),
 		2 => 'Auth-Type',
 		3 => 'Pool-Name'
 		);
 
-	$ctable->th_array_style = 'style="table-layout: fixed; width: 33%;"';
-	$ctable->td_array = $groups;
-	echo $ctable->ctable();
+	$table->th_array_style = 'style="table-layout: fixed; width: 33%;"';
+	$table->td_array = $groups;
+	echo $table->ctable();
 
 
 	require_once dirname(__FILE__).'/include/page_footer.php';

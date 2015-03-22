@@ -44,6 +44,17 @@ table, tr, td, th {
 	background-color:#CEE3EE;
 }
 
-.menu_right ul li ul li a:hover {
+/* RIGHT MENU */
+.right_menu ul li ul li a:hover {
 	background-color: #E0E9EE;
+}
+
+/* login */
+.login_container {
+	background: #CEE3EE;
+	border:1px solid #94D4F3;
+}
+
+.login_input {
+	box-shadow: inset 0px 1.5px 3px #2F2F2F, 0 0 0 5px #A6D1E6;
 }

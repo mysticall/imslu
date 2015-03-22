@@ -24,21 +24,23 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
-$cashier_rights = (OPERATOR_TYPE_CASHIER == CWebOperator::$data['type']);
-$technician_rights = (OPERATOR_TYPE_TECHNICIAN == CWebOperator::$data['type']);
-$disabled = ($admin_rights) ? '' : ' disabled';
+$db = new PDOinstance();
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+$cashier_permissions = (OPERATOR_TYPE_CASHIER == $_SESSION['data']['type']);
+$technician_permissions = (OPERATOR_TYPE_TECHNICIAN == $_SESSION['data']['type']);
+$disabled = ($admin_permissions) ? '' : ' disabled';
 
 
 ###################################################################################################
@@ -233,7 +235,7 @@ if (!empty($_GET['userid'])) {
 	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 	# Check rights to adding new IP address
-	$add_ip = ($admin_rights || $technician_rights) ? "              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid&new_ip=1'\">[ "._('Add IP address')." ]</label> \n" : '';
+	$add_ip = ($admin_permissions || $technician_permissions) ? "              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid&new_ip=1'\">[ "._('add IP address')." ]</label> \n" : '';
 
 	$form =
 "    <form name=\"edit_user\" action=\"user_edit_apply.php\" method=\"post\">
@@ -241,15 +243,16 @@ if (!empty($_GET['userid'])) {
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('User').": ".chars($user_info['name'])."</label>
-              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('Payments')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('Info')." ]</label>
+              <label>"._('user').": ".chars($user_info['name'])."</label>
+              <label class=\"link\" onClick=\"location.href='user_tickets.php?userid=$userid'\">[ "._('tickets')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('info')." ]</label>
               $add_ip
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('First name Surname')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"user[name]\" value=\"".chars($user_info['name'])."\" size=\"35\">
@@ -257,7 +260,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('The location')."</label>
+              <label>"._('the location')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'user[locationid]', $user_info['locationid'], $location)."
@@ -265,7 +268,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Switch')."</label>
+              <label>"._('switch')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'user[switchid]', $user_info['switchid'], $switches)."
@@ -273,7 +276,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Address')."</label>
+              <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"user[address]\" value=\"".chars($user_info['address'])."\" size=\"35\">
@@ -281,7 +284,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Phone number')."</label>
+              <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"user[phone_number]\" value=\"".chars($user_info['phone_number'])."\" size=\"35\">
@@ -289,7 +292,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
               <textarea name=\"user[notes]\" cols=\"55\" rows=\"3\">".chars($user_info['notes'])."</textarea>
@@ -297,17 +300,17 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Tariff plan')."</label>
+              <label>"._('tariff plan')."</label>
             </td>
             <td class=\"dd\">\n";
 
-	$form .= ($admin_rights || $cashier_rights) ? combobox('input select', 'user[trafficid]', $user_info['trafficid'], $tariff_plan)."\n" : "<label style=\"font-weight: bold;\">".chars($tariff_plan[$user_info['trafficid']])."</label>\n";
+	$form .= ($admin_permissions || $cashier_permissions) ? combobox('input select', 'user[trafficid]', $user_info['trafficid'], $tariff_plan)."\n" : "<label style=\"font-weight: bold;\">".chars($tariff_plan[$user_info['trafficid']])."</label>\n";
 	$form .= 
 "            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pay')."</label>
+              <label>"._('pay')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"user[pay]\" value=\"";
@@ -317,7 +320,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free internet access')."</label>
+              <label>"._('free internet access')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"user[free_access]\"";
@@ -327,7 +330,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Not excluding')."</label>
+              <label>"._('not excluding')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"user[not_excluding]\"";
@@ -337,7 +340,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Active until')."</label>
+              <label>"._('active until')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"user[expires]\" id=\"user_expires\" value=\"{$user_info['expires']}\" $disabled>\n";
@@ -360,7 +363,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Included in')."</label>
+              <label>"._('included in')."</label>
             </td>
             <td class=\"dd\">
               <label>{$user_info['created']}</label>
@@ -385,17 +388,17 @@ if (!empty($_GET['userid'])) {
             </td>
             <td class=\"dd\" $expired> \n";
 
-			$form .= ($admin_rights) ? combobox('input select', "static_ippool[$i][ipaddress]", NULL, $user_ip)."\n" : "<label style=\"font-weight: bold;\">{$ip_info[$i]['ipaddress']}</label>\n";
+			$form .= ($admin_permissions) ? combobox('input select', "static_ippool[$i][ipaddress]", NULL, $user_ip)."\n" : "<label style=\"font-weight: bold;\">{$ip_info[$i]['ipaddress']}</label>\n";
 
 			$form .=
 "              $ip_status
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
-              <label class=\"link\" onClick=\"location.href='ping_arping.php?resource=arping&ipaddress={$ip_info[$i]['ipaddress']}&vlan={$ip_info[$i]['vlan']}'\">[ arping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping.php?resource=ping&ipaddress={$ip_info[$i]['ipaddress']}'\">[ ping ]</label>
+              <label class=\"link\" onClick=\"location.href='ping.php?resource=arping&ipaddress={$ip_info[$i]['ipaddress']}&vlan={$ip_info[$i]['vlan']}'\">[ arping ]</label>
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('VLAN')."</label>
+              <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"static_ippool[$i][vlan]\" value=\"".chars($ip_info[$i]['vlan'])."\">
@@ -403,7 +406,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free MAC')."</label>
+              <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"static_ippool[$i][free_mac]\" ";
@@ -413,7 +416,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('MAC')."</label>
+              <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"static_ippool[$i][mac]\" value=\"".chars($ip_info[$i]['mac'])."\"> &nbsp; &nbsp;
@@ -422,7 +425,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
               <input class=\"input\" type=\"hidden\" name=\"static_ippool[$i][name]\" value=\"".chars($user_info['name'])."\">
@@ -472,7 +475,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('VLAN')."</label>
+              <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"new_ip[vlan]\">
@@ -480,7 +483,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free MAC')."</label>
+              <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"new_ip[free_mac]\">
@@ -488,7 +491,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('MAC')."</label>
+              <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"new_ip[mac]\">
@@ -496,7 +499,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
               <input class=\"input\" type=\"hidden\" name=\"new_ip[name]\" value=\"".chars($user_info['name'])."\" >
@@ -526,7 +529,7 @@ if (!empty($_GET['userid'])) {
 			$form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label>"._('Use PPPoE')."</label>
+              <label>"._('use PPPoE')."</label>
             </td>
             <td class=\"dd\">
 ".combobox_onchange('input select', 'use_pppoe', $use_pppoe, "add_pppoe('tbody', this[this.selectedIndex].value)")."
@@ -534,7 +537,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('FreeRADIUS group')."</label>
+              <label>"._('freeRadius group')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'groupname', null, $fr_groupname)."
@@ -550,7 +553,7 @@ if (!empty($_GET['userid'])) {
             $form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\">
-              <label>"._('Use PPPoE')."</label>
+              <label>"._('use PPPoE')."</label>
             </td>
             <td class=\"dd\">
               <label>"._('yes')."</label>
@@ -571,7 +574,7 @@ if (!empty($_GET['userid'])) {
                 // Add in Session for later comparison
                 $_SESSION['radcheck'] = $rows;
 
-                $fr_group = ($admin_rights || $cashier_rights) ? combobox('input select', 'freeradius[0][groupname]', $rows[0]['groupname'], $fr_groupname) : "<label style=\"font-weight: bold;\">{$rows[0]['groupname']}</label>";
+                $fr_group = ($admin_permissions || $cashier_permissions) ? combobox('input select', 'freeradius[0][groupname]', $rows[0]['groupname'], $fr_groupname) : "<label style=\"font-weight: bold;\">{$rows[0]['groupname']}</label>";
 			
                 # Get info for PPPoE status
                 $sql = 'SELECT nasipaddress, nasportid, acctstarttime, acctstoptime, acctsessiontime, callingstationid, framedipaddress
@@ -600,7 +603,7 @@ if (!empty($_GET['userid'])) {
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['framedipaddress']} : <span style=\"color: #ff0000;\">{$acct_info[$i]['callingstationid']}</span> @ {$acct_info[$i]['nasipaddress']}:{$acct_info[$i]['nasportid']}</label>" : 
                                 "<label style=\"font-weight:bold;\">{$acct_info[$i]['acctstarttime']} -> {$acct_info[$i]['acctstoptime']}</label>";
                         $ping = ($status) ? 
-                                "<label class=\"link\" onClick=\"location.href='ping_arping.php?resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
+                                "<label class=\"link\" onClick=\"location.href='ping.php?resource=ping&ipaddress={$acct_info[$i]['framedipaddress']}'\">[ ping ]</label>" : "";
                         $framedipaddress = ($status) ? 
                                 "<input class=\"input\" type=\"hidden\" name=\"freeradius[framedipaddress][{$acct_info[$i]['framedipaddress']}]\" value=\"{$acct_info[$i]['framedipaddress']}\">" : "";
 
@@ -625,7 +628,7 @@ if (!empty($_GET['userid'])) {
 "          </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Add attribute')."</label>
+              <label>"._('add attribute')."</label>
             </td>
             <td class=\"dd\">
 ".combobox_onchange('input select', 'new_attribute', $radcheck_attributes, "add_attribute('tbody', 'attribute', this[this.selectedIndex].value)")."
@@ -633,7 +636,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('FreeRADIUS group')."</label>
+              <label>"._('freeRadius group')."</label>
             </td>
             <td class=\"dd\">
             $fr_group
@@ -641,7 +644,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Username')."</label>
+              <label>"._('username')."</label>
             </td>
             <td class=\"dd\">
               <input id=\"username\" class=\"input\" type=\"text\" name=\"freeradius[0][username]\" value=\"".chars($rows[0]['username'])."\" onkeyup=\"user_exists('username', 'radcheck')\"><label id=\"hint\"></label> 
@@ -655,7 +658,7 @@ if (!empty($_GET['userid'])) {
               <input class=\"input\" type=\"hidden\" name=\"freeradius[0][id]\" value=\"{$rows[0]['id']}\">
               <input class=\"input\" type=\"hidden\" name=\"freeradius[0][attribute]\" value=\"{$rows[0]['attribute']}\">
               <input id=\"password\" class=\"input\" type=\"text\" name=\"freeradius[0][value]\" value=\"".chars($rows[0]['value'])."\">
-              <label class=\"generator\" onclick=\"generatepassword(document.getElementById('password'), 8);\" >"._('Generate')."</label>
+              <label class=\"generator\" onclick=\"generatepassword(document.getElementById('password'), 8);\" >"._('generate')."</label>
             </td>
           </tr>
           <tr>
@@ -719,7 +722,7 @@ if (!empty($_GET['userid'])) {
 	}
 
 	// Onli System Admin or Admin can dalete user
-	if($admin_rights) {
+	if($admin_permissions) {
 	
 		$form .=
 "        <tfoot> \n";

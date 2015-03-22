@@ -21,25 +21,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
-	header('Location: index.php');
-	exit;
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
-require_once dirname(__FILE__).'/include/network.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
+require_once dirname(__FILE__).'/include/network.php';
 
-$db = new CPDOinstance();
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
-$cashier_rights = (OPERATOR_TYPE_CASHIER == CWebOperator::$data['type']);
-$technician_rights = (OPERATOR_TYPE_TECHNICIAN == CWebOperator::$data['type']);
+$db = new PDOinstance();
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+$cashier_permissions = (OPERATOR_TYPE_CASHIER == $_SESSION['data']['type']);
+$technician_permissions = (OPERATOR_TYPE_TECHNICIAN == $_SESSION['data']['type']);
 
 
 ###################################################################################################
@@ -47,7 +54,7 @@ $technician_rights = (OPERATOR_TYPE_TECHNICIAN == CWebOperator::$data['type']);
 ###################################################################################################
 
 // Onli System Admin or Admin can dalete User or PPPoe account
-if (!empty($_POST['delete']) && $admin_rights) {
+if (!empty($_POST['delete']) && $admin_permissions) {
 
 	$old_ip = $_SESSION['old_ip_info'];
 	$new_ip = $_POST['static_ippool'];
@@ -238,7 +245,7 @@ if (!empty($_POST['change_user'])) {
 		
 		$update['users']['notes'] = $new_user_info['notes'];
 	}
-	if ((!empty($new_user_info['trafficid']) && $new_user_info['trafficid'] != 0) && ($old_user_info['trafficid'] != $new_user_info['trafficid']) && ($admin_rights || $cashier_rights)) {
+	if ((!empty($new_user_info['trafficid']) && $new_user_info['trafficid'] != 0) && ($old_user_info['trafficid'] != $new_user_info['trafficid']) && ($admin_permissions || $cashier_permissions)) {
 		
 		$update['users']['trafficid'] = $new_user_info['trafficid'];
 
@@ -247,7 +254,7 @@ if (!empty($_POST['change_user'])) {
 	}
 	
 	$new_user_info['pay'] = !empty($new_user_info['pay']) ? $new_user_info['pay'] : '0.00';
-	if (($old_user_info['pay'] != $new_user_info['pay']) && ($admin_rights)) {
+	if (($old_user_info['pay'] != $new_user_info['pay']) && ($admin_permissions)) {
 
 		// Add audit
 		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Pay is changed - ID: $userid, User: {$new_user_info['name']}.", "Pay - {$old_user_info['pay']}", "Pay - {$new_user_info['pay']}");		
@@ -257,7 +264,7 @@ if (!empty($_POST['change_user'])) {
 
 	// Checks for free internet access
 	$new_user_info['free_access'] = !empty($new_user_info['free_access']) ? 1 : 0;
-	if (($old_user_info['free_access'] != $new_user_info['free_access']) && $admin_rights) {
+	if (($old_user_info['free_access'] != $new_user_info['free_access']) && $admin_permissions) {
 
 		// Add audit
 		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Free Internet Access is changed - ID: $userid, User: {$new_user_info['name']}.", "{$old_user_info['free_access']}", "{$new_user_info['free_access']}");		
@@ -287,7 +294,7 @@ if (!empty($_POST['change_user'])) {
 	}
 		
 	$new_user_info['not_excluding'] = !empty($new_user_info['not_excluding']) ? 1 : 0;
-	if (($old_user_info['not_excluding'] != $new_user_info['not_excluding']) && $admin_rights) {
+	if (($old_user_info['not_excluding'] != $new_user_info['not_excluding']) && $admin_permissions) {
 
 		// Add audit
 		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Not excluding is changed - ID: $userid, User: {$new_user_info['name']}.", "{$old_user_info['not_excluding']}", "{$new_user_info['not_excluding']}");		
@@ -317,7 +324,7 @@ if (!empty($_POST['change_user'])) {
 	}
 		
 	# Check for changes on payments and update
-	if (!empty($new_user_info['expires']) && ($old_user_info['expires'] != $new_user_info['expires']) && $admin_rights) {
+	if (!empty($new_user_info['expires']) && ($old_user_info['expires'] != $new_user_info['expires']) && $admin_permissions) {
 
 		// Add audit
 		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Active until is changed - ID: $userid, User: {$new_user_info['name']}.", "{$old_user_info['expires']}", "{$new_user_info['expires']}");
@@ -370,14 +377,14 @@ if (!empty($_POST['change_user'])) {
 			$new_ip_values['name'] = $new_user_info['name'];
 			
 			// Onli Linux Admin or Admin can update Tariff plan and delete IP address
-			if ($admin_rights) {
+			if ($admin_permissions) {
 				
 				# if IP address is not set, ['userid'] = 0. The function will auto delete the rules for IP address.
 				$new_ip_values['userid'] = (!empty($new_ip_values['ipaddress'])) ? $old_user_info['userid'] : 0;
 				$new_ip_values['trafficid'] = $_POST['user']['trafficid'];
 			}
 			// Cashier can update only Tariff plan
-			elseif ($cashier_rights) {
+			elseif ($cashier_permissions) {
 				
 				$new_ip_values['userid'] = $old_user_info['userid'];
 				$new_ip_values['trafficid'] = $_POST['user']['trafficid'];
@@ -586,7 +593,7 @@ if (!empty($_POST['change_user'])) {
 		}
 			
 		# Expiration is changed
-		if (($old_fr[2]['value'] != $new_fr[2]['value']) && ($admin_rights)) {
+		if (($old_fr[2]['value'] != $new_fr[2]['value']) && ($admin_permissions)) {
 			
 			$id = $new_fr[2]['id'];
 			$value = strip_tags($new_fr[2]['value']);
@@ -617,7 +624,7 @@ if (!empty($_POST['change_user'])) {
         }
 
 		# Freeradius group is changed
-		if (($old_fr[0]['groupname'] != $new_fr[0]['groupname']) && ($admin_rights || $cashier_rights)) {
+		if (($old_fr[0]['groupname'] != $new_fr[0]['groupname']) && ($admin_permissions || $cashier_permissions)) {
 			
 			$groupname = $new_fr[0]['groupname'];
 

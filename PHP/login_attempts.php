@@ -24,23 +24,24 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']);
-$admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
-if ($sysadmin_rights || $admin_rights) {
+if ($sysadmin_permissions || $admin_permissions) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
+	$db = new PDOinstance();
 
 
 ###################################################################################################
@@ -209,13 +210,14 @@ END";
 			}
 		}
 
-		$ctable->form_name = 'login_attempts';
-		$ctable->table_name = 'login_attempts';
-		$ctable->colspan = 5;
-		$ctable->info_field1 = _('total').": ";
-		$ctable->info_field2 = _('Login attempts');
+        $table = new Table();
+		$table->form_name = 'login_attempts';
+		$table->table_name = 'login_attempts';
+		$table->colspan = 5;
+		$table->info_field1 = _('total').": ";
+		$table->info_field2 = _('Login attempts');
 
-		if ($sysadmin_rights) {
+		if ($sysadmin_permissions) {
 			$items1 = array(
 				'' => '',
 				'reset' => _('reset selected'),
@@ -233,19 +235,19 @@ END";
 		
 		$combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('login_attempts', this[this.selectedIndex].value)") ."</label> \n";
 	
-		$ctable->info_field3 = $combobox_form_submit;
-		$ctable->checkbox = true;
+		$table->info_field3 = $combobox_form_submit;
+		$table->checkbox = true;
 
-		$ctable->th_array = array(
+		$table->th_array = array(
 			1 => _('IP address'),
 			2 => _('attempts'),
 			3 => _('date'),
 			4 => _('alias')
 			);
 
-		$ctable->td_array = $rows;
+		$table->td_array = $rows;
 
-		echo $ctable->ctable();
+		echo $table->ctable();
 	}
 
 

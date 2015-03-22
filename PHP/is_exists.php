@@ -26,14 +26,16 @@ if (!empty($_POST['table']) && !empty($_POST['value'])) {
 	//enable debug mode
 	//error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-	require_once dirname(__FILE__).'/include/common.inc.php';
+	require_once dirname(__FILE__).'/include/common.php';
 
-	if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-		header('Location: index.php');
-		exit;
-	}
-	
-	$db = new CPDOinstance();
+    // Check for active session
+    if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+        header('Location: index.php');
+        exit;
+    }
+
+	$db = new PDOinstance();
 
 	$table = $_POST['table'];
 	$value = $_POST['value'];

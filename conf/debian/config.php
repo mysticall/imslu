@@ -28,7 +28,7 @@ $ARPING = '/usr/sbin/arping';
 
 # Do you want to use PPPoE - Freeradius?
 # boolean FALSE or TRUE
-$USE_PPPoE = TRUE;
+$USE_PPPoE = true;
 
 # Do you want to use VLANs?
 # boolean FALSE or TRUE

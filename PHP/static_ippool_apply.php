@@ -21,25 +21,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
-	header('Location: index.php');
-	exit;
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
-require_once dirname(__FILE__).'/include/network.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
+require_once dirname(__FILE__).'/include/network.php';
 
 //Only System Admin have acces to Static IP Addresses
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-	$db = new CPDOinstance();
+	$db = new PDOinstance();
 
 ###################################################################################################
 	// Delete IP address
@@ -72,7 +79,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 	}
 
 ###################################################################################################
-	// Update Pool Name 
+	// Update pool name 
 ###################################################################################################
 
 	if (isset($_POST['change_pool_name'])) {
@@ -101,7 +108,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 		$db->dbh->commit();
 
 		// Add audit
-		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_STATIC_IP, "Pool Name is changed.");
+		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_STATIC_IP, "pool name is changed.");
 
 		$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
         unset($_POST);
@@ -110,7 +117,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 	}
 
 ###################################################################################################
-	// Update Network type
+	// Update network type
 ###################################################################################################
 
 	if (isset($_POST['change_network_type'])) {
@@ -147,7 +154,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 	if (!empty($_POST['change_ip_values']) && is_array($_POST['edit_ip'])) {
 	
-		require_once dirname(__FILE__).'/include/network.inc.php';
+		require_once dirname(__FILE__).'/include/network.php';
 
 		$name = unserialize($_POST['edit_ip']['id_name']);
 
@@ -249,8 +256,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 			if ($ip_start > $ip_end) {
 				
-				$msg['msg_ipaddress_start'] = _('Start IP Address must be less!');
-				$msg['msg_ipaddress_end'] = _('End IP Address must be larger!');
+				$msg['msg_ipaddress_start'] = _('Start IP address must be less!');
+				$msg['msg_ipaddress_end'] = _('End IP address must be larger!');
 				show_error_message('action', 'addippool', null, $msg, 'static_ippool.php');
 				exit;
 			}
@@ -323,7 +330,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
     require_once dirname(__FILE__).'/include/page_header.php';
 
 ###################################################################################################
-    // Change Pool Name 
+    // Change pool name 
 ###################################################################################################
 
     if (!empty($_POST['action']) && $_POST['action'] == 'change_pool_name' && !empty($_POST['id'])) {
@@ -334,12 +341,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('Change Pool name for IP address or IP address range')."</label>
+              <label>"._('Change pool name for IP address or IP address range')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pool name')."</label>
+              <label>"._('pool name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"pool_name\">";
@@ -364,7 +371,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
     }           
 
 ###################################################################################################
-    // Change Network type
+    // Change network type
 ###################################################################################################
 
     if (!empty($_POST['action']) && $_POST['action'] == 'change_network_type' && !empty($_POST['id'])) {
@@ -380,7 +387,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Change network type')."</label>
+              <label>"._('change network type')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'network_type', null, $_network_type)."
@@ -461,12 +468,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('Edit IP address').": {$ip_info['ipaddress']}</label>
+              <label>"._('edit IP address').": {$ip_info['ipaddress']}</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('User ID')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'edit_ip[userid]', $ip_info['userid'], $userid)."
@@ -477,7 +484,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Shaper ID')."</label>
+              <label>"._('service')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'edit_ip[trafficid]', $ip_info['trafficid'], $trafficid)."
@@ -488,7 +495,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>VLAN</label>
+              <label>vlan</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"edit_ip[vlan]\" value=\"{$ip_info['vlan']}\">
@@ -499,7 +506,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>MAC</label>
+              <label>mac</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"edit_ip[mac]\" value=\"{$ip_info['mac']}\">
@@ -507,7 +514,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free MAC')."</label>
+              <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'edit_ip[free_mac]', $ip_info['free_mac'], $free_mac)."
@@ -515,7 +522,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pool name')."</label>
+              <label>"._('pool name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"edit_ip[pool_name]\" value=\"{$ip_info['pool_name']}\">
@@ -523,7 +530,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Network type')."</label>
+              <label>"._('network type')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"edit_ip[network_type]\" value=\"{$ip_info['network_type']}\">
@@ -531,7 +538,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr> 
           <tr>
             <td class=\"dt right\">
-              <label>"._('Username')."</label>
+              <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"edit_ip[name]\" value=\"".chars($ip_info['name'])."\">
@@ -539,7 +546,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
               <textarea name=\"edit_ip[notes]\" cols=\"55\" rows=\"2\">".chars($ip_info['notes'])."</textarea>
@@ -566,7 +573,9 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
     require_once dirname(__FILE__).'/include/page_footer.php';
   }
+    else {
 
-	header("Location: static_ippool.php");
+	   header("Location: static_ippool.php");
+    }
 }
 ?>

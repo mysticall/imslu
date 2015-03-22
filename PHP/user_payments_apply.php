@@ -21,31 +21,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
-	header('Location: index.php');
-	exit;
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
-$cashier_rights = (OPERATOR_TYPE_CASHIER == CWebOperator::$data['type']);
-$technician_rights = (OPERATOR_TYPE_TECHNICIAN == CWebOperator::$data['type']);
+$db = new PDOinstance();
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+$cashier_permissions = (OPERATOR_TYPE_CASHIER == $_SESSION['data']['type']);
+$technician_permissions = (OPERATOR_TYPE_TECHNICIAN == $_SESSION['data']['type']);
 
 
 ###################################################################################################
 	// Delet payment
 ###################################################################################################
 
-if (!empty($_POST['delete']) && !empty($_POST['del']) && $admin_rights && !empty($_POST['id']) && !empty($_POST['userid'])) {
+if (!empty($_POST['delete']) && !empty($_POST['del']) && $admin_permissions && !empty($_POST['id']) && !empty($_POST['userid'])) {
 
 	$id = $_POST['id'];
 	$userid = $_POST['userid'];
@@ -102,7 +109,7 @@ if (!empty($_POST['payment']) && !empty($_POST['userid'])) {
 	$userid = $_POST['userid'];
 	$name = $_POST['name'];
 	$username = $_POST['username'];
-	$operator2 = CWebOperator::$data['alias'];
+	$operator2 = $_SESSION['data']['alias'];
 	$date_payment2 = date('Y-m-d H:i:s');
 	$expires = $_POST['expires'];
 	$sum = $_POST['sum'];
@@ -150,7 +157,7 @@ if (!empty($_POST['obligation']) && !empty($_POST['userid'])) {
 	$userid = $_POST['userid'];
 	$name = $_POST['name'];
 	$username = $_POST['username'];
-	$operator1 = CWebOperator::$data['alias'];
+	$operator1 = $_SESSION['data']['alias'];
 	$date_payment1 = date('Y-m-d H:i:s');
 	$expires = $_POST['expires'];
 	$sum = $_POST['sum'];
@@ -199,7 +206,7 @@ if (!empty($_POST['limited_access']) && !empty($_POST['userid'])) {
 	$userid = $_POST['userid'];
 	$name = $_POST['name'];
 	$username = $_POST['username'];
-	$operator1 = CWebOperator::$data['alias'];
+	$operator1 = $_SESSION['data']['alias'];
 	$date_payment1 = date('Y-m-d H:i:s');
 	$expires = $_POST['limited'];
 	$sum = $_POST['sum'];
@@ -247,7 +254,7 @@ if (!empty($_POST['pay_limited']) && !empty($_POST['userid'])) {
 
 	$id = $_POST['pay_limited'];
 	$userid = $_POST['userid'];
-	$operator2 = CWebOperator::$data['alias'];
+	$operator2 = $_SESSION['data']['alias'];
 	$date_payment2 = date('Y-m-d H:i:s');
 
 	$expires_limited = $_POST["expires_$id"];
@@ -300,7 +307,7 @@ if (!empty($_POST['pay_unpaid']) && !empty($_POST['userid'])) {
 
 	$id = $_POST['pay_unpaid'];
 	$userid = $_POST['userid'];
-	$operator2 = CWebOperator::$data['alias'];
+	$operator2 = $_SESSION['data']['alias'];
 	$date_payment2 = date('Y-m-d H:i:s');
 
 	$sql = 'UPDATE `payments` SET unpaid = :unpaid, operator2 = :operator2, date_payment2 = :date_payment2 

@@ -21,29 +21,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-//enable debug mode
-error_reporting(E_ALL); ini_set('display_errors', 'On');
+// enable debug mode
+ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
+
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
-	header('Location: index.php');
-	exit;
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type'])) {
+if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-	$db = new CPDOinstance();
-	$coperators = new COperator();
-	$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']);
-	$admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+	$db = new PDOinstance();
+	$Operator = new Operator();
+	$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+	$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 ###################################################################################################
 	// Delete Operator
@@ -57,7 +61,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 		// Add audit
 		add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_OPERATOR, "Operator {$operator['alias']} is deleted.", "ID - {$operator['operid']}, Alias - {$operator['alias']}, Name - {$_POST['name']}");
 
-		$coperators->delete($db, $operator);
+		$Operator->delete($db, $operator);
 
 		$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
@@ -76,7 +80,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 		$operator = array();
 
 		//Only System Admin can change alias
-		if(isset($_POST['alias']) && ($_POST['alias'] != $_POST['alias_old']) && $sysadmin_rights) {
+		if(isset($_POST['alias']) && ($_POST['alias'] != $_POST['alias_old']) && $sysadmin_permissions) {
 
 			if(empty($_POST['alias'])) {
 				$_SESSION['msg'] .= _('Alias cannot empty.').'<br>';
@@ -128,10 +132,10 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 		$operator['type'] = $_POST['type'];
 
 		// Apply changes
-		$coperators->update($db, $operator, $operid);
+		$Operator->update($db, $operator, $operid);
 	
 		// Logout operator if ->
-		if(($operid == CWebOperator::$data['operid'] && !empty($operator['passwd'])) || ($_POST['alias_old'] == CWebOperator::$data['alias'] && $operator['alias'] != CWebOperator::$data['alias'])) {
+		if(($operid == $_SESSION['data']['operid'] && !empty($operator['passwd'])) || ($_POST['alias_old'] == $_SESSION['data']['alias'] && $operator['alias'] != $_SESSION['data']['alias'])) {
 
 			$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
@@ -196,7 +200,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) || (OPERATOR_TYPE_
 			// Add audit
 			add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_OPERATOR, "Operator {$operator['alias']} is added.");
 
-			$coperators->create($db, $operator);
+			$Operator->create($db, $operator);
 		}	
 	}
 

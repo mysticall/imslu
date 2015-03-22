@@ -131,7 +131,7 @@ function IsValidMAC($mac) {
 }
 
 function chars($value, $double_encode = TRUE) {
-    
+
     return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8', $double_encode);
 }
 

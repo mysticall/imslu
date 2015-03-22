@@ -24,21 +24,22 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //Only System Admin have acces to Static IP Addresses
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
+	$db = new PDOinstance();
 
 	$_network_type = array('public' => _('public'), 'private' => _('private'));
 
@@ -77,8 +78,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 		'network_type DESC' => _('network type')." "._('down'),
 		'pool_name ASC' => _('pool name')." "._('up'),
 		'pool_name DESC' => _('pool name')." "._('down'),
-		'id ASC' => _('ID')." "._('up'),
-		'id DESC' => _('ID')." "._('down'),
+		'id ASC' => _('id')." "._('up'),
+		'id DESC' => _('id')." "._('down'),
 		'name ASC' => _('name')." "._('up'),
 		'name DESC' => _('name')." "._('down')
 		);
@@ -134,7 +135,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pool name')."</label>
+              <label>"._('pool name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"pool_name\">";
@@ -144,7 +145,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Start IP address')."</label>
+              <label>"._('start IP address')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"ipaddress_start\">";
@@ -154,7 +155,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('End IP address')."</label>
+              <label>"._('end IP address')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"ipaddress_end\">";
@@ -164,7 +165,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Network type')."</label>
+              <label>"._('network type')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'network_type', null, $_network_type)."
@@ -191,12 +192,13 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 	if (!empty($_POST['show'])) {
 
-		$ctable->form_name = 'static_ip';
-        $ctable->action = 'static_ippool_apply.php';
-		$ctable->table_name = 'static_ip_addresses';
-		$ctable->colspan = 13;
-		$ctable->info_field1 = _('total').": ";
-		$ctable->info_field2 = _('Static IP addresses');
+        $table = new Table();
+		$table->form_name = 'static_ip';
+        $table->action = 'static_ippool_apply.php';
+		$table->table_name = 'static_ip_addresses';
+		$table->colspan = 13;
+		$table->info_field1 = _('total').": ";
+		$table->info_field2 = _('static IP addresses');
 
 		$items1 = array(
 			'' => '',
@@ -207,22 +209,22 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 		$combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('static_ip', this[this.selectedIndex].value)") ."</label>";
 
-		$ctable->info_field3 = $combobox_form_submit;
-		$ctable->checkbox = true;
-		$ctable->onclick_id = true;
-		$ctable->th_array = array(
-			1 => _('ID'),
-			2 => _('user ID'),
-			3 => _('shaper ID'),
+		$table->info_field3 = $combobox_form_submit;
+		$table->checkbox = true;
+		$table->onclick_id = true;
+		$table->th_array = array(
+			1 => _('id'),
+			2 => _('user id'),
+			3 => _('shaper id'),
 			4 => _('IP address'),
 			5 => _('subnet'),
-			6 => _('VLAN'),
-			7 => _('MAC'),
-			8 => _('MAC info'),
-			9 => _('free MAC'),
+			6 => _('vlan'),
+			7 => _('mac'),
+			8 => _('mac info'),
+			9 => _('free mac'),
 			10 => _('name'),
 			11 => _('network type'),
-			12 => _('username')
+			12 => _('name')
 			);
 
 
@@ -249,10 +251,10 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 		}
 
 		$sth->execute();
-		$ctable->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-        $ctable->form_key = $_SESSION['form_key'];
+		$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $table->form_key = $_SESSION['form_key'];
 
-		echo $ctable->ctable();
+		echo $table->ctable();
 	}
 
 	require_once dirname(__FILE__).'/include/page_footer.php';

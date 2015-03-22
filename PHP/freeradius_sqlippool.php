@@ -24,28 +24,28 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //Only System Admin have acces to FreeRadius SQLIPPOOL
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-	$db = new CPDOinstance();
-	$ctable = new CTable();
-
+	$db = new PDOinstance();
 
 ###################################################################################################
 	// PAGE HEADER
 ###################################################################################################
 
-	$page['title'] = 'FreeRADIUS IP Pool';
+	$page['title'] = 'freeRadius IP pool';
 	$page['file'] = 'freeradius_sqlippool.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
@@ -73,8 +73,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 		'username DESC' => _('username')." "._('down'),
 		'expiry_time ASC' => _('expiry time')." "._('up'),
 		'expiry_time DESC' => _('expiry time')." "._('down'),
-		'id ASC' => _('ID')." "._('up'),
-		'id DESC' => _('ID')." "._('down')
+		'id ASC' => _('id')." "._('up'),
+		'id DESC' => _('id')." "._('down')
 		);
 
     $items = array(
@@ -128,7 +128,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pool name')."</label>
+              <label>"._('pool name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"pool_name\">";
@@ -138,7 +138,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Start IP address')."</label>
+              <label>"._('start IP address')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"framedipaddress_start\">";
@@ -148,7 +148,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('End IP address')."</label>
+              <label>"._('end IP address')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"framedipaddress_end\">";
@@ -177,13 +177,14 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 ###################################################################################################
 
 	if (!empty($_POST['show'])) {
-		
-		$ctable->form_name = 'sqlippool';
-        $ctable->action = 'freeradius_sqlippool_apply.php';
-		$ctable->table_name = 'freeradius_sqlippool';
-		$ctable->colspan = 9;
-		$ctable->info_field1 = _('total').": ";
-		$ctable->info_field2 = _('FreeRADIUS IP Pool');
+
+        $table = new Table();
+		$table->form_name = 'sqlippool';
+        $table->action = 'freeradius_sqlippool_apply.php';
+		$table->table_name = 'freeradius_sqlippool';
+		$table->colspan = 9;
+		$table->info_field1 = _('total').": ";
+		$table->info_field2 = _('freeRadius IP pool');
 
 		$items1 = array(
 			'' => '',
@@ -193,17 +194,17 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
 		$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('sqlippool', this[this.selectedIndex].value)") ."</label>";
 
-		$ctable->info_field3 = $combobox_form_submit;
-		$ctable->checkbox = true;
-		$ctable->th_array = array(
-			1 => _('ID'),
+		$table->info_field3 = $combobox_form_submit;
+		$table->checkbox = true;
+		$table->th_array = array(
+			1 => _('id'),
 			2 => _('name'),
 			3 => _('IP address'),
-			4 => _('NAS IP address'),
-			5 => _('MAC'),
+			4 => _('nas IP address'),
+			5 => _('mac'),
 			6 => _('expiry time'),
 			7 => _('username'),
-			8 => _('NAS port')
+			8 => _('nas port')
 			);
 
 
@@ -222,10 +223,10 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 		}
 
 		$sth->execute();
-		$ctable->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
-		$ctable->form_key = $_SESSION['form_key'];
+		$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
+		$table->form_key = $_SESSION['form_key'];
 
-		echo $ctable->ctable();
+		echo $table->ctable();
 	}
 
 	require_once dirname(__FILE__).'/include/page_footer.php';

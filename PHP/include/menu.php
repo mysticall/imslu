@@ -21,150 +21,152 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-$sysadmin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']);
-$admin_rights = (OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
+$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 
-$menu_top = array (
-	1 =>	array (
-			'name'		=> 	_('Logout'),
-			'class'		=> 	'logout',
-			'link'		=> 	'logout.php',
-			'img'		=>	'log-out.png',
-			'check_anyright'=>	TRUE,
-			),				
-	2 =>	array (
-			'name'		=> 	_('Profile'),
-			'class'		=> 	'profile',
-			'link'		=> 	'profile.php',
-			'img'		=>	'avatar-default.png',
-			'check_anyright'=>	TRUE,
-			)
-	);
+$top_menu = array (
+    1 => array (
+        'name'  => _('logout'),
+        'class' => 'logout',
+        'link'  => 'logout.php',
+        'img'   => 'log-out.png',
+        'check_permissions' => TRUE,
+    ),				
+	2 => array (
+        'name'  => _('profile'),
+        'class' => 'profile',
+        'link'  => 'profile.php',
+        'img'   => 'avatar-default.png',
+        'check_permissions'=>	TRUE,
+    ),
+	3 => array (
+        'name'  => 	_('ping'),
+        'class' => 	'ping',
+        'link'  => 	'ping.php',
+        'img'   =>	'network-transmit-receive.png',
+        'check_permissions' => TRUE,
+			),
+	4 => array (
+        'name'  => 	_('tickets'),
+        'class' => 	'tikets',
+        'link'  => 	'tickets.php',
+        'img'   =>	'dialog-error.png',
+        'check_permissions' => TRUE,
+    ),
+    5 => array (
+        'name'  => _('requests'),
+        'class' => 'requests',
+        'link'  => 'requests.php',
+        'img'   => 'emblem-documents.png',
+        'check_permissions' => TRUE,
+    )
+);
 
 
-$menu_right = array (
-	1 =>	array (
-			'name'		=> 	_('Static IP addresses'),
-			'class'		=> 	'#',
-			'link'		=> 	'static_ippool.php',
-			'img'		=>	'ip_pub.gif',
-			'check_anyright'=>	$sysadmin_rights,
-			'submenu' => array(
-			
-			1 =>	array(
-					'name' 		=> _('Traffic control'),
-					'link' 		=>'traffic_control.php',
-					'img'		=>	'wired.png',
-					'check_anyright'=>	TRUE,
-					)				
-				)			
-			),
-	2 =>	array (
-			'name'		=> 	_('FreeRADIUS'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'vpn.png',
-			'check_anyright'=>	$sysadmin_rights,
-			'submenu' => array(
-			
-			1 =>	array(
-					'name' 		=> _('NAS'),
-					'link' 		=>'freeradius_nas.php',
-					'img'		=>	'network-server.png',
-					'check_anyright'=>	TRUE,
-					),
-			2 =>	array(
-					'name'		=> _('IP addresses'),
-					'link' 		=>'freeradius_sqlippool.php',
-					'img'		=>	'ip_pub.gif',
-					'check_anyright'=>	TRUE,
-					),
-			3 =>	array(
-					'name'		=> _('Groups'),
-					'link' 		=>'freeradius_groups.php',
-					'img'		=>	'preferences-desktop-peripherals.png',
-					'check_anyright'=>	TRUE,
-					)					
-				)			
-			),
-	3 =>	array (
-			'name'		=> 	_('Administration'),
-			'class'		=> 	'#',
-			'link'		=> 	'administration.php',
-			'img'		=>	'system.png',
-			'check_anyright'=>	($sysadmin_rights || $admin_rights),
-			'submenu' => array(
-			
-			1 =>	array(
-					'name' 		=> _('Operators'),
-					'link' 		=>'operators.php',
-					'img'		=>	'users.png',
-					'check_anyright'=>	TRUE,
-					),
-			2 =>	array(
-					'name' 		=> _('The location'),
-					'link' 		=>'user_location.php',
-					'img'		=>	'weather-clear-night.png',
-					'check_anyright'=>	TRUE,
-					),
-			3 =>	array(
-					'name' 		=> _('Audit'),
-					'link' 		=>'audit.php',
-					'img'		=>	'help-faq.png',
-					'check_anyright'=>	TRUE,
-					),
-			4 =>	array(
-					'name' 		=> _('Login attempts'),
-					'link' 		=>'login_attempts.php',
-					'img'		=>	'lock.png',
-					'check_anyright'=>	TRUE,
-					),
-            5 =>    array(
-                    'name'      => _('FreeRADIUS logs'),
-                    'link'      =>'freeradius_logs.php',
-                    'img'       =>  'accessories-dictionary.png',
-                    'check_anyright'=>  TRUE,
-                    )
-				)
-			),
-	4 =>	array (
-			'name'		=> 	_('Users'),
-			'class'		=> 	'#',
-			'link'		=> 	'users.php',
-			'img'		=>	'user.png',
-			'check_anyright'=>	TRUE,
-			'submenu' => array(
-		
-			1 =>	array(
-					'name'		=> _('New user'),
-					'link' 		=>'user_new.php',
-					'img'		=>	'list-add.png',
-					'check_anyright'=>	TRUE,
-					)
-				)
-			),	
-	5 =>	array (
-			'name'		=> 	_('Payments'),
-			'class'		=> 	'#',
-			'link'		=> 	'payments.php',
-			'img'		=>	'payment.gif',
-			'check_anyright'=>	TRUE,
-			),
-	6 =>	array (
-			'name'		=> 	_('Monitoring'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'utilities-system-monitor.png',
-			'check_anyright'=>	FALSE,
-			),
-	7 =>	array (
-			'name'		=> 	_('Map'),
-			'class'		=> 	'#',
-			'link'		=> 	'#',
-			'img'		=>	'applications-internet.png',
-			'check_anyright'=>	FALSE,
-			),
-	);
-
+$right_menu = array (
+	1 => array (
+        'name'  => 	_('static IP addresses'),
+        'class' => 	'#',
+        'link'  => 	'static_ippool.php',
+        'img'   =>	'ip_pub.gif',
+        'check_permissions' => $sysadmin_permissions,
+        'submenu' => array(
+            1 => array(
+                'name' => _('traffic control'),
+                'link' => 'traffic_control.php',
+                'img'  => 'wired.png',
+                'check_permissions' => TRUE,
+            )				
+        )			
+    ),
+	2 => array (
+        'name'  => _('freeRadius'),
+        'class' => '#',
+        'link'  => '#',
+        'img'   => 'vpn.png',
+        'check_permissions' => $sysadmin_permissions,
+        'submenu' => array(
+            1 => array(
+                'name' => _('nas'),
+                'link' => 'freeradius_nas.php',
+                'img'  => 'network-server.png',
+                'check_permissions' => TRUE,
+            ),
+            2 => array(
+                'name' => _('IP addresses'),
+                'link' => 'freeradius_sqlippool.php',
+                'img'  => 'ip_pub.gif',
+                'check_permissions' => TRUE,
+            ),
+			3 => array(
+                'name' => _('groups'),
+                'link' => 'freeradius_groups.php',
+                'img'  => 'preferences-desktop-peripherals.png',
+                'check_permissions' => TRUE,
+            )					
+        )			
+    ),
+	3 => array (
+        'name'  => _('administration'),
+        'class' => '#',
+        'link'  => 'administration.php',
+        'img'   => 'system.png',
+        'check_permissions' => ($sysadmin_permissions || $admin_permissions),
+        'submenu' => array(
+            1 => array(
+                'name' => _('operators'),
+                'link' => 'operators.php',
+                'img'  => 'users.png',
+                'check_permissions' => TRUE,
+            ),
+            2 => array(
+                'name' => _('the location'),
+                'link' => 'user_location.php',
+                'img'  => 'weather-clear-night.png',
+                'check_permissions' => TRUE,
+            ),
+            3 => array(
+                'name' => _('audit'),
+                'link' => 'audit.php',
+                'img'  => 'help-faq.png',
+					'check_permissions'=>	TRUE,
+            ),
+            4 => array(
+                'name' => _('login attempts'),
+                'link' => 'login_attempts.php',
+                'img'  => 'lock.png',
+                'check_permissions' => TRUE,
+            ),
+            5 => array(
+                'name' => _('freeRadius logs'),
+                'link' => 'freeradius_logs.php',
+                'img'  => 'accessories-dictionary.png',
+                'check_permissions' => TRUE,
+            )
+        )
+    ),
+	4 => array (
+        'name'  => _('users'),
+        'class' => '#',
+        'link'  => 'users.php',
+        'img'   => 'user.png',
+        'check_permissions' => TRUE,
+        'submenu' => array(
+            1 => array(
+                'name' => _('new user'),
+                'link' => 'user_new.php',
+                'img'  => 'list-add.png',
+                'check_permissions' => TRUE,
+            )
+        )
+    ),	
+	5 => array (
+        'name'  => _('payments'),
+        'class' => '#',
+        'link'  => 'payments.php',
+        'img'   => 'payment.gif',
+        'check_permissions' => TRUE,
+    )
+);
 

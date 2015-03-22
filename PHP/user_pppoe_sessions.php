@@ -24,18 +24,19 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
     header('Location: index.php');
     exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$ctable = new CTable();
+$db = new PDOinstance();
 
 $page['title'] = 'PPPoE sessions';
 $page['file'] = 'user_pppoe_sessions.php';
@@ -68,23 +69,25 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
 ###################################################################################################
 
     // Set CTable variable
-    $ctable->form_name = 'pppoe_sessions';
-    $ctable->table_name = 'pppoe_sessions';
-    $ctable->colspan = 8;
-    $ctable->info_field1 = _('total').": ";
-    $ctable->info_field2 = _('username').": ".chars($username);
-    $ctable->info_field3 =
-"              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('Payments')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('Info')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid'\">[ "._('Edit')." ]</label>";
-    $ctable->th_array = array(
-        1 => _('NAS IP address'),
+    $table = new Table();
+    $table->form_name = 'pppoe_sessions';
+    $table->table_name = 'pppoe_sessions';
+    $table->colspan = 8;
+    $table->info_field1 = _('total').": ";
+    $table->info_field2 = _('username').": ".chars($username);
+    $table->info_field3 =
+"             <label class=\"link\" onClick=\"location.href='user_tickets.php?userid=$userid'\">[ "._('tickets')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid'\">[ "._('edit')." ]</label>
+              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('info')." ]</label>";
+    $table->th_array = array(
+        1 => _('nas IP address'),
         2 => _('start time'),
         3 => _('stop time'),
         4 => _('session time'),
         5 => _('upload'),
         6 => _('download'),
-        7 => _('MAC'),
+        7 => _('mac'),
         8 => _('IP address')
         );
 
@@ -116,8 +119,8 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
         }
     }
 
-    $ctable->td_array = $rows;
-    echo $ctable->ctable();
+    $table->td_array = $rows;
+    echo $table->ctable();
 
     require_once dirname(__FILE__).'/include/page_footer.php';
 }

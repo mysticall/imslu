@@ -21,24 +21,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+//enable debug mode
+error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
+require_once dirname(__FILE__).'/include/common.php';
+
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
     header('Location: index.php');
     exit;
 }
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
+
     header('Location: index.php');
     exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
 //Only System Admin have acces to Static IP Addresses
-if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
+if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
-    $db = new CPDOinstance();
+    $db = new PDOinstance();
 
 
 ###################################################################################################
@@ -219,7 +225,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
     // PAGE HEADER
 ###################################################################################################
 
-    $page['title'] = 'FreeRADIUS IP Pool apply';
+    $page['title'] = 'freeRadius IP pool apply';
     $page['file'] = 'freeradius_sqlippool_apply.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
@@ -236,12 +242,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
-              <label>"._('Change Pool name for IP address or IP address range')."</label>
+              <label>"._('Change pool name for IP address or IP address range')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pool name')."</label>
+              <label>"._('pool name')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"pool_name\">";
@@ -267,6 +273,12 @@ if (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type']) {
 
     require_once dirname(__FILE__).'/include/page_footer.php';
   }
+    else {
+
+        header("Location: freeradius_sqlippool.php");
+    }
+}
+else {
 
     header("Location: freeradius_sqlippool.php");
 }

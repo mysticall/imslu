@@ -24,19 +24,21 @@
 //enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once dirname(__FILE__).'/include/common.inc.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-if (!CWebOperator::checkAuthentication(get_cookie('imslu_sessionid'))) {
-	header('Location: index.php');
-	exit;
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+
+    header('Location: index.php');
+    exit;
 }
 
 # Must be included after session check
-require_once dirname(__FILE__).'/include/config.inc.php';
+require_once dirname(__FILE__).'/include/config.php';
 
-$db = new CPDOinstance();
-$admin_rights = (OPERATOR_TYPE_LINUX_ADMIN == CWebOperator::$data['type'] || OPERATOR_TYPE_ADMIN == CWebOperator::$data['type']);
-$disabled = ($admin_rights) ? '' : ' disabled';
+$db = new PDOinstance();
+$admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+$disabled = ($admin_permissions) ? '' : ' disabled';
 
 
 ###################################################################################################
@@ -179,28 +181,39 @@ else {
 
 $use_pppoe = array('' => '', 'PPPoE' => _('yes'));
 
+/*
+ * When closing the request with "connected", the information is stored in $_SESSION['new_request'] and automatically transferred to new user form.
+ * see request_apply.php - $_SESSION['new_request'] = array ();
+ */
+$name = !empty($_SESSION['new_request']['user_name']) ? $_SESSION['new_request']['user_name'] : "";
+$address = !empty($_SESSION['new_request']['address']) ? $_SESSION['new_request']['address'] : "";
+$phone_number = !empty($_SESSION['new_request']['phone_number']) ? $_SESSION['new_request']['phone_number'] : "";
+$notes = !empty($_SESSION['new_request']['notes']) ? $_SESSION['new_request']['notes'] : "";
+!empty($_SESSION['new_request']) ? $_SESSION['new_request'] = null : "";
+
 $form =
 "    <form name=\"new_user\" action=\"user_new_apply.php\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('New user')."</label>
+              <label>"._('new user')."</label>
             </th>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('First name Surname')." * </label>
+              <label>"._('name')." * </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"user_name\" size=\"35\">";
+              <input class=\"input\" type=\"text\" name=\"user_name\" value=\"{$name}\" size=\"35\">";
+
 $form .= (isset($_POST['msg_user_name'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_user_name']}</span>\n" : "\n";
 $form .=
 "            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('The location')."</label>
+              <label>"._('the location')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'locationid', null, $location)."
@@ -208,7 +221,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Switch')."</label>
+              <label>"._('switch')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'switchid', null, $switches)."
@@ -216,31 +229,31 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Address')."</label>
+              <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" size=\"35\">
+              <input class=\"input\" type=\"text\" name=\"address\" value=\"{$address}\" size=\"35\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Phone number')."</label>
+              <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" size=\"35\">
+              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"{$phone_number}\" size=\"35\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Notes')."</label>
+              <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
-              <textarea name=\"notes\" cols=\"55\" rows=\"3\"></textarea>
+              <textarea name=\"notes\" cols=\"55\" rows=\"3\">{$notes}</textarea>
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Tariff plan')."</label>
+              <label>"._('tariff plan')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'trafficid', null, $tariff_plan)."
@@ -248,7 +261,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Pay')."</label>
+              <label>"._('pay')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"pay\" $disabled>
@@ -256,7 +269,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free internet access')."</label>
+              <label>"._('free internet access')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"free_access\" $disabled>
@@ -264,7 +277,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Not excluding')."</label>
+              <label>"._('not excluding')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"not_excluding\" $disabled>
@@ -282,7 +295,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('VLAN')."</label>
+              <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"vlan\">
@@ -290,7 +303,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('Free MAC')."</label>
+              <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"checkbox\" name=\"free_mac\">
@@ -298,7 +311,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('MAC')."</label>
+              <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"input\" type=\"text\" name=\"mac\">
@@ -314,7 +327,7 @@ if (!empty($fr_groupname)) {
     $form .=
 "          <tr>
             <td class=\"dt right\">
-              <label>"._('Use PPPoE')." * </label>
+              <label>"._('use PPPoE')." * </label>
             </td>
             <td class=\"dd\">
 ".combobox_onchange('input select', 'use_pppoe', $use_pppoe, 'add_pppoe(\'tbody\', this[this.selectedIndex].value)');
@@ -324,7 +337,7 @@ $form .=
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('FreeRADIUS group')."</label>
+              <label>"._('freeRadius group')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('input select', 'groupname', null, $fr_groupname)."
