@@ -27,28 +27,27 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
 }
-$check=null;
 
 # Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 
-if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
+$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+
+if($admin_permissions || $sysadmin_permissions) {
 
 	$db = new PDOinstance();
-	$Operator = new Operator();
-	$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
-	$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 	if(!$sysadmin_permissions) {
 
 		$OPERATOR_GROUPS = array(
-				1 => _('Cashiers'),
-				2 => _('Network technicians')
+				1 => _('cashiers'),
+				2 => _('network technicians')
 				);
 	}
 
@@ -69,322 +68,26 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 	$_SESSION['msg'] = null;
 
 	// Security key for comparison
-	$_SESSION['form_key_old'] = $_SESSION['form_key'];
 	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
-
-###################################################################################################
-	// Edit Operator
-###################################################################################################
-
-	if (empty($_POST['action']) && !empty($_POST['operid']) && $_SESSION['form_key_old'] === $_POST['form_key']) {
-
-		$operid = $_POST['operid'];
-		$get_operator = $Operator->get($db, $operid);
-
-	$form =
-"    <form action=\"operators_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <tbody id=\"tbody\">
-          <tr class=\"header_top\">
-            <th  colspan=\"2\">
-              <label>"._('profile').": ".chars($get_operator['name'])."</label>
-            </th>
-          </tr>\n";
-
-	//Only System Admin can change alias
-	$form .= ($sysadmin_permissions) ?
-"          <tr>
-            <td class=\"dt right\">
-              <label>"._('alias')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"alias\" value=\"".chars($get_operator['alias'])."\"> 
-            </td>
-          </tr>\n" : '';
-
-	$form .=
-"          <tr>
-            <td class=\"dt right\">
-              <label>"._('name')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($get_operator['name'])."\" >
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('password')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('password (once again)')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('Language')."</label>
-            </td>
-            <td class=\"dd\">
-              <select class=\"input select\" name=\"lang\">\n";
-
-// append languages to form list
-$array = $LOCALES;
-$languages_unable_set = 0;
-
-
-// Search for operator languarge
-foreach ($array as $key => $value) {
-            
-    if ($key == $get_operator['lang']) {
-
-        $found[$key] = $value;
-
-        unset($array[$key]);
-        $locales = $found + $array;
-        break;
-    }   
-}
-
-foreach ($locales as $key => $value) {
-    // checking if this locale exists in the system. The only way of doing it is to try and set one
-    // trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
-    $locale_exists = (setlocale(LC_MONETARY , $key.'.UTF-8') || $key == 'en_US') ? 'yes' : 'no';
-
-    if ($locale_exists != 'yes') {
-
-        $form .=
-"              <option value=\"{$key}\" disabled>{$value}</option>\n";
-        $languages_unable_set++;
-    }
-    else {
-        $form .=
-"              <option value=\"{$key}\">{$value}</option>\n";
-    }
-}
-
-$form .= 
-"              </select>";
-
-$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">". _('Some of locales for the languages are not installed on the web server.') ."</span> \n" : "\n";
-
-// restoring original locale
-setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
-
-	$form .=
-"            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('theme')."</label>
-            </td>
-            <td class=\"dd\">
-".combobox('input select', 'theme', $get_operator['theme'], $THEMES)."\n
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('url (after login)')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"url\" size=\"50\" maxlength=\"255\" value=\"".chars($get_operator['url'])."\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('group')."</label>
-            </td>
-            <td class=\"dd\">
-".combobox('input select', 'type', $get_operator['type'], $OPERATOR_GROUPS)."\n
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label class=\"red\">"._('delete')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
-            </td>
-          </tr>
-          <tr class=\"odd_row\">
-            <td class=\"dt right\" style=\"border-right-color:transparent;\">
-            </td>
-            <td class=\"dd\">
-              <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"hidden\" name=\"operid\" value=\"{$get_operator['operid']}\">
-              <input type=\"hidden\" name=\"alias_old\" value=\"".chars($get_operator['alias'])."\">
-              <input type=\"submit\" name=\"save\" id=\"save\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
-              <input type=\"submit\" name=\"delete\" id=\"delete\" value=\""._('delete')."\">
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </form>\n";
-	
-	echo $form;
-	}
-
-###################################################################################################
-// Add new Operator
-###################################################################################################
-
-	if(isset($_POST['action']) && $_POST['action'] == 'addoperator') {
-
-		$form =
-"    <form action=\"operators_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <tbody id=\"tbody\">
-          <tr class=\"header_top\">
-            <th  colspan=\"2\">
-              <label>"._('new operator')."</label>
-            </th>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('alias')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"alias\">";
-		$form .= (isset($_POST['msg_alias'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_alias']}</span>\n" : "\n";
-
-		$form .=
-"            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('name')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('password')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">";
-		$form .= (isset($_POST['msg_password'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_password']}</span>\n" : "\n";
-
-		$form .=
-"            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('password (once again)')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">";
-		$form .= (isset($_POST['msg_password'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_password']}</span>\n" : "\n";
-
-		$form .=
-"            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('Language')."</label>
-            </td>
-            <td class=\"dd\">
-              <select class=\"input select\" name=\"lang\">\n";
-
-// append languages to form list
-$languages_unable_set = 0;
-
-foreach ($LOCALES as $key => $value) {
-    // checking if this locale exists in the system. The only way of doing it is to try and set one
-    // trying to set only the LC_MONETARY locale to avoid changing LC_NUMERIC
-    $locale_exists = (setlocale(LC_MONETARY , $key.'.UTF-8') || $key == 'en_US') ? 'yes' : 'no';
-
-    if ($locale_exists != 'yes') {
-
-        $form .=
-"              <option value=\"{$key}\" disabled>{$value}</option>\n";
-        $languages_unable_set++;
-    }
-    else {
-        $form .=
-"              <option value=\"{$key}\">{$value}</option>\n";
-    }
-}
-
-$form .= 
-"              </select>";
-
-$form .= ($languages_unable_set > 0) ? "&nbsp; <span class=\"red\">". _('Some of locales for the languages are not installed on the web server.') ."</span> \n" : "\n";
-
-// restoring original locale
-setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
-
-		$form .=
-"            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('theme')."</label>
-            </td>
-            <td class=\"dd\">
-".combobox('input select', 'theme', null, $THEMES)."\n
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('url (after login)')."</label>
-            </td>
-            <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"url\" size=\"50\" maxlength=\"255\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label>"._('group')."</label>
-            </td>
-            <td class=\"dd\">
-".combobox('input select', 'type', null, $OPERATOR_GROUPS)."\n
-            </td>
-          </tr>
-          <tr class=\"odd_row\">
-            <td class=\"dt right\" style=\"border-right-color:transparent;\">
-            </td>
-            <td class=\"dd\">
-              <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"savenew\" id=\"savenew\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </form>\n";
-
-	echo $form;
-	}
-
 
 ###################################################################################################
 // Set CTable variable and create dynamic html table
 ###################################################################################################
 
-	// Set CTable variable
+	// Set Table variable
 	$table = new Table();
 	$table->form_name = 'operators';
+    $table->action = 'operator_edit.php';
+    $table->method = 'get';
 	$table->table_name = 'operators';
 	$table->colspan = 5;
 	$table->info_field1 = _('total').": ";
 	$table->info_field2 = _('operators');
-
-	$items1 = array('' => '', 'addoperator' => _('add operator'));
-	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
-
-	$table->info_field3 = $combobox_form_submit;
+	$table->info_field3 = "<label class=\"info_right\"><a href=\"operator_add.php\">["._('new operator')."]</a></label>";
 	$table->onclick_id = true;
 	$table->th_array = array(1 => _('id'), 2 => _('alias'), 3 => _('name'), 4 => _('language'), 5 => _('group'));
 	$table->th_array_style = 'style="table-layout: fixed; width: 3%"';
 	$table->td_array = $Operator->get($db, null);
-	$table->form_key = $_SESSION['form_key'];
 	echo $table->ctable();
 
 

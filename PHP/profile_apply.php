@@ -27,7 +27,7 @@
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -51,8 +51,8 @@ if (isset($_POST['edit'])) {
 
 	$operator = array();
 
-	//Only System Admin can change alias
-	if($sysadmin_permissions) {
+	//admin or system admin can change alias
+	if($admin_permissions || $sysadmin_permissions) {
 
 		if(empty($_POST['alias'])) {
 
@@ -68,10 +68,8 @@ if (isset($_POST['edit'])) {
 		}
 	}
 
-	if (!empty($_POST['name']) && ($_POST['name'] != $_SESSION['data']['name'])) {
-
-		$operator['name'] = strip_tags($_POST['name']);
-	}
+	$operator['name'] = strip_tags($_POST['name']);
+    $_SESSION['data']['name'] = $operator['name'];
 
 	if (!empty($_POST['p1']) && !empty($_POST['p2'])) {
 
@@ -94,54 +92,50 @@ if (isset($_POST['edit'])) {
 		}
 	}
 
-	if(!empty($_POST['url']) && ($_POST['url'] != $_SESSION['data']['url'])) {
+	$operator['url'] = strip_tags($_POST['url']);
+	$_SESSION['data']['url'] = $operator['url'];
 
-		$operator['url'] = strip_tags($_POST['url']);
-	}
 	if($_POST['lang'] != $_SESSION['data']['lang']) {
 
 		$operator['lang'] = $_POST['lang'];
         $_SESSION['data']['lang'] = $_POST['lang'];
-        setcookie( 'lang', $_POST['lang'], time() + (86400 * 30), "/"); // 86400 = 1 day
+        setcookie( 'lang', $_POST['lang'], time() + (86400 * 7), "/"); // 86400 = 1 day
 	}
 	if($_POST['theme'] != $_SESSION['data']['theme']) {
 
 		$operator['theme'] = $_POST['theme'];
         $_SESSION['data']['theme'] = $_POST['theme'];
-        setcookie( 'theme', $_POST['theme'], time() + (86400 * 30), "/"); // 86400 = 1 day
+        setcookie( 'theme', $_POST['theme'], time() + (86400 * 7), "/"); // 86400 = 1 day
 	}
 
-	if(!empty($operator)) {
+    $id = $_SESSION['data']['operid'];
 
-		$id = $_SESSION['data']['operid'];
+    $i= 1;
+    foreach($operator as $key => $value) {
+        $keys[$i] = $key;
+        $values[$i] = $value;
 
-		$i= 1;
-		foreach($operator as $key => $value) {
-			$keys[$i] = $key;
-    		$values[$i] = $value;
+        $i++;
+    }
+    
+    $sql = 'UPDATE `operators` SET '.implode(' = ?, ', $keys).' = ? WHERE `operid` = ?';
 
-		$i++;
-		}
-
-		$sql = 'UPDATE operators SET '.implode(' = ?, ', $keys).' = ? WHERE operid = ?';
-
-		// Apply changes
-		array_push($values, $id);
-		$db->prepare_array($sql, $values);
+    // Apply changes
+    array_push($values, $id);
+    $db->prepare_array($sql, $values);
 
 
-		// Logout operator if ->
-		if(!empty($operator['passwd']) || (!empty($operator['alias']) && $_SESSION['data']['alias'] != $operator['alias'])) {
+    // Logout operator if ->
+    if(!empty($operator['passwd']) || (!empty($operator['alias']) && $_SESSION['data']['alias'] != $operator['alias'])) {
 
-			$db->destroy_session_handler();
-		}
-		else {
+        $db->destroy_session_handler();
+    }
+    else {
 
-			header('Location: profile.php');
-			exit;
-		}
-	}
-	
-	header('Location: profile.php');
+        header('Location: profile.php');
+        exit;
+    }
 }
+header('Location: profile.php');
+
 ?>

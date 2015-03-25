@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-22 23:34+0200\n"
+"POT-Creation-Date: 2015-03-25 00:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: payments.php:89 user_payments.php:191 user_payments.php:313
-#: user_payments.php:339
+#: payments.php:89 user_payments.php:191 user_payments.php:315
+#: user_payments.php:341
 #, php-format
 msgid "%s days"
 msgstr ""
@@ -32,7 +32,7 @@ msgstr ""
 msgid "Add new IP address or IP address range"
 msgstr ""
 
-#: operators_apply.php:86 operators_apply.php:166 profile_apply.php:59
+#: operator_apply.php:86 operator_apply.php:155 profile_apply.php:59
 msgid "Alias cannot empty."
 msgstr ""
 
@@ -55,15 +55,15 @@ msgstr ""
 msgid "Backup of table %s success."
 msgstr ""
 
-#: operators_apply.php:109 operators_apply.php:178 profile_apply.php:80
+#: operator_apply.php:106 operator_apply.php:167 profile_apply.php:80
 msgid "Both passwords must be equal."
 msgstr ""
 
-#: include/config.php:16
+#: include/config.php:17
 msgid "Bulgarian (bg_BG)"
 msgstr ""
 
-#: operators.php:50
+#: operator_add.php:47
 msgid "Cashiers"
 msgstr ""
 
@@ -77,8 +77,8 @@ msgstr ""
 
 #: freeradius_groups_apply.php:311 freeradius_nas_apply.php:65
 #: freeradius_nas_apply.php:151 freeradius_sqlippool_apply.php:73
-#: freeradius_sqlippool_apply.php:111 operators_apply.php:66
-#: operators_apply.php:140 operators_apply.php:152 payments.php:80
+#: freeradius_sqlippool_apply.php:111 operator_apply.php:66
+#: operator_apply.php:134 operator_apply.php:141 payments.php:80
 #: request_apply.php:149 static_ippool_apply.php:75
 #: static_ippool_apply.php:113 static_ippool_apply.php:145
 #: traffic_control_apply.php:119 user_edit_apply.php:73
@@ -106,7 +106,7 @@ msgstr ""
 msgid "End IP address must be larger!"
 msgstr ""
 
-#: include/config.php:17
+#: include/config.php:16
 msgid "English (en_US)"
 msgstr ""
 
@@ -123,9 +123,9 @@ msgid "For more information about attributes"
 msgstr ""
 
 #: audit.php:124 audit.php:246 audit.php:357 freeradius_sqlippool.php:202
-#: login_attempts.php:242 static_ippool.php:219 user_edit.php:387
-#: user_edit.php:470 user_info.php:239 user_new.php:288
-#: user_pppoe_sessions.php:91
+#: login_attempts.php:242 static_ippool.php:219 user_edit.php:388
+#: user_edit.php:471 user_info.php:240 user_new.php:288
+#: user_pppoe_sessions.php:94
 msgid "IP address"
 msgstr ""
 
@@ -171,10 +171,6 @@ msgstr ""
 #: user_edit_apply.php:290 user_edit_apply.php:357 user_edit_apply.php:507
 #, php-format
 msgid "Internet access for IP address %s is stopped."
-msgstr ""
-
-#: operators.php:132 operators.php:291
-msgid "Language"
 msgstr ""
 
 #: traffic_control_apply.php:73 traffic_control_apply.php:143
@@ -257,10 +253,10 @@ msgstr ""
 
 #: freeradius_groups_apply.php:324 freeradius_nas_apply.php:81
 #: freeradius_nas_apply.php:167 freeradius_sqlippool_apply.php:127
-#: operators_apply.php:99 static_ippool_apply.php:221
-#: traffic_control_apply.php:61 traffic_control_apply.php:131
-#: user_edit_apply.php:184 user_location_apply.php:81
-#: user_location_apply.php:108 user_new_apply.php:56
+#: static_ippool_apply.php:221 traffic_control_apply.php:61
+#: traffic_control_apply.php:131 user_edit_apply.php:184
+#: user_location_apply.php:81 user_location_apply.php:108
+#: user_new_apply.php:56
 msgid "Name cannot empty."
 msgstr ""
 
@@ -268,7 +264,7 @@ msgstr ""
 msgid "Name cannot empty. Re-select IP addresses!"
 msgstr ""
 
-#: operators.php:51
+#: operator_add.php:48
 msgid "Network technicians"
 msgstr ""
 
@@ -305,7 +301,7 @@ msgstr ""
 msgid "PPPoE username and password cannot empty."
 msgstr ""
 
-#: user_edit.php:461 user_new.php:110
+#: user_edit.php:462 user_new.php:110
 msgid "Please contact your system administrator. Not added static IP addresses in the \"Static IP addresses\""
 msgstr ""
 
@@ -317,7 +313,7 @@ msgstr ""
 msgid "Please contact your system administrator. Not created tariff plan in the \"Traffic control\""
 msgstr ""
 
-#: operators_apply.php:178
+#: operator_apply.php:167
 msgid "Please enter a password."
 msgstr ""
 
@@ -346,7 +342,7 @@ msgstr ""
 msgid "Select IP address or use PPPoE."
 msgstr ""
 
-#: operators.php:175 operators.php:319 profile.php:143
+#: operator_add.php:143 operator_edit.php:172 profile.php:147
 msgid "Some of locales for the languages are not installed on the web server."
 msgstr ""
 
@@ -410,7 +406,7 @@ msgstr ""
 msgid "The password of %s is changed."
 msgstr ""
 
-#: operators_apply.php:119
+#: operator_apply.php:116
 #, php-format
 msgid "The password on %s is changed."
 msgstr ""
@@ -440,7 +436,7 @@ msgstr ""
 msgid "Use PPPoE or select IP address."
 msgstr ""
 
-#: user_payments.php:326
+#: user_payments.php:328
 msgid "User is exempt from payments!"
 msgstr ""
 
@@ -460,17 +456,16 @@ msgstr ""
 #: audit.php:153 audit.php:226 audit.php:346 audit.php:353
 #: freeradius_groups.php:485 freeradius_nas.php:312
 #: freeradius_sqlippool.php:95 freeradius_sqlippool.php:195
-#: login_attempts.php:236 operators.php:380 payments.php:347
-#: static_ippool.php:103 static_ippool.php:210 traffic_control.php:277
-#: user_location.php:176
+#: login_attempts.php:236 payments.php:347 static_ippool.php:103
+#: static_ippool.php:210 traffic_control.php:277 user_location.php:176
 msgid "action"
 msgstr ""
 
-#: user_edit.php:343 user_info.php:213
+#: user_edit.php:344 user_info.php:214
 msgid "active until"
 msgstr ""
 
-#: audit.php:115 tickets.php:79
+#: audit.php:115 tickets.php:82
 msgid "add"
 msgstr ""
 
@@ -482,7 +477,7 @@ msgstr ""
 msgid "add IP pool"
 msgstr ""
 
-#: user_edit.php:631
+#: user_edit.php:632
 msgid "add attribute"
 msgstr ""
 
@@ -490,12 +485,8 @@ msgstr ""
 msgid "add group"
 msgstr ""
 
-#: operators.php:379
-msgid "add operator"
-msgstr ""
-
-#: request_add.php:161 request_edit.php:209 requests.php:126 tickets.php:82
-#: user_edit.php:279 user_info.php:151 user_new.php:232 users.php:152
+#: request_add.php:161 request_edit.php:209 requests.php:127 tickets.php:85
+#: user_edit.php:280 user_info.php:152 user_new.php:232 users.php:152
 msgid "address"
 msgstr ""
 
@@ -507,13 +498,13 @@ msgstr ""
 msgid "administrators"
 msgstr ""
 
-#: login_attempts.php:245 operators.php:98 operators.php:250 operators.php:384
-#: profile.php:68
+#: login_attempts.php:245 operator_add.php:82 operator_edit.php:96
+#: operators.php:88 profile.php:68
 msgid "alias"
 msgstr ""
 
-#: request_add.php:107 request_edit.php:138 requests.php:124 tickets.php:80
-#: user_tickets_add.php:146 user_tickets_edit.php:163 user_tickets.php:128
+#: request_add.php:107 request_edit.php:138 requests.php:125 tickets.php:83
+#: user_tickets_add.php:137 user_tickets_edit.php:154 user_tickets.php:119
 msgid "assign"
 msgstr ""
 
@@ -533,7 +524,7 @@ msgstr ""
 msgid "backup and delete"
 msgstr ""
 
-#: include/config.php:22
+#: include/config.php:22 operator_edit.php:49 operators.php:49
 msgid "cashiers"
 msgstr ""
 
@@ -545,7 +536,7 @@ msgstr ""
 msgid "change pool name"
 msgstr ""
 
-#: request_edit.php:176 user_tickets_edit.php:201
+#: request_edit.php:176 user_tickets_edit.php:192
 msgid "changed"
 msgstr ""
 
@@ -554,15 +545,23 @@ msgid "check for vlan, mac"
 msgstr ""
 
 #: include/config.php:41 include/config.php:45 request_edit.php:184
-#: requests.php:62 user_tickets_edit.php:209
+#: user_tickets_edit.php:200
 msgid "closed"
 msgstr ""
 
-#: include/config.php:39 requests.php:64
+#: requests.php:66
+msgid "closed "
+msgstr ""
+
+#: include/config.php:39
 msgid "connected"
 msgstr ""
 
-#: request_edit.php:130 user_tickets_edit.php:155
+#: requests.php:64
+msgid "connected "
+msgstr ""
+
+#: request_edit.php:130 user_tickets_edit.php:146
 msgid "created"
 msgstr ""
 
@@ -571,8 +570,8 @@ msgctxt "day short"
 msgid "d"
 msgstr ""
 
-#: audit.php:241 audit.php:356 login_attempts.php:244 requests.php:123
-#: user_tickets.php:127
+#: audit.php:241 audit.php:356 login_attempts.php:244 requests.php:124
+#: user_tickets.php:118
 msgid "date"
 msgstr ""
 
@@ -581,13 +580,13 @@ msgid "default"
 msgstr ""
 
 #: audit.php:117 freeradius_groups.php:419 freeradius_groups.php:435
-#: freeradius_nas.php:271 freeradius_nas.php:284 operators.php:209
-#: operators.php:223 user_edit.php:758 user_location.php:136
+#: freeradius_nas.php:271 freeradius_nas.php:284 operator_edit.php:206
+#: operator_edit.php:220 user_edit.php:759 user_location.php:136
 #: user_location.php:149 user_payments.php:209 user_payments.php:228
 msgid "delete"
 msgstr ""
 
-#: user_edit.php:735
+#: user_edit.php:736
 msgid "delete PPPoE"
 msgstr ""
 
@@ -596,7 +595,7 @@ msgstr ""
 msgid "delete selected"
 msgstr ""
 
-#: user_edit.php:746
+#: user_edit.php:747
 msgid "delete user"
 msgstr ""
 
@@ -610,12 +609,12 @@ msgstr ""
 msgid "down"
 msgstr ""
 
-#: user_pppoe_sessions.php:89
+#: user_pppoe_sessions.php:92
 msgid "download"
 msgstr ""
 
-#: user_info.php:120 user_payments.php:270 user_pppoe_sessions.php:81
-#: user_tickets_add.php:120 user_tickets_edit.php:129 user_tickets.php:92
+#: user_info.php:118 user_payments.php:270 user_pppoe_sessions.php:81
+#: user_tickets_add.php:121 user_tickets_edit.php:130 user_tickets.php:110
 msgid "edit"
 msgstr ""
 
@@ -631,8 +630,12 @@ msgstr ""
 msgid "edit service"
 msgstr ""
 
-#: request_add.php:126 request_edit.php:157 user_tickets_add.php:165
-#: user_tickets_edit.php:182
+#: operator_edit.php:91
+msgid "editing operator"
+msgstr ""
+
+#: request_add.php:126 request_edit.php:157 user_tickets_add.php:156
+#: user_tickets_edit.php:173
 msgid "end"
 msgstr ""
 
@@ -640,8 +643,8 @@ msgstr ""
 msgid "end IP address"
 msgstr ""
 
-#: payments.php:374 user_payments.php:152 user_payments.php:282
-#: user_payments.php:336
+#: payments.php:374 user_payments.php:152 user_payments.php:284
+#: user_payments.php:338
 msgid "expires"
 msgstr ""
 
@@ -654,12 +657,12 @@ msgstr ""
 msgid "free access"
 msgstr ""
 
-#: user_edit.php:323 user_info.php:193 user_new.php:272
+#: user_edit.php:324 user_info.php:194 user_new.php:272
 msgid "free internet access"
 msgstr ""
 
-#: static_ippool_apply.php:517 static_ippool.php:224 user_edit.php:409
-#: user_edit.php:486 user_info.php:258 user_new.php:306
+#: static_ippool_apply.php:517 static_ippool.php:224 user_edit.php:410
+#: user_edit.php:487 user_info.php:259 user_new.php:306
 msgid "free mac"
 msgstr ""
 
@@ -671,7 +674,7 @@ msgstr ""
 msgid "freeRadius IP pool"
 msgstr ""
 
-#: user_edit.php:540 user_edit.php:639 user_info.php:376 user_new.php:340
+#: user_edit.php:541 user_edit.php:640 user_info.php:377 user_new.php:340
 msgid "freeRadius group"
 msgstr ""
 
@@ -691,12 +694,12 @@ msgstr ""
 msgid "from date"
 msgstr ""
 
-#: user_edit.php:661
+#: user_edit.php:662
 msgid "generate"
 msgstr ""
 
-#: freeradius_groups.php:300 operators.php:201 operators.php:345
-#: operators.php:384
+#: freeradius_groups.php:300 operator_add.php:169 operator_edit.php:198
+#: operators.php:88
 msgid "group"
 msgstr ""
 
@@ -710,19 +713,19 @@ msgid "h"
 msgstr ""
 
 #: audit.php:352 freeradius_nas.php:317 freeradius_sqlippool.php:76
-#: freeradius_sqlippool.php:77 freeradius_sqlippool.php:200 operators.php:384
-#: requests.php:121 static_ippool.php:81 static_ippool.php:82
-#: static_ippool.php:216 tickets.php:77 traffic_control.php:282
-#: user_location.php:181 user_payments.php:333 user_tickets.php:125
+#: freeradius_sqlippool.php:77 freeradius_sqlippool.php:200 operators.php:88
+#: requests.php:122 static_ippool.php:81 static_ippool.php:82
+#: static_ippool.php:216 tickets.php:80 traffic_control.php:282
+#: user_location.php:181 user_payments.php:335 user_tickets.php:116
 msgid "id"
 msgstr ""
 
-#: user_edit.php:366 user_info.php:221
+#: user_edit.php:367 user_info.php:222
 msgid "included in"
 msgstr ""
 
-#: user_edit.php:249 user_payments.php:269 user_pppoe_sessions.php:82
-#: user_tickets_add.php:121 user_tickets_edit.php:130 user_tickets.php:93
+#: user_edit.php:248 user_payments.php:269 user_pppoe_sessions.php:80
+#: user_tickets_add.php:120 user_tickets_edit.php:129 user_tickets.php:109
 msgid "info"
 msgstr ""
 
@@ -734,7 +737,7 @@ msgstr ""
 msgid "international out"
 msgstr ""
 
-#: operators.php:384 profile.php:100
+#: operator_add.php:115 operator_edit.php:129 operators.php:88 profile.php:104
 msgid "language"
 msgstr ""
 
@@ -762,9 +765,9 @@ msgstr ""
 msgid "logs"
 msgstr ""
 
-#: freeradius_sqlippool.php:204 static_ippool.php:222 user_edit.php:419
-#: user_edit.php:494 user_info.php:268 user_new.php:314
-#: user_pppoe_sessions.php:90
+#: freeradius_sqlippool.php:204 static_ippool.php:222 user_edit.php:420
+#: user_edit.php:495 user_info.php:269 user_new.php:314
+#: user_pppoe_sessions.php:93
 msgid "mac"
 msgstr ""
 
@@ -783,13 +786,13 @@ msgstr ""
 
 #: freeradius_groups.php:119 freeradius_groups.php:490
 #: freeradius_sqlippool.php:91 freeradius_sqlippool.php:201 index.php:87
-#: operators.php:108 operators.php:261 operators.php:384 payments.php:371
-#: profile.php:76 request_add.php:153 request_edit.php:201
+#: operator_add.php:91 operator_edit.php:105 operators.php:88 payments.php:371
+#: profile.php:80 request_add.php:153 request_edit.php:201
 #: static_ippool_apply.php:476 static_ippool_apply.php:541
 #: static_ippool.php:83 static_ippool.php:84 static_ippool.php:98
-#: static_ippool.php:225 static_ippool.php:227 tickets.php:81
+#: static_ippool.php:225 static_ippool.php:227 tickets.php:84
 #: traffic_control.php:82 traffic_control.php:181 traffic_control.php:283
-#: user_edit.php:255 user_info.php:125 user_location.php:78
+#: user_edit.php:256 user_info.php:126 user_location.php:78
 #: user_location.php:126 user_new.php:205 users.php:150
 msgid "name"
 msgstr ""
@@ -798,7 +801,7 @@ msgstr ""
 msgid "nas"
 msgstr ""
 
-#: freeradius_sqlippool.php:203 user_pppoe_sessions.php:84
+#: freeradius_sqlippool.php:203 user_pppoe_sessions.php:87
 msgid "nas IP address"
 msgstr ""
 
@@ -838,7 +841,7 @@ msgstr ""
 msgid "nas type"
 msgstr ""
 
-#: include/config.php:23
+#: include/config.php:23 operator_edit.php:50 operators.php:50
 msgid "network technicians"
 msgstr ""
 
@@ -859,11 +862,11 @@ msgstr ""
 msgid "new nas"
 msgstr ""
 
-#: operators.php:245
+#: operator_add.php:77 operators.php:86
 msgid "new operator"
 msgstr ""
 
-#: requests.php:66
+#: requests.php:62
 msgid "new request"
 msgstr ""
 
@@ -875,7 +878,7 @@ msgstr ""
 msgid "new tariff plan"
 msgstr ""
 
-#: user_tickets.php:94
+#: user_tickets.php:108
 msgid "new ticket"
 msgstr ""
 
@@ -887,27 +890,27 @@ msgstr ""
 msgid "new value"
 msgstr ""
 
-#: static_ippool_apply.php:463 user_info.php:197 user_info.php:207
-#: user_info.php:262 user_info.php:299 users.php:164 users.php:165
+#: static_ippool_apply.php:463 user_info.php:198 user_info.php:208
+#: user_info.php:263 user_info.php:300 users.php:164 users.php:165
 msgid "no"
 msgstr ""
 
-#: user_edit.php:333 user_info.php:203 user_new.php:280 users.php:54
+#: user_edit.php:334 user_info.php:204 user_new.php:280 users.php:54
 #: users.php:155
 msgid "not excluding"
 msgstr ""
 
-#: payments.php:375 request_add.php:177 request_edit.php:225 requests.php:128
-#: static_ippool_apply.php:549 tickets.php:84 user_edit.php:295
-#: user_edit.php:428 user_edit.php:502 user_info.php:167 user_info.php:277
-#: user_new.php:248 user_payments.php:183 user_payments.php:304
-#: user_payments.php:338 user_tickets_add.php:184 user_tickets_edit.php:225
-#: user_tickets.php:129
+#: payments.php:375 request_add.php:177 request_edit.php:225 requests.php:129
+#: static_ippool_apply.php:549 tickets.php:87 user_edit.php:296
+#: user_edit.php:429 user_edit.php:503 user_info.php:168 user_info.php:278
+#: user_new.php:248 user_payments.php:183 user_payments.php:306
+#: user_payments.php:340 user_tickets_add.php:175 user_tickets_edit.php:216
+#: user_tickets.php:120
 msgid "notes"
 msgstr ""
 
 #: payments.php:372 user_payments.php:136 user_payments.php:199
-#: user_payments.php:315 user_payments.php:334 user_payments.php:340
+#: user_payments.php:317 user_payments.php:336 user_payments.php:342
 msgid "obligation"
 msgstr ""
 
@@ -915,7 +918,7 @@ msgstr ""
 msgid "obligations"
 msgstr ""
 
-#: user_edit.php:382 user_edit.php:599 user_info.php:234 user_info.php:348
+#: user_edit.php:383 user_edit.php:600 user_info.php:235 user_info.php:349
 msgid "offline"
 msgstr ""
 
@@ -923,8 +926,8 @@ msgstr ""
 msgid "old value"
 msgstr ""
 
-#: user_edit.php:382 user_edit.php:598 user_info.php:234 user_info.php:347
-#: user_pppoe_sessions.php:108
+#: user_edit.php:383 user_edit.php:599 user_info.php:235 user_info.php:348
+#: user_pppoe_sessions.php:111
 msgid "online"
 msgstr ""
 
@@ -933,12 +936,12 @@ msgid "open"
 msgstr ""
 
 #: audit.php:122 audit.php:155 audit.php:236 audit.php:355 payments.php:127
-#: request_add.php:145 request_edit.php:192 user_tickets_add.php:138
-#: user_tickets_edit.php:217
+#: request_add.php:145 request_edit.php:192 user_tickets_add.php:129
+#: user_tickets_edit.php:208
 msgid "operator"
 msgstr ""
 
-#: include/menu.php:118 operators.php:377
+#: include/menu.php:118 operators.php:85
 msgid "operators"
 msgstr ""
 
@@ -950,27 +953,27 @@ msgstr ""
 msgid "original blue"
 msgstr ""
 
-#: index.php:89 operators.php:116 operators.php:269 profile.php:84
+#: index.php:89 operator_add.php:99 operator_edit.php:113 profile.php:88
 msgid "password"
 msgstr ""
 
-#: operators.php:124 operators.php:280 profile.php:92
+#: operator_add.php:107 operator_edit.php:121 profile.php:96
 msgid "password (once again)"
 msgstr ""
 
-#: user_edit.php:313 user_info.php:183 user_new.php:264
+#: user_edit.php:314 user_info.php:184 user_new.php:264
 msgid "pay"
 msgstr ""
 
 #: payments.php:373 user_payments.php:131 user_payments.php:144
-#: user_payments.php:317 user_payments.php:335 user_payments.php:367
-#: user_payments.php:378 user_payments.php:403 user_payments.php:414
+#: user_payments.php:319 user_payments.php:337 user_payments.php:369
+#: user_payments.php:380 user_payments.php:405 user_payments.php:416
 msgid "payment"
 msgstr ""
 
-#: audit.php:128 include/menu.php:165 user_edit.php:248 user_info.php:119
-#: user_pppoe_sessions.php:80 user_tickets_add.php:119
-#: user_tickets_edit.php:128 user_tickets.php:91
+#: audit.php:128 include/menu.php:165 user_edit.php:249 user_info.php:119
+#: user_pppoe_sessions.php:82 user_tickets_add.php:122
+#: user_tickets_edit.php:131 user_tickets.php:111
 msgid "payments"
 msgstr ""
 
@@ -979,12 +982,12 @@ msgstr ""
 msgid "payments of %s"
 msgstr ""
 
-#: include/config.php:38 requests.php:65
+#: include/config.php:38 requests.php:63
 msgid "pending"
 msgstr ""
 
-#: request_add.php:169 request_edit.php:217 requests.php:127 tickets.php:83
-#: user_edit.php:287 user_info.php:159 user_new.php:240 users.php:153
+#: request_add.php:169 request_edit.php:217 requests.php:128 tickets.php:86
+#: user_edit.php:288 user_info.php:160 user_new.php:240 users.php:153
 msgid "phone"
 msgstr ""
 
@@ -1007,7 +1010,7 @@ msgstr ""
 msgid "private"
 msgstr ""
 
-#: include/menu.php:37 operators.php:90 profile.php:63
+#: include/menu.php:37 profile.php:63
 msgid "profile"
 msgstr ""
 
@@ -1016,7 +1019,7 @@ msgstr ""
 msgid "public"
 msgstr ""
 
-#: include/config.php:40 requests.php:63
+#: include/config.php:40 requests.php:65
 msgid "refused"
 msgstr ""
 
@@ -1028,7 +1031,7 @@ msgstr ""
 msgid "reporting of selected"
 msgstr ""
 
-#: include/menu.php:58 requests.php:118
+#: include/menu.php:58 requests.php:119
 msgid "requests"
 msgstr ""
 
@@ -1042,13 +1045,13 @@ msgstr ""
 
 #: freeradius_groups.php:254 freeradius_groups.php:434 freeradius_nas.php:168
 #: freeradius_nas.php:283 freeradius_sqlippool_apply.php:264
-#: freeradius_sqlippool.php:165 operators.php:222 operators.php:356
-#: profile.php:172 request_add.php:190 request_edit.php:239
+#: freeradius_sqlippool.php:165 operator_add.php:180 operator_edit.php:219
+#: profile.php:176 request_add.php:190 request_edit.php:239
 #: static_ippool_apply.php:363 static_ippool_apply.php:402
 #: static_ippool_apply.php:564 static_ippool.php:179 traffic_control.php:150
-#: traffic_control.php:250 user_edit.php:757 user_edit.php:772
+#: traffic_control.php:250 user_edit.php:758 user_edit.php:773
 #: user_location.php:91 user_location.php:148 user_new.php:356
-#: user_payments.php:225 user_tickets_add.php:198 user_tickets_edit.php:240
+#: user_payments.php:225 user_tickets_add.php:189 user_tickets_edit.php:231
 msgid "save"
 msgstr ""
 
@@ -1065,11 +1068,11 @@ msgstr ""
 msgid "service - price"
 msgstr ""
 
-#: user_pppoe_sessions.php:87
+#: user_pppoe_sessions.php:90
 msgid "session time"
 msgstr ""
 
-#: user_edit.php:619 user_info.php:365
+#: user_edit.php:620 user_info.php:366
 msgid "sessions"
 msgstr ""
 
@@ -1090,7 +1093,7 @@ msgstr ""
 msgid "start IP address"
 msgstr ""
 
-#: user_pppoe_sessions.php:85
+#: user_pppoe_sessions.php:88
 msgid "start time"
 msgstr ""
 
@@ -1098,8 +1101,8 @@ msgstr ""
 msgid "static IP addresses"
 msgstr ""
 
-#: request_add.php:99 request_edit.php:122 requests.php:122 tickets.php:78
-#: user_tickets_edit.php:147 user_tickets.php:126
+#: request_add.php:99 request_edit.php:122 requests.php:123 tickets.php:81
+#: user_tickets_edit.php:138 user_tickets.php:117
 msgid "status"
 msgstr ""
 
@@ -1107,7 +1110,7 @@ msgstr ""
 msgid "stop"
 msgstr ""
 
-#: user_pppoe_sessions.php:86
+#: user_pppoe_sessions.php:89
 msgid "stop time"
 msgstr ""
 
@@ -1115,12 +1118,12 @@ msgstr ""
 msgid "subnet"
 msgstr ""
 
-#: payments.php:376 user_payments.php:175 user_payments.php:280
-#: user_payments.php:337
+#: payments.php:376 user_payments.php:175 user_payments.php:282
+#: user_payments.php:339
 msgid "sum"
 msgstr ""
 
-#: user_edit.php:271 user_info.php:141 user_new.php:224
+#: user_edit.php:272 user_info.php:142 user_new.php:224
 msgid "switch"
 msgstr ""
 
@@ -1132,27 +1135,27 @@ msgstr ""
 msgid "system administrators"
 msgstr ""
 
-#: user_edit.php:303 user_info.php:175 user_new.php:256
+#: user_edit.php:304 user_info.php:176 user_new.php:256
 msgid "tariff plan"
 msgstr ""
 
-#: include/menu.php:124 user_edit.php:263 user_info.php:133
+#: include/menu.php:124 user_edit.php:264 user_info.php:134
 #: user_location.php:169 user_location.php:182 user_new.php:216 users.php:87
 #: users.php:151
 msgid "the location"
 msgstr ""
 
-#: operators.php:185 operators.php:329 profile.php:153
+#: operator_add.php:153 operator_edit.php:182 profile.php:157
 msgid "theme"
 msgstr ""
 
-#: include/menu.php:51 tickets.php:71 user_edit.php:247 user_info.php:118
-#: user_payments.php:268 user_pppoe_sessions.php:79 user_tickets_add.php:118
-#: user_tickets_edit.php:127 user_tickets.php:122
+#: include/menu.php:51 tickets.php:74 user_edit.php:250 user_info.php:120
+#: user_payments.php:271 user_pppoe_sessions.php:83 user_tickets_add.php:123
+#: user_tickets_edit.php:132
 msgid "tickets"
 msgstr ""
 
-#: user_tickets.php:90
+#: user_tickets.php:105
 #, php-format
 msgid "tickets of %s"
 msgstr ""
@@ -1166,14 +1169,14 @@ msgid "to date"
 msgstr ""
 
 #: audit.php:327 freeradius_groups.php:477 freeradius_nas.php:304
-#: freeradius_sqlippool.php:186 login_attempts.php:217 operators.php:376
-#: payments.php:363 requests.php:117 static_ippool.php:200 tickets.php:70
+#: freeradius_sqlippool.php:186 login_attempts.php:217 operators.php:84
+#: payments.php:363 requests.php:118 static_ippool.php:200 tickets.php:73
 #: traffic_control.php:269 user_location.php:168 user_payments.php:266
-#: user_pppoe_sessions.php:76 users.php:143 user_tickets.php:121
+#: user_pppoe_sessions.php:76 users.php:143 user_tickets.php:104
 msgid "total"
 msgstr ""
 
-#: payments.php:453 user_payments.php:431
+#: payments.php:453 user_payments.php:433
 msgid "total sum"
 msgstr ""
 
@@ -1195,20 +1198,20 @@ msgstr ""
 msgid "update"
 msgstr ""
 
-#: user_pppoe_sessions.php:88
+#: user_pppoe_sessions.php:91
 msgid "upload"
 msgstr ""
 
-#: operators.php:193 operators.php:337 profile.php:161
+#: operator_add.php:161 operator_edit.php:190 profile.php:165
 msgid "url (after login)"
 msgstr ""
 
-#: user_edit.php:532 user_edit.php:556 user_info.php:296 user_info.php:308
+#: user_edit.php:533 user_edit.php:557 user_info.php:297 user_info.php:309
 #: user_new.php:330
 msgid "use PPPoE"
 msgstr ""
 
-#: audit.php:123 requests.php:125 user_edit.php:246 user_info.php:117
+#: audit.php:123 requests.php:126
 msgid "user"
 msgstr ""
 
@@ -1217,7 +1220,7 @@ msgid "user id"
 msgstr ""
 
 #: freeradius_sqlippool.php:72 freeradius_sqlippool.php:73
-#: freeradius_sqlippool.php:206 user_edit.php:647 user_info.php:384
+#: freeradius_sqlippool.php:206 user_edit.php:648 user_info.php:385
 #: user_pppoe_sessions.php:77
 msgid "username"
 msgstr ""
@@ -1230,7 +1233,7 @@ msgstr ""
 msgid "version"
 msgstr ""
 
-#: static_ippool.php:221 user_edit.php:401 user_edit.php:478 user_info.php:250
+#: static_ippool.php:221 user_edit.php:402 user_edit.php:479 user_info.php:251
 #: user_new.php:298
 msgid "vlan"
 msgstr ""
@@ -1239,8 +1242,8 @@ msgstr ""
 msgid "will call"
 msgstr ""
 
-#: static_ippool_apply.php:463 user_edit.php:232 user_edit.php:559
-#: user_info.php:197 user_info.php:207 user_info.php:262 user_info.php:311
+#: static_ippool_apply.php:463 user_edit.php:232 user_edit.php:560
+#: user_info.php:198 user_info.php:208 user_info.php:263 user_info.php:312
 #: user_new.php:182 users.php:164 users.php:165
 msgid "yes"
 msgstr ""

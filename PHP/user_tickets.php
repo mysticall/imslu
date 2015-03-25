@@ -27,7 +27,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -82,23 +82,6 @@ if (!empty($_GET['userid'])) {
     $rows = $sth->fetch(PDO::FETCH_ASSOC);
     $user_info = "{$rows['name']}, {$rows['address']}";
 
-    $form =
-"      <table class=\"tableinfo\">
-        <thead id=\"thead\">
-          <tr class=\"header_top\">
-            <th colspan=\"8\">
-              <label>". _s('tickets of %s', chars($user_info)) ."</label>
-              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
-              <label class=\"link\" onClick='location.href=\"user_edit.php?userid=$userid\"' >[ ". _('edit') ." ]</label>
-              <label class=\"link\" onClick='location.href=\"user_info.php?userid=$userid\"'>[ ". _('info') ." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_tickets_add.php?userid=$userid&new_ticket=1'\">[ "._('new ticket')." ]</label>
-            </th>
-          </tr>
-        </thead>
-      </table> \n";
-
-    echo $form;
-
     $sql = 'SELECT `ticketid`, `status`, `add`, `assign`, `notes`
             FROM `tickets`
             WHERE `userid` = :userid ORDER BY `assign` DESC';
@@ -119,7 +102,15 @@ if (!empty($_GET['userid'])) {
         $table->table_name = 'tickets';
         $table->colspan = 5;
         $table->info_field1 = _('total').": ";
-        $table->info_field2 = _('tickets');
+        $table->info_field2 = _s('tickets of %s', chars($user_info));
+        $table->info_field3 = 
+"              <label class=\"info_right\">
+                <a href=\"user_tickets_add.php?userid={$userid}&new_ticket=1\">["._('new ticket')."]</a>
+                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
+                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+              </label>\n";
+
         $table->onclick_id = true;
         $table->th_array = array(
             1 => _('id'),

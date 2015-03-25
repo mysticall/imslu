@@ -26,7 +26,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 
 require_once dirname(__FILE__).'/include/common.php';
 
-/*
+/**
  * @param int - Block IP address after 'n' failed attempts.
  */
 $block_ip = '7';
@@ -45,7 +45,7 @@ if (!empty($_POST['alias']) && !empty($_POST['p'])) {
         'block_ip' => $block_ip
         );
 
-    if($check->login($operator)) {
+    if($Operator->login($operator)) {
 
         $url = (!empty($_SESSION['data']['url'])) ? $_SESSION['data']['url'] : 'profile.php';
         header("Location: $url");
@@ -58,7 +58,7 @@ elseif (!empty($_POST['login']) && (empty($_POST['alias']) || empty($_POST['p'])
 }
 
 // Check for active session
-if (!empty($_COOKIE['imslu_sessionid']) && $check->authentication($_COOKIE['imslu_sessionid'])) {
+if (!empty($_COOKIE['imslu_sessionid']) && $Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: profile.php');
     exit;

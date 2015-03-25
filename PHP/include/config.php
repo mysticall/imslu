@@ -12,9 +12,9 @@ require_once dirname(__FILE__).'/classes/table.php';
 $VERSION = 'IMSLU 0.1-alpha-1';
 
 // array - Available languages in the system.
-$LOCALES = array(
-    'bg_BG' => _('Bulgarian (bg_BG)'),      
-    'en_US' => _('English (en_US)')
+$LOCALES = array(      
+    'en_US' => _('English (en_US)'),
+    'bg_BG' => _('Bulgarian (bg_BG)')
     );
 
 // array - Available operator groups in the system.

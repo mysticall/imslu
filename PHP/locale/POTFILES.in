@@ -29,7 +29,9 @@
 ./js/calendar/calendar.php
 ./login_attempts.php
 ./logout.php
-./operators_apply.php
+./operator_add.php
+./operator_apply.php
+./operator_edit.php
 ./operators.php
 ./payments.php
 ./ping.php

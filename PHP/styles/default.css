@@ -77,7 +77,6 @@ body, form, table {
 }
 
 .link {
-	float: right;
 	margin: 0px 5px 0px 5px;
 }
 .link:hover {
@@ -173,14 +172,12 @@ table, tr, td, th {
 .tableinfo tr.header_top {
 	height: 21px;
 	line-height: 21px;
-	font-weight: bold;
 	background-color: #cef3d1;
 	text-align: start;
 }
 .tableinfo tr.header {
 	height: 21px;
 	line-height: 21px;
-	font-weight: bold;
 	background-color: #cef3d1;
 }
 
@@ -197,11 +194,16 @@ table, tr, td, th {
 }
 .tableinfo tr th label.info_right {
 	float:right;
-	margin: 0px 5px 0px 5px;
+	margin: 0px 3px 0px 3px;
 }
 
-.tableinfo td a:link, a:visited {
+.tableinfo a:link, a:visited {
+	margin-right: 5px;
 	color:#2F2F2F;
+}
+.tableinfo a:hover {
+	cursor: pointer;
+	color: red;
 }
 
 /* login */

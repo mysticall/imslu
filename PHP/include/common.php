@@ -20,6 +20,9 @@ else {
 require_once dirname(__FILE__).'/classes/pdoinstance.php';
 require_once dirname(__FILE__).'/classes/operator.php';
 
-$check = new Operator;
+/**
+ * @param = new Operator instance, see inlude/classes/operator.php
+ */
+$Operator = new Operator;
 
 ?>

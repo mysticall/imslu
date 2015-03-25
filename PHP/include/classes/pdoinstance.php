@@ -84,28 +84,6 @@ class PDOinstance {
     	}
 	}
 
-    public function bind($pos, $value, $type = null, $sth) {
-    	
-        if (is_null($type)) {
-            switch (true) {
-                case is_int($value);
-                    $type = PDO::PARAM_INT;
-                    break;
-
-                case is_bool($value);
-                    $type = PDO::PARAM_BOOL;
-                    break;
-
-                case (empty($value) || is_null($value));
-                    $type = PDO::PARAM_NULL;
-                    break;
-
-                default :
-                    $type = PDO::PARAM_STR;
-            }
-        }
-        $sth->bindParam($pos, $value, $type);
-    }
 	
 	/**
 	 * Use array for PDOStatement
@@ -118,9 +96,30 @@ class PDOinstance {
 		$sth = $this->dbh->prepare($sql);
 
 		$i = 1;
-		foreach ($array as &$value) {
+		foreach ($array as $value) {
 
-			$this->bind($i, $value, null, $sth);
+			//$this->bind($i, $value, null, $sth);
+			
+            switch (true) {
+                case is_int($value);
+                    $sth->bindValue($i, $value, PDO::PARAM_INT);
+                    break;
+
+                case is_bool($value);
+                    $sth->bindValue($i, $value, PDO::PARAM_BOOL);
+                    break;
+
+                case (empty($value));
+                    $sth->bindValue($i, '');
+                    break;
+
+                case (is_null($value));
+                    $sth->bindValue($i, $value, PDO::PARAM_NULL);
+                    break;
+
+                default :
+                    $sth->bindValue($i, $value, PDO::PARAM_STR);
+            }
 			$i++;
 		}
 		$sth->execute();

@@ -27,7 +27,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;

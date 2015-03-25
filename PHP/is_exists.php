@@ -29,7 +29,7 @@ if (!empty($_POST['table']) && !empty($_POST['value'])) {
 	require_once dirname(__FILE__).'/include/common.php';
 
     // Check for active session
-    if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+    if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
         header('Location: index.php');
         exit;
@@ -42,13 +42,18 @@ if (!empty($_POST['table']) && !empty($_POST['value'])) {
 
 	if ($table == 'radcheck') {
 		
-		$sql = 'SELECT username FROM radcheck WHERE username = ? GROUP BY username LIMIT 1';
+		$sql = 'SELECT `usernam`e FROM `radcheck` WHERE `username` = ? GROUP BY username LIMIT 1';
 	}
 	
 	if ($table == 'radgroupcheck') {
 		
-		$sql = 'SELECT groupname FROM radgroupcheck WHERE groupname = ? GROUP BY groupname LIMIT 1';
+		$sql = 'SELECT `groupname` FROM `radgroupcheck` WHERE `groupname` = ? GROUP BY groupname LIMIT 1';
 	}
+
+    if ($table == 'operators') {
+        
+        $sql = 'SELECT `alias` FROM `operators` WHERE `alias` = ? LIMIT 1';
+    }
 
 	$sth = $db->dbh->prepare($sql);
 	$sth->bindParam(1, $value, PDO::PARAM_STR);

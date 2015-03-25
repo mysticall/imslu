@@ -27,7 +27,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -235,7 +235,7 @@ if (!empty($_GET['userid'])) {
 	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 	# Check rights to adding new IP address
-	$add_ip = ($admin_permissions || $technician_permissions) ? "              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid&new_ip=1'\">[ "._('add IP address')." ]</label> \n" : '';
+	$add_ip = ($admin_permissions || $technician_permissions) ? "<a href=\"user_edit.php?userid={$userid}&new_ip=1\">["._('add IP address')."]</a>" : '';
 
 	$form =
 "    <form name=\"edit_user\" action=\"user_edit_apply.php\" method=\"post\">
@@ -243,11 +243,12 @@ if (!empty($_GET['userid'])) {
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('user').": ".chars($user_info['name'])."</label>
-              <label class=\"link\" onClick=\"location.href='user_tickets.php?userid=$userid'\">[ "._('tickets')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('info')." ]</label>
-              $add_ip
+              <label class=\"info_right\">
+                {$add_ip}
+                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
+                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+                <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
+              </label>
             </th>
           </tr>
           <tr>

@@ -80,17 +80,18 @@ class Table {
  */
 function ctable() {
 
-	$table  = "    <form name=\"$this->form_name\" action=\"$this->action\" method=\"$this->method\"> \n";
-	$table .= "      <table class=\"$this->table_class\" name=\"$this->table_name\"> \n";
-	$table .= "        <tbody> \n";
-	$table .= "          <tr class=\"$this->tr_top_class\"> \n";
-	$table .= "            <th colspan=\"$this->colspan\"> \n";
-	$table .= "              <label style=\"float: left;\">$this->info_field1".count($this->td_array)."</label> \n";
-	$table .= "              $this->info_field2 \n";
-	$table .= "              $this->info_field3 \n";
-	$table .= "            </th> \n";
-	$table .= "          </tr> \n";
-	$table .= "          <tr class=\"$this->tr_class\"> \n";
+    $table  =
+"    <form name=\"$this->form_name\" action=\"$this->action\" method=\"$this->method\">
+      <table class=\"$this->table_class\" name=\"$this->table_name\">
+        <tbody>
+          <tr class=\"$this->tr_top_class\">
+            <th colspan=\"$this->colspan\">
+              <label style=\"float: left;\">$this->info_field1".count($this->td_array)."</label>
+              $this->info_field2
+              $this->info_field3
+            </th>
+          </tr>
+          <tr class=\"$this->tr_class\">\n";
 	
 	if (isset($this->checkbox)) {
 		$table .= "            <th style=\"table-layout: fixed; width: 3px;\"><input class=\"$this->th_class\" type=\"checkbox\" id=\"all\" onclick=\"check_unchek('$this->form_name', 'all')\"></th> \n";
@@ -163,11 +164,12 @@ function ctable() {
 	  }	
 	}
 
-	$table .= "        </tbody> \n";
-	$table .= "      </table> \n";
-	$table .= "      $this->input_submit";
-	$table .= "      <input type=\"hidden\" name=\"form_key\" value=\"$this->form_key\">\n";
-	$table .= "    </form> \n";
+    $table .= 
+"        </tbody>
+      </table>
+      $this->input_submit
+      <input type=\"hidden\" name=\"form_key\" value=\"$this->form_key\">
+    </form> \n";
 
 	return $table;
   }

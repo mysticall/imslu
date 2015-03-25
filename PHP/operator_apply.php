@@ -22,12 +22,12 @@
  */
 
 // enable debug mode
- error_reporting(E_ALL); ini_set('display_errors', 'On');
+error_reporting(E_ALL); ini_set('display_errors', 'On');
 
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -42,12 +42,12 @@ if ($_SESSION['form_key'] !== $_POST['form_key']) {
 # Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 
-if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
+$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
+$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
+
+if($admin_permissions || $sysadmin_permissions) {
 
 	$db = new PDOinstance();
-	$Operator = new Operator();
-	$sysadmin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']);
-	$admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 ###################################################################################################
 	// Delete Operator
@@ -65,7 +65,6 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 
 		$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-		unset($_POST);
 		header("Location: operators.php");
 		exit;
 	}
@@ -74,33 +73,31 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 	// Update Operator changes
 ###################################################################################################
 
-	if (!empty($_POST['save']) && !empty($_POST['operid'])) {
+	if (!empty($_POST['edit']) && !empty($_POST['operid'])) {
 
 		$operid = $_POST['operid'];
 		$operator = array();
 
-		//Only System Admin can change alias
-		if(isset($_POST['alias']) && ($_POST['alias'] != $_POST['alias_old']) && $sysadmin_permissions) {
+		//admin or system admin can change alias
+		if($_POST['alias'] != $_POST['alias_old']) {
 
 			if(empty($_POST['alias'])) {
+
 				$_SESSION['msg'] .= _('Alias cannot empty.').'<br>';
+                header("Location: operator_edit.php?operid={$operid}");
+                exit;
 			}
 			else {
 
+                $str = strip_tags($_POST['alias']);
+                $operator['alias'] = preg_replace('/\s+/', '_', $str);
+
 				// Add audit
 				add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The alias is changed.", "Old alias - {$_POST['alias_old']}", "New alias - {$operator['alias']}");
-
-				$str = strip_tags($_POST['alias']);
-                $operator['alias'] = preg_replace('/\s+/', '_', $str);
 			}
 		}
-	
-		if(empty($_POST['name'])) {
-			$_SESSION['msg'] .= _('Name cannot empty.').'<br>';
-		}
-		else {
-			$operator['name'] = strip_tags($_POST['name']);
-		}
+
+		$operator['name'] = strip_tags($_POST['name']);
 	
 		if (!empty($_POST['p1']) || !empty($_POST['p2'])) {
 
@@ -123,10 +120,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 			}
 		}
 
-		if(!empty($_POST['url'])) {
-			$operator['url'] = strip_tags($_POST['url']);
-		}
-
+		$operator['url'] = strip_tags($_POST['url']);
 		$operator['lang'] = $_POST['lang'];
 		$operator['theme'] = $_POST['theme'];
 		$operator['type'] = $_POST['type'];
@@ -139,19 +133,14 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 
 			$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-			unset($_POST);
-			echo 
-'<form name="myform" method="post" action="logout.php">
-	<input type="hidden" name="logout" value="logout">
-  	<script language="JavaScript">document.myform.submit();</script>
-</form>';
-
+			$db->destroy_session_handler();
+            exit;
 		}
 		else {
-		
+
 			$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
-			unset($_POST);
 			header("Location: operators.php");
+            exit;
 		}
 	}
 
@@ -159,13 +148,13 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 	// Save new operator
 ###################################################################################################
 
-	if (!empty($_POST['savenew'])) {
+	if (!empty($_POST['new'])) {
 	
 		if(empty($_POST['alias'])) {
 
-			$msg['msg_alias'] = _('Alias cannot empty.');
-			show_error_message('action', 'addoperator', null, $msg, 'operators.php');
-		exit;
+            $_SESSION['msg'] .= _('Alias cannot empty.').'<br>';
+            header("Location: operator_add.php");
+            exit;
 		}
 
 		$operator = array();
@@ -175,9 +164,9 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 
 		if (($_POST['p1'] !== $_POST['p2']) || empty($_POST['p1'])) {
 			
-			$msg['msg_password'] = (empty($_POST['p1']) || empty($_POST['p1'])) ? _('Please enter a password.') :_('Both passwords must be equal.');
-			show_error_message('action', 'addoperator', null, $msg, 'operators.php');
-		exit;
+			$_SESSION['msg'] .= (empty($_POST['p1']) || empty($_POST['p1'])) ? _('Please enter a password.') :_('Both passwords must be equal.');
+            header("Location: operator_add.php");
+            exit;
 		}
 
 		if ($_POST['p1'] === $_POST['p2']) {
@@ -205,5 +194,6 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 	}
 
 	header("Location: operators.php");
+    exit;
 }
 ?>

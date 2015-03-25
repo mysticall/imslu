@@ -27,7 +27,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -76,10 +76,13 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
     $table->info_field1 = _('total').": ";
     $table->info_field2 = _('username').": ".chars($username);
     $table->info_field3 =
-"             <label class=\"link\" onClick=\"location.href='user_tickets.php?userid=$userid'\">[ "._('tickets')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_payments.php?userid=$userid'\">[ "._('payments')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_edit.php?userid=$userid'\">[ "._('edit')." ]</label>
-              <label class=\"link\" onClick=\"location.href='user_info.php?userid=$userid'\">[ "._('info')." ]</label>";
+"              <label class=\"info_right\">
+                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
+                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+                <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
+              </label>\n";
+
     $table->th_array = array(
         1 => _('nas IP address'),
         2 => _('start time'),

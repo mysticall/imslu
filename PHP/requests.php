@@ -27,7 +27,7 @@ error_reporting(E_ALL); ini_set('display_errors', 'On');
 require_once dirname(__FILE__).'/include/common.php';
 
 // Check for active session
-if (empty($_COOKIE['imslu_sessionid']) || !$check->authentication($_COOKIE['imslu_sessionid'])) {
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
     header('Location: index.php');
     exit;
@@ -54,23 +54,24 @@ echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'<
 $_SESSION['msg'] = null;
 
 $form =
-"    <form method=\"get\">
-      <table class=\"tableinfo\">
+"      <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
-            <th colspan=\"2\">
-		      <label class=\"link\" onClick=\"location.href='requests.php?status=closed'\">| "._('closed')." ]</label>
-		      <label class=\"link\" onClick=\"location.href='requests.php?status=refused'\">| "._('refused')." |</label>
-		      <label class=\"link\" onClick=\"location.href='requests.php?status=connected'\">| "._('connected')." |</label>
-		      <label class=\"link\" onClick=\"location.href='requests.php?status=pending'\">[ "._('pending')." |</label>
-		      <label class=\"link\" onClick=\"location.href='request_add.php'\">[ "._('new request')." ]</label>
+            <th>
+		      <label class=\"info_right\">
+		      <a href=\"request_add.php\">["._('new request')."]</a>
+		      <a href=\"requests.php?status=pending\">["._('pending')."]</a>
+		      <a href=\"requests.php?status=connected\">["._('connected ')."]</a>
+		      <a href=\"requests.php?status=refused\">["._('refused')."]</a>
+              <a href=\"requests.php?status=closed\">["._('closed ')."]</a>
+              </label>
             </th>
           </tr>
           <tr>
         </tbody>
-      </table>
-    </form>\n";
+      </table>\n";
 echo $form;
+
 
 $_GET['status'] = (!empty($_GET['status'])) ? $_GET['status'] : '';
 

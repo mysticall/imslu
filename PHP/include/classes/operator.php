@@ -56,8 +56,8 @@ class Operator {
                 $_SESSION['form_key'] = null;
                 $_SESSION['msg'] = null;
 
-                setcookie( 'theme', self::$data['theme'], time() + (86400 * 30), "/"); // 86400 = 1 day
-                setcookie( 'lang', self::$data['lang'], time() + (86400 * 30), "/"); // 86400 = 1 day
+                setcookie( 'theme', self::$data['theme'], time() + (86400 * 7), "/"); // 86400 = 1 day
+                setcookie( 'lang', self::$data['lang'], time() + (86400 * 7), "/"); // 86400 = 1 day
 
                 $this->attempt_reset($operator, $db);
                 return true;
@@ -368,7 +368,7 @@ class Operator {
 		$admin_permissions = (OPERATOR_TYPE_ADMIN == self::$data['type']);
 		
 		// Limitation Admin to create operators from groups Cashiers and Network Technicians
-		if ($admin_permissions && OPERATOR_TYPE_ADMIN >= $operator['type']) {
+		if ($admin_permissions && $operator['type'] >= OPERATOR_TYPE_ADMIN) {
 			
 			$operator['type'] = 1;
 		}
@@ -429,8 +429,8 @@ class Operator {
 		$admin_permissions = (OPERATOR_TYPE_ADMIN == self::$data['type']);
 
 		// Limitation Admin to update operators from groups Cashiers and Network Technicians
-		if ($admin_permissions && OPERATOR_TYPE_ADMIN >= $operator['type']) {
-			
+		if ($admin_permissions && $operator['type'] >= OPERATOR_TYPE_ADMIN) {
+
 			header('Location: profile.php');
 			exit;
 		}
@@ -474,7 +474,7 @@ class Operator {
 		$admin_permissions = (OPERATOR_TYPE_ADMIN == self::$data['type']);
 
 		// Limitation Admin to update operators from groups Cashiers and Network Technicians
-		if ($admin_permissions && OPERATOR_TYPE_ADMIN >= $operator['type']) {
+		if ($admin_permissions && $operator['type'] >= OPERATOR_TYPE_ADMIN) {
 			
 			header('Location: profile.php');
 			exit;
