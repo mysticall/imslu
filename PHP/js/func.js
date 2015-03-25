@@ -163,7 +163,7 @@ function add_pppoe(id, selected) {
 						"</td>";
 	
 	new_tr.innerHTML += "<td class='dd'>" +
-						"  <input class='input' type='text' name='" + 'pppoe' + "[" + 'username' + "]' id='username' onkeyup=\"user_exists(\'username\', \'radcheck\')\" ><label id='hint'></label>" +
+						"  <input class='input' type='text' name='" + 'pppoe' + "[" + 'username' + "]' id='username' onkeyup=\"user_exists(\'username\', \'radcheck\')\"><label id='hint'></label>" +
 						"</td>";
 
 	new_tr2 = document.createElement("tr");

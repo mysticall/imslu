@@ -42,7 +42,7 @@ if (!empty($_POST['table']) && !empty($_POST['value'])) {
 
 	if ($table == 'radcheck') {
 		
-		$sql = 'SELECT `usernam`e FROM `radcheck` WHERE `username` = ? GROUP BY username LIMIT 1';
+		$sql = 'SELECT `username` FROM `radcheck` WHERE `username` = ? GROUP BY username LIMIT 1';
 	}
 	
 	if ($table == 'radgroupcheck') {

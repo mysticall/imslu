@@ -60,7 +60,7 @@ $form =
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
-              <label>"._('profile').": {$_SESSION['data']['name']}</label>
+              <label>"._('profile')."</label>
             </th>
           </tr>
           <tr>
