@@ -47,47 +47,53 @@ class Menu {
 	}
 	
 	function build_menu($menu, $div_class) {
-		
-		$out = "      <div class=\"$div_class\"> \n";
-		$out .= "        <ul> \n";
+
+        $out = 
+"      <div class=\"{$div_class}\">
+        <ul> \n";
 
 		for ($i = 1; $i <= count($menu); ++$i) {
 	
 			if ($menu[$i]['check_permissions']) {
-				
-				$out .= "        <li class=\"{$menu[$i]['class']}\"><a href=\"{$menu[$i]['link']}\">";
-				$out .= "<img src=\"images/general/{$menu[$i]['img']}\">  {$menu[$i]['name']}</a> \n";
 
-				if (isset($menu[$i]['submenu']) && is_array($menu[$i]['submenu'])) {
+                $out .=
+"        <li class=\"{$menu[$i]['class']}\"><a href=\"{$menu[$i]['link']}\"><img src=\"images/general/{$menu[$i]['img']}\">  {$menu[$i]['name']}</a>";
+
+				if (!empty($menu[$i]['submenu']) && is_array($menu[$i]['submenu'])) {
 					
 					$submenu = $menu[$i]['submenu'];
 					$out .= $this->submenu($submenu);
 				}
 
-				$out .= "        </li> \n";
+                $out .=
+ "        </li> \n";
 			}
 		}
-		
-		$out .= "        </ul> \n";
-		$out .= "      </div> \n";
+
+$out .=		
+"        </ul>
+      </div> \n";
+
 		return $out;
 	}
 	
 	function submenu($submenu) {
 
-		$out = "          <ul> \n";
+        $out =
+"          <ul> \n";
 
 		for ($i = 1; $i <= count($submenu); ++$i) {
 			
 			if ($submenu[$i]['check_permissions']){
-				
-				$out .= "            <li><a href=\"{$submenu[$i]['link']}\">";
-				$out .= "<img src=\"images/general/{$submenu[$i]['img']}\">  {$submenu[$i]['name']}</a> \n";
-				$out .= "            </li> \n";
+
+                $out .=
+"            <li><a href=\"{$submenu[$i]['link']}\"><img src=\"images/general/{$submenu[$i]['img']}\">  {$submenu[$i]['name']}</a></li> \n";
 			}
 		}
-		
-		$out .= "          </ul> \n";
+
+        $out .= 
+"          </ul> \n";
+
 		return $out;
 	}
 

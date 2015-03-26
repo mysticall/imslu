@@ -124,6 +124,24 @@ if (!empty($_GET['userid'])) {
         $table->input_submit = "      <input type=\"hidden\" name=\"userid\" value=\"{$userid}\">\n";
         echo $table->ctable();
     }
+    else {
+        echo
+"      <table class=\"tableinfo\">
+        <thead id=\"thead\">
+          <tr class=\"header_top\">
+            <th colspan=\"2\">
+              <label>". _s('tickets of %s', chars($user_info)) ."</label>
+              <label class=\"info_right\">
+                <a href=\"user_tickets_add.php?userid={$userid}&new_ticket=1\">["._('new ticket')."]</a>
+                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
+                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+              </label>
+            </th>
+          </tr>
+        </thead>
+      </table>";
+    }
 }
 
 require_once dirname(__FILE__).'/include/page_footer.php';
