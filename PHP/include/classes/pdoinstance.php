@@ -139,7 +139,7 @@ class PDOinstance {
         session_register_shutdown('register shutdown');
 
         // $use_https - set to true if using https
-        $use_https = false;
+        $use_https = true;
         $httponly = true;
 
         ini_set('session.gc_probability', 100);

@@ -91,6 +91,7 @@ Chapter 1. Intro
 		- (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=386924398
 		- Debian advanced router for ISP – firewall, traffic shaping, smp_affinity, taskset, sysctl and more … http://itservice-bg.net/?p=1122
 		- (russian) http://linuxsnippets.net/ru/node/268
+		- https://www.digitalocean.com/community/tutorials/how-to-create-a-ssl-certificate-on-apache-for-debian-7
 		
 		
 1.3 Legal Notice
@@ -205,7 +206,7 @@ gpg --keyserver keys.gnupg.net --recv-keys CBCB082A1BB943DB
 gpg -a --export CBCB082A1BB943DB | apt-key add -
 
 apt-get update
-apt-get install mariadb-server libmysqlclient18=5.5.36+maria-1~wheezy
+apt-get install mariadb-server
 
 Hold MariaDB Client version on current:
 echo libmysqlclient18 hold | dpkg --set-selections
@@ -246,7 +247,7 @@ mysql -D imslu -u imslu -pimslu_password < ../upgrades/mysql/01_patch-0.1-alpha-
 #	                            #
 ################################
 
-apt-get install libapache2-mod-php5 php5-mysql subversion
+apt-get install libapache2-mod-php5 php5-mysql
 
 --------------------------------------------------------------------------------
 EDIT Debian Session garbage collection
@@ -276,7 +277,40 @@ nano /etc/apache2/ports.conf
 ServerName 192.168.1.11
 --------------------------------------------------------------------------------
 
-ln -s /etc/imslu/apache.conf /etc/apache2/conf.d/imslu.conf
+mkdir /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+
+The most important line is "Common Name". Enter your official domain name here or, if you don't have one yet, your site's IP address.
+
+example:
+--------------------------------------------------------------------------------
+Generating a 2048 bit RSA private key
+............................................................+++
+...........................................................+++
+writing new private key to '/etc/apache2/ssl/apache.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:BG
+State or Province Name (full name) [Some-State]:Sofia
+Locality Name (eg, city) []:Sofia
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:imslu
+Organizational Unit Name (eg, section) []:imslu
+Common Name (e.g. server FQDN or YOUR name) []:192.168.1.253
+Email Address []:webmaster@localhost
+--------------------------------------------------------------------------------
+
+a2enmod ssl
+rm /etc/apache2/sites-enabled/default-ssl
+rm /var/www/index.html
+ln -s /etc/imslu/apache-ssl.conf /etc/apache2/sites-enabled/imslu-ssl
+cp /etc/imslu/index.php /var/www
+
 /etc/init.d/apache2 restart
 
   #################################
