@@ -403,11 +403,7 @@ sysctl -p
 --------------------------------------------------------------------------------
 
 To prevent the login prompt from clearing the screen add the "--noclear" switch in /etc/inittab:
-nano /etc/inittab
-after edit:
---------------------------------------------------------------------------------
-1:2345:respawn:/sbin/getty --noclear 38400 tty1
---------------------------------------------------------------------------------
+sed -i -e 's/1:2345:respawn:\/sbin\/getty 38400 tty1/1:2345:respawn:\/sbin\/getty --noclear 38400 tty1/' /etc/inittab
 
 Exsample network settings:
 
@@ -419,19 +415,19 @@ iface lo inet loopback
 #LAN
 auto eth0
 iface eth0 inet manual
-	pre-up /sbin/ip link set dev $IFACE up  >> /dev/null 2>&1
+    pre-up ip link set dev $IFACE up
 
 #WAN
 auto eth1
 iface eth1 inet manual
-	pre-up /sbin/ip link set dev $IFACE up  >> /dev/null 2>&1
-#	post-up /sbin/ip address add 192.168.1.254/24 dev $IFACE  >> /dev/null 2>&1
+    pre-up ip link set dev $IFACE up
+    post-up ip address add 192.168.1.254/24 dev $IFACE
 
-#	post-up /sbin/ip route add default scope global via 192.168.1.1  >> /dev/null 2>&1
-	
-#	post-down /sbin/ip route flush default  >> /dev/null 2>&1
-#	post-down /sbin/ip address flush dev $IFACE  >> /dev/null 2>&1
-#	post-down /sbin/ip route flush cache  >> /dev/null 2>&1
+#    post-up ip route add default scope global via 192.168.1.1
+
+#    post-down ip route flush default
+#    post-down ip route flush dev $IFACE
+#    post-down ip address flush dev $IFACE
 --------------------------------------------------------------------------------
 
 

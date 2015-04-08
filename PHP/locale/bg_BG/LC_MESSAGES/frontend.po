@@ -1101,7 +1101,7 @@ msgstr "начална дата"
 
 #: audit.php:126 include/menu.php:69 static_ippool.php:201
 msgid "static IP addresses"
-msgstr "статични IP ареси"
+msgstr "статични IP адреси"
 
 #: request_add.php:99 request_edit.php:122 requests.php:123 tickets.php:81
 #: user_tickets_edit.php:138 user_tickets.php:117

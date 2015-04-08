@@ -4,5 +4,6 @@ IMSLU (0.1-alpha-1)
   * Login system fixes
   * Added requests
   * Added tickets
+  * https by default
 
  -- Fahri Hasan <fahri_hasan@hotmail.com>  Sun, 22 Mar 2015 23:50:25 +0200
