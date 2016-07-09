@@ -57,19 +57,14 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     	);
 
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
     $page['title'] = 'freeRadius nas';
     $page['file'] = 'freeradius_nas.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
 
-#####################################################
-	// Display messages
-#####################################################
+    ####### Display messages #######
     echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
@@ -77,14 +72,30 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 
-###################################################################################################
-// New NAS
-###################################################################################################
-
+    ####### New #######
     if(!empty($_POST['action']) && $_POST['action'] == 'newnas') {
 
         $form =
-"    <form action=\"freeradius_nas_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"nasname\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('NAS name'))."\");
+        document.getElementById(\"nasname\").focus();
+        return false;
+    }
+    if (document.getElementById(\"shortname\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('NAS short name'))."\");
+        document.getElementById(\"shortname\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form action=\"freeradius_nas_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
@@ -97,20 +108,16 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label>"._('NAS name')." * </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"nasname\">";
-        $form .= (isset($_POST['msg_nasname'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_nasname']}</span>\n" : "\n";
-        $form .=
-"            </td>
+              <input id=\"nasname\" name=\"nasname\" class=\"input\" type=\"text\">
+            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label>"._('NAS short name')." * </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"shortname\">";
-        $form .= (isset($_POST['msg_shortname'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_shortname']}</span>\n" : "\n";
-        $form .=
-"            </td>
+              <input id=\"shortname\" name=\"shortname\" class=\"input\" type=\"text\">
+            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
@@ -165,7 +172,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"savenew\" id=\"save\" value=\""._('save')."\">
+              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>
@@ -175,10 +182,8 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
         echo $form;
 }
 
-###################################################################################################
-// Edit NAS
-###################################################################################################
 
+    ####### Edit #######
     if (!empty($_POST['id'])) {
 
         $nasid = $_POST['id'];
@@ -190,7 +195,26 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
         $get_nas = $sth->fetch(PDO::FETCH_ASSOC);
 
         $form =
-"    <form action=\"freeradius_nas_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"nasname\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('NAS name'))."\");
+        document.getElementById(\"nasname\").focus();
+        return false;
+    }
+    if (document.getElementById(\"shortname\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('NAS short name'))."\");
+        document.getElementById(\"shortname\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form action=\"freeradius_nas_apply.php\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
@@ -203,20 +227,16 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label>"._('NAS name')." *</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"nasname\" value=\"".chars($get_nas['nasname'])."\">";
-        $form .= (isset($_POST['msg_nasname'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_nasname']}</span>\n" : "\n";
-        $form .=
-"            </td>
+              <input id=\"nasname\" name=\"nasname\" class=\"input\" type=\"text\" value=\"".chars($get_nas['nasname'])."\">
+            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label>"._('NAS short name')." *</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"shortname\" value=\"".chars($get_nas['shortname'])."\">";
-        $form .= (isset($_POST['msg_shortname'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_shortname']}</span>\n" : "\n";
-        $form .=
-"            </td>
+              <input id=\"shortname\" name=\"shortname\" class=\"input\" type=\"text\" value=\"".chars($get_nas['shortname'])."\">
+            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
@@ -280,7 +300,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"nas\" value='".serialize($get_nas)."'>
-              <input type=\"submit\" name=\"save\" id=\"save\" value=\""._('save')."\">
+              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
               <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
@@ -292,11 +312,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 }
 
 
-###################################################################################################
-// Set CTable variable and create dynamic html table
-###################################################################################################
-
-	// Set Table variable
+####### Set Table variable #######
     $table = new Table();
 	$table->form_name = 'nas';
 	$table->table_name = 'freeradius_nas';

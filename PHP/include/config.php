@@ -9,7 +9,7 @@ require_once dirname(__FILE__).'/audit.php';
 require_once dirname(__FILE__).'/combobox.php';
 require_once dirname(__FILE__).'/classes/table.php';
 
-$VERSION = 'IMSLU 0.1-alpha-1';
+$VERSION = 'IMSLU 0.2-alpha';
 
 // array - Available languages in the system.
 $LOCALES = array(      
@@ -46,21 +46,8 @@ $ticket_status = array(
             '1' => _('open')
             );
 
-// array - Freeradisu operators
-$freeradius_op = array(
-    '=' => '=',
-    ':=' => ':=',
-    '+=' => '+=',
-    '==' => '==',
-    '!=' => '!=',
-    '&gt;' => '&gt;',
-    '&gt;=' => '&gt;=',
-    '&lt;' => '&lt;',
-    '&lt;=' => '&lt;=',
-    '=~' => '=~',
-    '!~' => '!~',
-    '=*' => '=*',
-    '!*' => '!*'
-    );
-    
+$protocol = array(
+            'IP' => 'IP',
+            'PPPoE' => 'PPPoE'
+            );
 ?>

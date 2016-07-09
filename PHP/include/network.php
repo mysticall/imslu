@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -20,470 +20,272 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
- 
+
+require_once dirname(__FILE__).'/config.php';
+
 /**
- * This function comparison changes for IP Address if $USE_VLANS = TRUE and applies the change with calling python scripts and functions
+ * This function add all PPPoE rules for username
  * 
- * @param array $old_ip_values - ['id'], ['userid'], ['trafficid'], ['ipaddress'], [vlan], [mac], [free_mac]
- * @param array $new_ip_values - ['userid'], ['trafficid'], [vlan], [mac], [free_mac], ['name']
+ * @param Array $pppoe - ['userid'], ['mac'], ['username'], ['pass'], ['groupname']
  */
-function comparison_ip_vlan_changes($db, $old_ip_values, $new_ip_values) {
+function pppoe_add($db, $pppoe) {
 
-	global $SUDO, $PYTHON, $IMSLU_SCRIPTS;
+    $str = strip_tags($pppoe['username']);
+    $username = preg_replace('/\s+/', '_', $str);
+    $password = strip_tags($pppoe['pass']);
 
-	$sql = 'SELECT trafficid,local_in,local_out FROM traffic';
-	$sth = $db->dbh->prepare($sql);
-	$sth->execute();
-	$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+    $db->dbh->beginTransaction();
+    $sql = 'INSERT INTO radcheck ( userid, username, attribute, op, value) VALUES (:userid, :username, :attribute, :op, :value)';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', $pppoe['userid'], PDO::PARAM_INT);
+    $sth->bindValue(':username', $username, PDO::PARAM_STR);
+    $sth->bindValue(':attribute', 'Cleartext-Password');
+    $sth->bindValue(':op', ':=');
+    $sth->bindValue(':value', $password, PDO::PARAM_STR);
+    $sth->execute();
 
-	if ($rows) {
+    $sql = 'INSERT INTO radcheck (userid, username, attribute, op, value) VALUES (:userid, :username, :attribute, :op, :value)';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', $pppoe['userid'], PDO::PARAM_INT);
+    $sth->bindValue(':username', $username, PDO::PARAM_STR);
+    $sth->bindValue(':attribute', 'Calling-Station-Id');
+    $sth->bindValue(':value', $pppoe['mac'], PDO::PARAM_STR);
+    $sth->bindValue(':op', ':=');
+    $sth->execute();
 
-		$trafficid = array();
-
-		for ($i = 0; $i < count($rows); ++$i) {
-
-		$trafficid[$rows[$i]['trafficid']] = array('local_in' => $rows[$i]['local_in'], 'local_out' => $rows[$i]['local_out']);
-		}
-	}
-
-	if (!is_array($old_ip_values) || !is_array($new_ip_values)) {
-		
-		$msg = 'The variables: $old_ip_values and $new_ip_values, must be array';
-		return array('msg' => $msg);
-	}
-
-//echo '<pre>' .' IP OLD '; print_r($old_ip_values); echo '</pre>';
-//echo '<pre>' .' IP NEW '; print_r($new_ip_values); echo '</pre>';
-
-	# Nothing has changed.
-	if ($old_ip_values['userid'] == 0 && ($new_ip_values['userid'] == 0 || $new_ip_values['trafficid'] == 0)) {
-		
-		$msg = _s('No changes were made to IP address %s.', $old_ip_values['ipaddress']);
-		return array('msg' => $msg);
-	}
-
-	# 1. User and Tariff plan is != 0. Add new rules for IP Address
-	if ($old_ip_values['userid'] == 0 && $new_ip_values['userid'] != 0 && $new_ip_values['trafficid'] != 0) {
-
-		$vlan = isset($new_ip_values['vlan']) ? $new_ip_values['vlan'] : '';
-		$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.add_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '$vlan', mac = '$mac', free_mac = '{$new_ip_values['free_mac']}', donw_speed = '{$trafficid[$new_ip_values['trafficid']]['local_in']}', up_speed = '{$trafficid[$new_ip_values['trafficid']]['local_out']}')
-END";
-		shell_exec($command);
-
-		// Add audit
-		add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_USER, "IP Address {$old_ip_values['ipaddress']} is added to - ID: {$new_ip_values['userid']}, User: {$new_ip_values['name']}.");
-
-		$msg = (!empty($mac) || empty($new_ip_values['mac'])) ? _s('The new rules for IP address %s are added.', $old_ip_values['ipaddress']) : _s('The new rules for IP address %s are added. Please enter valid MAC.', $old_ip_values['ipaddress']);
-		$update = array ('id' => $old_ip_values['id'], 'userid' => $new_ip_values['userid'], 'trafficid' => $new_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => $vlan, 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-		return $update;
-	}
-
-	# 2. User or Tariff plan is 0. Clear all rules for IP Address
-	if ($old_ip_values['userid'] != 0 && ($new_ip_values['userid'] == 0 || $new_ip_values['trafficid'] == 0)) {
-		
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}')
-END";
-		shell_exec($command);
-
-		// Add audit
-		add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_USER, "IP Address {$old_ip_values['ipaddress']} is deleted from - ID: {$old_ip_values['userid']}, User: {$new_ip_values['name']}.");
-
-		$msg = _s('All rules for IP address %s are deleted.', $old_ip_values['ipaddress'])." - line 105";
-		$update = array ('id' => $old_ip_values['id'], 'userid' => 0, 'trafficid' => 0, 'ipaddress' => $old_ip_values['ipaddress'], 
-						 'vlan' => '', 'mac' => '', 'free_mac' => 0, 'name' => '', 'msg' => $msg);
-
-		return $update;
-	}
-
-	# 3. Any changes are possible	
-	if ($old_ip_values['userid'] != 0 && $new_ip_values['userid'] != 0 && $new_ip_values['trafficid'] != 0) {
-		
-		# 3.1 IP Address is bound to the same user and the same tariff plan.
-		if (($old_ip_values['userid'] == $new_ip_values['userid']) && ($old_ip_values['trafficid'] == $new_ip_values['trafficid'])) {
-
-			# 3.1.1 Nothing has changed.
-			if (($old_ip_values['vlan'] == $new_ip_values['vlan']) && ($old_ip_values['mac'] == $new_ip_values['mac']) && ($old_ip_values['free_mac'] == $new_ip_values['free_mac'])) {
-				
-				$msg = _s('No changes were made to IP address %s.', $old_ip_values['ipaddress']);
-				return array('msg' => $msg);
-			}
-
-			# 3.1.2 VLAN is same, but (MAC or Free MAC) are changed
-			elseif ((($old_ip_values['vlan'] == $new_ip_values['vlan']) && !empty($new_ip_values['vlan'])) && (($old_ip_values['mac'] != $new_ip_values['mac']) || ($old_ip_values['free_mac'] != $new_ip_values['free_mac']))) {
-				
-				# 3.1.2.1 MAC is changed and Free MAC - No
-				if (!empty($new_ip_values['mac']) && $new_ip_values['free_mac'] == 0) {
-
-					$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.replace_mac(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '$mac')
-END";
-					shell_exec($command);
-
-					$msg = !empty($mac) ? _s('MAC for IP address %s are updated.', $old_ip_values['ipaddress']) : _s('Please enter valid MAC for IP address %s.', $old_ip_values['ipaddress']);
-					$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => $old_ip_values['vlan'], 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-				}
-				# 3.1.2.2 MAC is empty or Free MAC -Yes
-				elseif (empty($new_ip_values['mac']) || $new_ip_values['free_mac'] == 1) {
-						
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_mac(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}')
-END";
-					shell_exec($command);
-
-					$msg = (empty($new_ip_values['mac']) && ($new_ip_values['free_mac'] == 0)) ? _s('MAC for IP address %s are deleted.', $old_ip_values['ipaddress']) : _s('IP address %s is free from MAC.', $old_ip_values['ipaddress']);
-					$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => $old_ip_values['vlan'], 'mac' => $new_ip_values['mac'], 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-				}
-			}
-
-			# 3.1.3 VLAN is changed
-			elseif (($old_ip_values['vlan'] != $new_ip_values['vlan']) && !empty($new_ip_values['vlan'])) {
-					
-				$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-					
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}')
-END";
-					shell_exec($command);
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.add_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$new_ip_values['vlan']}', mac = '$mac', free_mac = '{$new_ip_values['free_mac']}', donw_speed = '{$trafficid[$new_ip_values['trafficid']]['local_in']}', up_speed = '{$trafficid[$new_ip_values['trafficid']]['local_out']}')
-END";
-					shell_exec($command);
-
-				$msg = (!empty($mac) || empty($new_ip_values['mac'])) ? _s('The new VLAN and MAC for IP address %s are added.', $old_ip_values['ipaddress'])." - line 193" : _s('The new VLAN for IP address %s are added. Please enter valid MAC.', $old_ip_values['ipaddress'])." - line 193";
-				$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => $new_ip_values['vlan'], 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-			}
-			
-			# 3.1.4 VLAN is deleted
-			elseif (($old_ip_values['vlan'] != $new_ip_values['vlan']) && empty($new_ip_values['vlan'])) {
-
-                $mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}')
-END";
-                shell_exec($command);
-
-                $msg = _s('VLAN and MAC for IP address %s are deleted.', $old_ip_values['ipaddress'])." - line 215";
-                $update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-                                'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'],
-                                'name' => $new_ip_values['name'], 'msg' => $msg);
-
-                return $update;
-			}
-			
-			# 3.1.5 VLAN is not set.
-			elseif (empty($old_ip_values['vlan']) && empty($new_ip_values['vlan'])) {
-						
-				# 3.1.5.1 Adding (MAC or Free MAC) or deleting (MAC or Free MAC) in DB
-				if (($old_ip_values['mac'] != $new_ip_values['mac']) || ($old_ip_values['free_mac'] != $new_ip_values['free_mac'])) {
-						
-					$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-
-					$msg = (!empty($mac) || empty($new_ip_values['mac'])) ? _s('MAC and Free MAC for IP address %s are updated.', $old_ip_values['ipaddress'])." - line 231" : _s('Please enter valid MAC for IP address %s.', $old_ip_values['ipaddress'])." - line 231";
-					$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-					return $update;
-				}
-			}
-		}
-
-		# 3.2 Tariff plan is changed
-		if ($old_ip_values['trafficid'] != $new_ip_values['trafficid']) {
-			
-			# 3.2.1 Only tariff plan is changed
-			if (($old_ip_values['trafficid'] != $new_ip_values['trafficid']) && ($old_ip_values['vlan'] == $new_ip_values['vlan']) && ($old_ip_values['mac'] == $new_ip_values['mac']) && ($old_ip_values['free_mac'] == $new_ip_values['free_mac'])){
-				
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}')
-END";
-					shell_exec($command);
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.add_ip_rules(ip = '{$old_ip_values['ipaddress']}', vlan = '{$old_ip_values['vlan']}', mac = '{$old_ip_values['mac']}', free_mac = '{$old_ip_values['free_mac']}', donw_speed = '{$trafficid[$new_ip_values['trafficid']]['local_in']}', up_speed = '{$trafficid[$new_ip_values['trafficid']]['local_out']}')
-END";
-				shell_exec($command);
-
-				$msg = _s('The tariff plan for IP address %s is changed.', $old_ip_values['ipaddress']);
-				$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $new_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => $old_ip_values['vlan'], 'mac' => $old_ip_values['mac'], 'free_mac' => $old_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-			}
-			# 3.2.2 Any changes are possible
-			else {
-				
-				$msg = _s('No changes were made to IP address %s. Before change something, first change tariff plan.', $old_ip_values['ipaddress']);
-				return array('msg' => $msg);
-			}
-		}
-
-		# 3.3 User is replaced with another user
-		if ($old_ip_values['userid'] != $new_ip_values['userid']) {
-				
-			$msg = _s('No changes were made to IP address %s. First exempt the IP address from the user to which is added.', $old_ip_values['ipaddress']);
-			return array('msg' => $msg);
-		}
-	}
-
-	$msg = _('The system does not support the changes, who want you to apply! The function comparison_ip_vlan_changes() in network.inc.php need to develop.');
-	return array('msg' => $msg);
+    $sql = 'INSERT INTO radusergroup (username, groupname, userid) VALUES (:username, :groupname, :userid)';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':username', $username, PDO::PARAM_STR);
+    $sth->bindValue(':groupname', $pppoe['groupname'], PDO::PARAM_STR);
+    $sth->bindValue(':userid', $pppoe['userid'], PDO::PARAM_INT);
+    $sth->execute();
+    $db->dbh->commit();
 }
 
 /**
- * This function comparison changes for IP Address if $USE_VLANS = FALSE and applies the change with calling python scripts and functions
+ * This function update PPPoE rules for username
  * 
- * @param array $old_ip_values - ['id'], ['userid'], ['trafficid'], ['ipaddress'], [mac], [free_mac]
- * @param array $new_ip_values - ['userid'], ['trafficid'], [mac], [free_mac], ['name']
+ * @param Array $pppoe_old, $pppoe_new - ['ip'], ['mac'], ['username'], ['pass'], ['groupname']
  */
-function comparison_ip_changes($db, $old_ip_values, $new_ip_values) {
+function pppoe_update($db, $pppoe_old, $pppoe_new) {
 
-	global $SUDO, $PYTHON, $IMSLU_SCRIPTS;
+    global $SUDO;
+    global $IMSLU_SCRIPTS;
 
-	$sql = 'SELECT trafficid,local_in,local_out FROM traffic';
-	$sth = $db->dbh->prepare($sql);
-	$sth->execute();
-	$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+    $db->dbh->beginTransaction();
 
-	if ($rows) {
+    if (!empty($pppoe_old['pass']) && !empty($pppoe_new['pass'])) {
 
-		$trafficid = array();
+        $password = strip_tags($pppoe_new['pass']);
 
-		for ($i = 0; $i < count($rows); ++$i) {
+        $sql = 'UPDATE radcheck SET value = :value WHERE username = :username AND attribute = :attribute';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':value', $password, PDO::PARAM_STR);
+        $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
+        $sth->bindValue(':attribute', 'Cleartext-Password');
+        $sth->execute();
+    }
 
-		$trafficid[$rows[$i]['trafficid']] = array('local_in' => $rows[$i]['local_in'], 'local_out' => $rows[$i]['local_out']);
-		}
-	}
+    if (!empty($pppoe_old['mac']) && !empty($pppoe_new['mac'])) {
 
-	if (!is_array($old_ip_values) || !is_array($new_ip_values)) {
-		
-		$msg = 'The variables: $old_ip_values and $new_ip_values, must be array';
-		return array('msg' => $msg);
-	}
+        $sql = 'UPDATE radcheck SET value = :value WHERE username = :username AND attribute = :attribute';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':value', $pppoe_new['mac'], PDO::PARAM_STR);
+        $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
+        $sth->bindValue(':attribute', 'Calling-Station-Id');
+        $sth->execute();
+    }
 
-//echo '<pre>' .' IP OLD '; print_r($old_ip_values); echo '</pre>';
-//echo '<pre>' .' IP NEW '; print_r($new_ip_values); echo '</pre>';
+    if (!empty($pppoe_old['groupname']) && !empty($pppoe_new['groupname'])) {
 
-	# Nothing has changed.
-	if ($old_ip_values['userid'] == 0 && ($new_ip_values['userid'] == 0 || $new_ip_values['trafficid'] == 0)) {
-		
-		$msg = _s('No changes were made to IP address %s.', $old_ip_values['ipaddress']);
-		return array('msg' => $msg);
-	}
+        $sql = 'UPDATE radusergroup SET groupname = :groupname WHERE username = :username';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':groupname', $pppoe_new['groupname'], PDO::PARAM_STR);
+        $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
+        $sth->execute();
+    }
 
-	# 1. User and Tariff plan is != 0. Add The new rules for IP Address
-	if ($old_ip_values['userid'] == 0 && $new_ip_values['userid'] != 0 && $new_ip_values['trafficid'] != 0) {
+    if (!empty($pppoe_old['username']) && !empty($pppoe_new['username'])) {
 
-		$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
+        $str = strip_tags($pppoe_new['username']);
+        $username = preg_replace('/\s+/', '_', $str);
 
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.add_ip_rules(ip = '{$old_ip_values['ipaddress']}', mac = '$mac', free_mac = '{$new_ip_values['free_mac']}', donw_speed = '{$trafficid[$new_ip_values['trafficid']]['local_in']}', up_speed = '{$trafficid[$new_ip_values['trafficid']]['local_out']}')
-END";
-		shell_exec($command);
+        $sql = 'SELECT id FROM radcheck WHERE username = :username';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
+        $sth->execute();
+        $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-		// Add audit
-		add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_USER, "IP Address {$old_ip_values['ipaddress']} is added to - ID: {$new_ip_values['userid']}, User: {$new_ip_values['name']}.");
+        if ($rows) {
 
-		$msg = (!empty($mac) || empty($new_ip_values['mac'])) ? _s('The new rules for IP address %s are added.', $old_ip_values['ipaddress']) : _s('The new rules for IP address %s are added. Please enter valid MAC.', $old_ip_values['ipaddress']);
-		$update = array ('id' => $old_ip_values['id'], 'userid' => $new_ip_values['userid'], 'trafficid' => $new_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-		return $update;
-	}
+            for ($i = 0; $i < count($rows); ++$i) {
 
-	# 2. User or Tariff plan is 0. Clear all rules for IP Address
-	if ($old_ip_values['userid'] != 0 && ($new_ip_values['userid'] == 0 || $new_ip_values['trafficid'] == 0)) {
-		
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', mac = '{$old_ip_values['mac']}')
-END";
-		shell_exec($command);
+                $sql = 'UPDATE radcheck SET username = :username WHERE id = :id';
+                $sth = $db->dbh->prepare($sql);
+                $sth->bindValue(':username', $username, PDO::PARAM_STR);
+                $sth->bindValue(':id', $rows[$i]['id']);
+                $sth->execute();
+            }
 
-		// Add audit
-		add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_USER, "IP Address {$old_ip_values['ipaddress']} is deleted from - ID: {$old_ip_values['userid']}, User: {$new_ip_values['name']}.");
+            $sql = 'UPDATE radusergroup SET username = :username WHERE username = :user_name';
+            $sth = $db->dbh->prepare($sql);
+            $sth->bindValue(':username', $username, PDO::PARAM_STR);
+            $sth->bindValue(':user_name', $pppoe_old['username'], PDO::PARAM_STR);
+            $sth->execute();
+        }
+    }
 
-		$msg = _s('All rules for IP address %s are deleted.', $old_ip_values['ipaddress']);
-		$update = array ('id' => $old_ip_values['id'], 'userid' => 0, 'trafficid' => 0, 'ipaddress' => $old_ip_values['ipaddress'], 
-						 'vlan' => '', 'mac' => '', 'free_mac' => 0, 'name' => '', 'msg' => $msg);
+    $db->dbh->commit();
 
-		return $update;
-	}
-
-	# 3. Any changes are possible	
-	if ($old_ip_values['userid'] != 0 && $new_ip_values['userid'] != 0 && $new_ip_values['trafficid'] != 0) {
-		
-		# 3.1 IP Address is bound to the same user and the same tariff plan.
-		if (($old_ip_values['userid'] == $new_ip_values['userid']) && ($old_ip_values['trafficid'] == $new_ip_values['trafficid'])) {
-
-			# 3.1.1 Nothing has changed.
-			if (($old_ip_values['mac'] == $new_ip_values['mac']) && ($old_ip_values['free_mac'] == $new_ip_values['free_mac'])) {
-				
-				$msg = _s('No changes were made to IP address %s.', $old_ip_values['ipaddress']);
-				return array('msg' => $msg);
-			}
-
-			# 3.1.2 MAC or Free MAC are changed
-			elseif (($old_ip_values['mac'] != $new_ip_values['mac']) || ($old_ip_values['free_mac'] != $new_ip_values['free_mac'])) {
-				
-				# 3.1.2.1 MAC is changed and Free MAC - No
-				if (!empty($new_ip_values['mac']) && $new_ip_values['free_mac'] == 0) {
-
-					$mac = IsValidMAC($new_ip_values['mac']) ? $new_ip_values['mac'] : '';
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.replace_mac(ip = '{$old_ip_values['ipaddress']}', mac = '$mac')
-END";
-					shell_exec($command);
-
-					$msg = !empty($mac) ? _s('MAC for IP address %s are updated.', $old_ip_values['ipaddress']) : _s('Please enter valid MAC for IP address %s.', $old_ip_values['ipaddress']);
-					$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $mac, 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-				}
-				# 3.1.2.2 MAC is empty or Free MAC -Yes
-				elseif (empty($new_ip_values['mac']) || $new_ip_values['free_mac'] == 1) {
-						
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_mac(ip = '{$old_ip_values['ipaddress']}', mac = '{$old_ip_values['mac']}')
-END";
-					shell_exec($command);
-
-					$msg = (empty($new_ip_values['mac']) && ($new_ip_values['free_mac'] == 0)) ? _s('MAC for IP address %s are deleted.', $old_ip_values['ipaddress']) : _s('IP address %s is free from MAC.', $old_ip_values['ipaddress']);
-					$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $old_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $new_ip_values['mac'], 'free_mac' => $new_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-				}
-			}
-		}
-
-		# 3.2 Tariff plan is changed
-		if ($old_ip_values['trafficid'] != $new_ip_values['trafficid']) {
-			
-			# 3.2.1 Only tariff plan is changed
-			if (($old_ip_values['trafficid'] != $new_ip_values['trafficid']) && ($old_ip_values['mac'] == $new_ip_values['mac']) && ($old_ip_values['free_mac'] == $new_ip_values['free_mac'])){
-				
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.del_ip_rules(ip = '{$old_ip_values['ipaddress']}', mac = '{$old_ip_values['mac']}')
-END";
-					shell_exec($command);
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import admin_tools
-admin_tools.add_ip_rules(ip = '{$old_ip_values['ipaddress']}', mac = '{$old_ip_values['mac']}', free_mac = '{$old_ip_values['free_mac']}', donw_speed = '{$trafficid[$new_ip_values['trafficid']]['local_in']}', up_speed = '{$trafficid[$new_ip_values['trafficid']]['local_out']}')
-END";
-				shell_exec($command);
-
-				$msg = _s('The tariff plan for IP address %s is changed.', $old_ip_values['ipaddress']);
-				$update = array ('id' => $old_ip_values['id'], 'userid' => $old_ip_values['userid'], 'trafficid' => $new_ip_values['trafficid'], 
-						 'ipaddress' => $old_ip_values['ipaddress'], 'vlan' => '', 'mac' => $old_ip_values['mac'], 'free_mac' => $old_ip_values['free_mac'], 
-						 'name' => $new_ip_values['name'], 'msg' => $msg);
-
-				return $update;
-			}
-			# 3.2.2 Any changes are possible
-			else {
-				
-				$msg = _s('No changes were made to IP address %s. Before change something, first change tariff plan.', $old_ip_values['ipaddress']);
-				return array('msg' => $msg);
-			}
-		}
-
-		# 3.3 User is replaced with another user
-		if ($old_ip_values['userid'] != $new_ip_values['userid']) {
-				
-			$msg = _s('No changes were made to IP address %s. First exempt the IP address from the user to which is added.', $old_ip_values['ipaddress']);
-			return array('msg' => $msg);
-		}
-	}
-
-	$msg = _('The system does not support the changes, who want you to apply! The function comparison_ip_changes() in network.inc.php need to develop.');
-	return array('msg' => $msg);
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$pppoe_old['ip']}/32' 2>&1";
+    $result = shell_exec($cmd);
+    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
 }
 
+/**
+ * This function removes all PPPoE rules for username
+ * 
+ * @param String $ip - IP address, $username - PPPoE username
+ */
+function pppoe_remove($db, $ip, $username) {
+
+    global $SUDO;
+    global $IMSLU_SCRIPTS;
+
+    $sql = 'DELETE FROM radcheck  WHERE username = :username';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':username', $username);
+    $sth->execute();
+
+    $sql = 'DELETE FROM radusergroup  WHERE username = :username';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':username', $username);
+    $sth->execute();
+
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$ip}/32' 2>&1";
+    $result = shell_exec($cmd);
+    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+}
+
+/**
+ * This function add all rules for new IP address
+ * 
+ * @param array $ip - ['userid'], ['ip'], ['vlan'], ['mac'], ['free_mac'], ['username'], ['pass'], ['protocol'], ['stopped'], ['notes']
+ */
+function ip_add($db, $ip) {
+
+    global $SUDO;
+    global $IMSLU_SCRIPTS;
+
+    if (!filter_var($ip['ip'], FILTER_VALIDATE_IP)) {
+
+        $_SESSION['msg'] .= _('Invalid IP Address!')."<br>";
+        header("Location: user.php?userid={$ip['userid']}");
+        exit;
+    }
+    if (!empty($ip['mac']) && !IsValidMAC($ip['mac'])) {
+
+        $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
+        header("Location: user.php?userid={$ip['userid']}");
+        exit;
+    }
+
+    $now = date('Y-m-d H:i:s');
+
+    ####### Get user info, ip adresses and payment #######
+    $sql = 'SELECT users.*, payments.id as payment_id, payments.expires
+            FROM users
+            LEFT JOIN (SELECT id, userid, expires FROM payments WHERE userid = :payments_userid ORDER BY id DESC, expires DESC LIMIT 1) AS payments
+            ON users.userid = payments.userid
+            WHERE users.userid = :userid LIMIT 1';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':payments_userid', $ip['userid'], PDO::PARAM_INT);
+    $sth->bindValue(':userid', $ip['userid'], PDO::PARAM_INT);
+    $sth->execute();
+    $user = $sth->fetch(PDO::FETCH_ASSOC);
+
+    $sql = 'UPDATE ip SET userid = :userid, vlan = :vlan, mac = :mac, free_mac = :free_mac, username = :username, pass = :pass, protocol = :protocol, stopped = :stopped, notes = :notes  WHERE ip = :ip AND userid=0';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', $ip['userid'], PDO::PARAM_INT);
+    $sth->bindValue(':vlan', $ip['vlan'], PDO::PARAM_STR);
+    $sth->bindValue(':mac', $ip['mac'], PDO::PARAM_STR);
+    $sth->bindValue(':free_mac', $ip['free_mac'], PDO::PARAM_STR);
+    $sth->bindValue(':username', $ip['username'], PDO::PARAM_STR);
+    $sth->bindValue(':pass', $ip['pass'], PDO::PARAM_STR);
+    $sth->bindValue(':protocol', $ip['protocol'], PDO::PARAM_STR);
+    $sth->bindValue(':stopped', $ip['stopped'], PDO::PARAM_STR);
+    $sth->bindValue(':notes', $ip['notes'], PDO::PARAM_STR);
+    $sth->bindValue(':ip', $ip['ip'], PDO::PARAM_STR);
+    $sth->execute();
+
+    if (!empty($ip['username']) && ($ip['protocol'] == 'PPPoE')) {
+
+        pppoe_add($db, $ip);
+    }
+    else {
+
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$ip['ip']}' '{$ip['vlan']}' '{$ip['mac']}' '{$ip['free_mac']}' 2>&1";
+        $result = shell_exec($cmd);
+        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    }
+
+    // Start internet access
+    if ($ip['stopped'] == 'n' && ($user['free_access'] == 'y' || $user['expires'] > $now || substr($user['created'],0,10) == substr($now,0,10))) {
+
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip['ip']}' 2>&1";
+        $result = shell_exec($cmd);
+        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    }
+
+    // Add tc filter for IP
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_filter_add '{$ip['ip']}' '{$ip['userid']}' 2>&1";
+    $result = shell_exec($cmd);
+    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+}
+
+/**
+ * This function removes all rules for IP address
+ * 
+ * @param array $ip - ['id'], ['userid'], ['ip'], ['vlan'], ['username'], ['pass']
+ */
+function ip_remove($db, $ip) {
+
+    global $SUDO;
+    global $IMSLU_SCRIPTS;
+
+    $sql = 'UPDATE ip SET userid = :userid, vlan = :vlan, mac = :mac, free_mac = :free_mac, username = :username, pass = :pass, protocol = :protocol, stopped = :stopped, notes = :notes  WHERE id = :id';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', 0);
+    $sth->bindValue(':vlan', '');
+    $sth->bindValue(':mac', '');
+    $sth->bindValue(':free_mac', 'n');
+    $sth->bindValue(':username', '');
+    $sth->bindValue(':pass', '');
+    $sth->bindValue(':protocol', 'IP');
+    $sth->bindValue(':stopped', 'n');
+    $sth->bindValue(':notes', '');
+    $sth->bindValue(':id', $ip['id'], PDO::PARAM_INT);
+    $sth->execute();
+
+    if (!empty($ip['username']) && ($ip['protocol'] == 'PPPoE')) {
+
+        pppoe_remove($db, $ip['ip'], $ip['username']);
+    }
+    else {
+
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$ip['ip']}' '{$ip['vlan']}' 2>&1";
+        $result = shell_exec($cmd);
+        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    }
+
+    // Stop internet access for IP
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip['ip']} 2>&1";
+    $result = shell_exec($cmd);
+    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+
+    // Remove tc filter for IP
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_filter_delete {$ip['ip']} 2>&1";
+    $result = shell_exec($cmd);
+    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+}
 ?>

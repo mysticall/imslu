@@ -1,8 +1,8 @@
 <?php
 # LAN Interface
-$IFACE_INTERNAL = "eth0";
+$IFACE_INTERNAL = "eth1";
 # WAN Interface
-$IFACE_EXTERNAL = "eth1";
+$IFACE_EXTERNAL = "eth0";
 
 # Log files location
 $LOG_DIR = "/var/log/imslu";
@@ -28,11 +28,11 @@ $ARPING = '/usr/sbin/arping';
 
 # Do you want to use PPPoE - Freeradius?
 # boolean FALSE or TRUE
-$USE_PPPoE = true;
+$USE_PPPoE = TRUE;
 
 # Do you want to use VLANs?
 # boolean FALSE or TRUE
-$USE_VLANS = FALSE;
+$USE_VLANS = TRUE;
 
 # int - Days for limited internet acces
 $LIMITED_INTERNET_ACCESS = 3;

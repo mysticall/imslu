@@ -266,8 +266,7 @@ if (!empty($_GET['userid'])) {
               <label style=\"float: left;\">". _('total').": ".count($payments_info) ."</label>
               <label>". _s('payments of %s', chars($username)) ."</label>
               <label class=\"info_right\">
-                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
-                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
                 <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
               </label>
             </th>

@@ -1,198 +1,200 @@
 
 CREATE TABLE `sessions` (
-  `sessionid`		char(128) 	DEFAULT ''	NOT NULL,
-  `set_time` 		char(10) 				NOT NULL,
-  `data` 			blob 					NOT NULL,
-  `login_string` 	char(128) 				NOT NULL,
+  `sessionid`    char(128) NOT NULL DEFAULT '',
+  `set_time`     char(10)  NOT NULL,
+  `data`         blob      NOT NULL,
+  `login_string` char(128) NOT NULL,
   PRIMARY KEY (sessionid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `opergrp` (
+  `opergrpid` int(4)      UNSIGNED NOT NULL,
+  `name`      varchar(64) NOT NULL DEFAULT '',
+  PRIMARY KEY (opergrpid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO opergrp VALUES (1,'Cashiers'), (2,'Network Technicians'), (3,'Administrators'), (4,'LINUX Administrators');
+
 CREATE TABLE `operators` (
-	`operid`		int(4)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`alias`			varchar(50)		DEFAULT ''			NOT NULL,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	`passwd`		char(128)		DEFAULT ''			NOT NULL,
-	`salt`			char(128)		DEFAULT ''			NOT NULL,
-	`url`			varchar(255)	DEFAULT '' 			NOT NULL,
-	`lang`			varchar(5)		DEFAULT 'en_US' 	NOT NULL,
-	`theme`			varchar(128)    DEFAULT 'originalgreen'	NOT NULL,
-	`refresh`		int(4)			DEFAULT '30'		NOT NULL,
-	`type`			int(4)			UNSIGNED			NULL,
+  `operid`  int(4)       UNSIGNED  NOT NULL AUTO_INCREMENT,
+  `alias`   varchar(50)  NOT NULL  DEFAULT '',
+  `name`    varchar(64)  NOT NULL  DEFAULT '',
+  `passwd`  char(32)    NOT NULL  DEFAULT '',
+  `url`     varchar(128) NOT NULL  DEFAULT '',
+  `lang`    varchar(5)   NOT NULL  DEFAULT 'en_US',
+  `theme`   varchar(32)  NOT NULL  DEFAULT 'originalgreen',
+  `type`    int(4)       UNSIGNED  NULL,
   PRIMARY KEY (operid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `operators_1` ON `operators` (`alias`,`type`);
-
-CREATE TABLE `opergrp` (
-  `opergrpid`		int(4)		UNSIGNED	NOT NULL,
-  `name`			varchar(64)	DEFAULT ''	NOT NULL,
-  PRIMARY KEY (opergrpid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO operators (operid, alias, name, passwd, lang, theme, type) VALUES (1, 'sadmin', 'System Administrator', MD5('sadmin'), 'en_US', 'originalgreen', 4), (2, 'admin', 'Administrator', MD5('admin'), 'en_US', 'originalgreen', 3);
 
 CREATE TABLE `operators_groups` (
-  `id`			int(4)		UNSIGNED	NOT NULL	AUTO_INCREMENT,
-  `opergrpid`	int(4)		UNSIGNED	NOT NULL,
-  `operid`		int(4)		UNSIGNED	NOT NULL,
+  `id`        int(4) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `opergrpid` int(4) UNSIGNED NOT NULL,
+  `operid`    int(4) UNSIGNED NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `operators_groups_1` ON `operators_groups` (`opergrpid`,`operid`);
+INSERT INTO operators_groups (id, opergrpid, operid) VALUES ('1','4','1'), ('2','3','2');
 
 CREATE TABLE `login_attempts` (
-	`attempt_failed`	int(11)			DEFAULT '1'		NOT NULL,
-	`attempt_time`		varchar(30)     DEFAULT ''		NOT NULL,
-	`attempt_ip`		varchar(50)     DEFAULT ''		NOT NULL,
-	`alias`				varchar(50)		DEFAULT ''		NOT NULL,
+  `attempt_failed` int(11)     NOT NULL DEFAULT '1',
+  `attempt_time`   varchar(30) NOT NULL DEFAULT '',
+  `attempt_ip`     varchar(50) NOT NULL DEFAULT '',
+  `alias`          varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (attempt_ip)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `auditlog` (
-	`auditid`				bigint UNSIGNED				NOT NULL	AUTO_INCREMENT,
-	`actionid`				int(4) UNSIGNED				NOT NULL,
-	`resourceid`			int(4) UNSIGNED				NOT NULL,
-	`operid`				int(4) UNSIGNED				NOT NULL,
-	`oper_alias`			varchar(50)					NOT NULL,
-	`date_time`				datetime					NOT NULL,
-	`ip`					varchar(39)					NOT NULL,
-	`details`				varchar(255)				NOT NULL,
-	`oldvalue`				text						NOT NULL,
-	`newvalue`				text						NOT NULL,
-
-	PRIMARY KEY (auditid)
+  `auditid`    bigint       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `actionid`   int(4)       UNSIGNED NOT NULL,
+  `resourceid` int(4)       UNSIGNED NOT NULL,
+  `operid`     int(4)       UNSIGNED NOT NULL,
+  `oper_alias` varchar(50)  NOT NULL,
+  `date_time`  datetime     NOT NULL,
+  `ip`         varchar(39)  NOT NULL,
+  `details`    varchar(255) NOT NULL,
+  `oldvalue`   text         NOT NULL,
+  `newvalue`   text         NOT NULL,
+  PRIMARY KEY (auditid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-#
-# Table structure for table 'Static IPPOOL'
-#
-CREATE TABLE `static_ippool` (
-	`id`			int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`userid`		int(11)			DEFAULT '0'			NOT NULL,
-	`trafficid`		int(11)			DEFAULT '0'			NOT NULL,
-	`ipaddress`		varchar(128)	DEFAULT ''			NOT NULL,
-	`subnet`		int(2)			DEFAULT '32'		NOT NULL,
-	`vlan`			varchar(128)	DEFAULT ''			NOT NULL,
-	`mac`			varchar(128)	DEFAULT ''			NOT NULL,
-	`mac_info`		varchar(128)	DEFAULT ''			NOT NULL,
-	`free_mac`		TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`pool_name`		varchar(128)	DEFAULT ''			NOT NULL,
-	`network_type`	varchar(128)	DEFAULT ''			NOT NULL,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	`notes`			text			DEFAULT ''			NOT NULL,
-	PRIMARY KEY (id)
+--
+-- Table structure for table 'kind_traffic'
+--
+CREATE TABLE kind_traffic (
+  `kind_trafficid` int(11)     UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name`           varchar(64) NOT NULL,
+  `notes`          text        NOT NULL DEFAULT '',
+  PRIMARY KEY (kind_trafficid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'int','International traffic');
+
+--
+-- Table structure for table 'Services'
+--
+CREATE TABLE `services` (
+  `serviceid`      int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `kind_trafficid` int(11)      UNSIGNED NOT NULL,
+  `name`           varchar(64)  NOT NULL,
+  `price`          double(10,2) NOT NULL DEFAULT '0.00',
+  `in_min`         varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max`         varchar(32)  NOT NULL,
+  `out_min`        varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max`        varchar(32)  NOT NULL,
+  PRIMARY KEY (serviceid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO `services` (`serviceid`, `kind_trafficid`, `name`, `price`, `in_max`, `out_max`) VALUES (1, 1, 'LOW', 15, '30mbit', '15mbit'), (2, 2, 'LOW', 15, '15mbit', '10mbit'), (3, 1, 'HIGH', 20, '50mbit', '35mbit'), (4, 2, 'HIGH', 20, '25mbit', '20mbit');
+
+--
+-- Table structure for table 'ip'
+--
+CREATE TABLE `ip` (
+  `id`       int(11)       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userid`   int(11)       NOT NULL,
+  `ip`       varchar(39)   NOT NULL DEFAULT '',
+  `vlan`     varchar(17)   NOT NULL DEFAULT '',
+  `mac`      varchar(17)   NOT NULL DEFAULT '',
+  `free_mac` enum('n','y') NOT NULL DEFAULT 'n',
+  `username` varchar(64)   NOT NULL DEFAULT '',
+  `pass`     varchar(64)   NOT NULL DEFAULT '',
+  `pool`     varchar(64)   NOT NULL DEFAULT '',
+  `protocol` varchar(10)   NOT NULL DEFAULT 'IP',
+  `stopped`  enum('n','y') NOT NULL DEFAULT 'n',
+  `notes`    text          NOT NULL DEFAULT '',
+  PRIMARY KEY (id),
+  INDEX (ip(15)),
+  INDEX (pool(9))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-#
-# Table structure for table 'Traffic'
-#
- -- local_in - Country based local traffic download speed
- -- local_out - Country based local traffic upload speed
- -- int_in - Internacional traffic download speed
- -- int_out - Internacional traffic upload speed
-CREATE TABLE `traffic` (
-	`trafficid`		int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`name`			varchar(128)						NOT NULL,
-	`price`			double(10,2)	DEFAULT '0.00'		NOT NULL,
-	`local_in`		int(11)								NOT NULL,
-	`local_out`		int(11)								NOT NULL,
-	`int_in`		int(11)								NOT NULL,
-	`int_out`		int(11)								NOT NULL,
-	PRIMARY KEY (trafficid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-#
-# Table structure for table 'The location'
-#
+--
+-- Table structure for table 'The location'
+--
 CREATE TABLE `location` (
-	`id`			int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	PRIMARY KEY (id)
+  `id`   int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL DEFAULT '',
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-#
-# Table structure for table 'Switches'
-#
-CREATE TABLE `switches` (
-	`id`			int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-#
-# Table structure for table 'users'
-#
+--
+-- Table structure for table 'users'
+--
 CREATE TABLE `users` (
-	`userid`		int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	`locationid`	int(11)			DEFAULT '0'			NOT NULL,
-	`address`		varchar(128)	DEFAULT ''			NOT NULL,
-	`phone_number`	varchar(128)	DEFAULT ''			NOT NULL,
-	`notes`			text			DEFAULT ''			NOT NULL,
-	`created`		datetime 				 			NOT NULL,
-	`trafficid`		int(11)								NOT NULL,
-	`pay`			double(10,2)	DEFAULT '0.00'		NOT NULL,
-	`free_access`	TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`not_excluding`	TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`switchid`		int(11)			DEFAULT '0'			NOT NULL,
-	`pppoe`			TINYINT(1)		DEFAULT '0'			NOT NULL,
-	PRIMARY KEY (userid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE UNIQUE INDEX `users_1` ON `users` (`userid`,`name`, `address`, `phone_number`);
+  `userid`        int(11)       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name`          varchar(64)   NOT NULL DEFAULT '',
+  `locationid`    int(11)       NOT NULL DEFAULT '0',
+  `address`       varchar(128)  NOT NULL DEFAULT '',
+  `phone_number`  varchar(32)   NOT NULL DEFAULT '',
+  `notes`         text          NOT NULL DEFAULT '',
+  `created`       datetime      NOT NULL,
+  `service`       varchar(64)   NOT NULL,
+  `pay`           double(10,2)  NOT NULL DEFAULT '0.00',
+  `free_access`   enum('n','y') NOT NULL DEFAULT 'n',
+  `not_excluding` enum('n','y') NOT NULL DEFAULT 'n',
+  PRIMARY KEY (userid),
+  INDEX (name(32)),
+  INDEX (address(32)),
+  INDEX (phone_number(15))
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+INSERT INTO `users` (`userid`,`name`, `service`) VALUES ('10','test', `LOW`);
 
-#
-# Table structure for table 'payments'
-#
+--
+-- Table structure for table 'payments'
+--
 CREATE TABLE `payments` (
-	`id`			bigint			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`userid`		int(11)								NOT NULL,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	`username`		varchar(128)	DEFAULT ''			NOT NULL,
-	`unpaid`		TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`limited`		TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`reported`		TINYINT(1)		DEFAULT '0'			NOT NULL,
-	`operator1`		varchar(128)	DEFAULT ''			NULL,
-	`operator2`		varchar(128)	DEFAULT ''			NULL,
-	`date_payment1`	datetime							NULL,
-	`date_payment2`	datetime							NULL,
-	`expires`		datetime							NOT NULL,
-	`sum`			double(10,2)	DEFAULT '0.00'		NOT NULL,
-	`notes`			text			DEFAULT ''			NULL,
-	PRIMARY KEY (id)
+  `id`            bigint       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userid`        int(11)      NOT NULL,
+  `name`          varchar(64)  NOT NULL DEFAULT '',
+  `username`      varchar(64)  NOT NULL DEFAULT '',
+  `unpaid`        TINYINT(1)   NOT NULL DEFAULT '0',
+  `limited`       TINYINT(1)   NOT NULL DEFAULT '0',
+  `reported`      TINYINT(1)   NOT NULL DEFAULT '0',
+  `operator1`     varchar(128) NOT NULL DEFAULT '',
+  `operator2`     varchar(128) NOT NULL DEFAULT '',
+  `date_payment1` datetime     NULL,
+  `date_payment2` datetime     NULL,
+  `expires`       datetime     NOT NULL,
+  `sum`           double(10,2) NOT NULL DEFAULT '0.00',
+  `notes`         text         NOT NULL DEFAULT '',
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-#
-# Table structure for table 'requests'
-#
+--
+-- Table structure for table 'requests'
+--
 CREATE TABLE `requests` (
-	`requestid`		int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`operid`		int(4)			UNSIGNED			NOT NULL,
-	`status`		TINYINT(1)		UNSIGNED			NOT NULL,
-	`add`			datetime 				 			NOT NULL,
-	`assign`		datetime 				 			NOT NULL,
-	`end`			datetime 				 			NOT NULL,
-	`created`		varchar(128)	DEFAULT ''			NOT NULL,
-	`changed`		varchar(128)	DEFAULT ''			NOT NULL,
-	`closed`		varchar(128)	DEFAULT ''			NOT NULL,
-	`name`			varchar(128)	DEFAULT ''			NOT NULL,
-	`address`		varchar(128)	DEFAULT ''			NOT NULL,
-	`phone_number`	varchar(128)	DEFAULT ''			NOT NULL,
-	`notes`			text			DEFAULT ''			NOT NULL,
-	PRIMARY KEY (requestid)
+  `requestid`    int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `operid`       int(4)       UNSIGNED NOT NULL,
+  `status`       TINYINT(1)   UNSIGNED NOT NULL,
+  `add`          datetime     NOT NULL,
+  `assign`       datetime     NOT NULL,
+  `end`          datetime     NOT NULL,
+  `created`      varchar(64)  NOT NULL DEFAULT '',
+  `changed`      varchar(64)  NOT NULL DEFAULT '',
+  `closed`       varchar(64)  NOT NULL DEFAULT '',
+  `name`         varchar(64)  NOT NULL DEFAULT '',
+  `address`      varchar(128) NOT NULL DEFAULT '',
+  `phone_number` varchar(32)  NOT NULL DEFAULT '',
+  `notes`        text         NOT NULL DEFAULT '',
+  PRIMARY KEY (requestid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-#
-# Table structure for table 'tickets'
-#
+--
+-- Table structure for table 'tickets'
+--
 CREATE TABLE `tickets` (
-	`ticketid`		int(11)			UNSIGNED			NOT NULL AUTO_INCREMENT,
-	`userid`		int(11)			UNSIGNED			NOT NULL,
-	`operid`		int(4)			UNSIGNED			NOT NULL,
-	`status`		TINYINT(1)		UNSIGNED			NOT NULL,
-	`add`			datetime 				 			NOT NULL,
-	`assign`		datetime 				 			NOT NULL,
-	`end`			datetime 				 			NOT NULL,
-	`created`		varchar(128)	DEFAULT ''			NOT NULL,
-	`changed`		varchar(128)	DEFAULT ''			NOT NULL,
-	`closed`		varchar(128)	DEFAULT ''			NOT NULL,
-	`notes`			text			DEFAULT ''			NOT NULL,
-	PRIMARY KEY (ticketid)
+  `ticketid` int(11)     UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userid`   int(11)     UNSIGNED NOT NULL,
+  `operid`   int(4)      UNSIGNED NOT NULL,
+  `status`   TINYINT(1)  UNSIGNED NOT NULL,
+  `add`      datetime    NOT NULL,
+  `assign`   datetime    NOT NULL,
+  `end`      datetime    NOT NULL,
+  `created`  varchar(64) NOT NULL DEFAULT '',
+  `changed`  varchar(64) NOT NULL DEFAULT '',
+  `closed`   varchar(64) NOT NULL DEFAULT '',
+  `notes`    text        NOT NULL DEFAULT '',
+  PRIMARY KEY (ticketid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `operators` ADD CONSTRAINT `c_operators_1` FOREIGN KEY (`type`) REFERENCES `opergrp` (`opergrpid`) ON DELETE SET NULL;

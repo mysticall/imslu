@@ -45,7 +45,7 @@ function combobox($class, $name, $selected, $items) {
 		}
 	}
 
-	$dropdown = "              <select class=\"$class\" name=\"$name\">\n";
+	$dropdown = "              <select id=\"$name\" class=\"$class\" name=\"$name\">\n";
 
 	foreach ($items as $key => $value) {
 

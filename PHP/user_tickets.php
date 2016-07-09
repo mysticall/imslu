@@ -106,8 +106,7 @@ if (!empty($_GET['userid'])) {
         $table->info_field3 = 
 "              <label class=\"info_right\">
                 <a href=\"user_tickets_add.php?userid={$userid}&new_ticket=1\">["._('new ticket')."]</a>
-                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
-                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
                 <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
               </label>\n";
 

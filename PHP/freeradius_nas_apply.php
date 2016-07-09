@@ -46,9 +46,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
     $db = new PDOinstance();
 
-###################################################################################################
-    // Delete NAS
-###################################################################################################
+####### Delete ####### 
 if(!empty($_POST['delete']) && !empty($_POST['del'])) {
 
     $nas_old = unserialize($_POST['nas']);
@@ -68,32 +66,17 @@ if(!empty($_POST['delete']) && !empty($_POST['del'])) {
     exit;
 }
 
-###################################################################################################
-    // Update NAS
-###################################################################################################
-
-if (!empty($_POST['save']) && !empty($_POST['nas'])) {
+####### Edit ####### 
+if (!empty($_POST['edit']) && !empty($_POST['nas'])) {
 
     $nas_old = unserialize($_POST['nas']);
 
-    if(empty($_POST['nasname'])) {
-
-        $msg['msg_nasname'] = _('Name cannot empty.');
-        show_error_message('id', $nas['id'], null, $msg, 'freeradius_nas.php');
-    exit;
-    }
     if($nas_old['nasname'] != $_POST['nasname']) {
 
         $str = strip_tags($_POST['nasname']);
         $nas['nasname'] = preg_replace('/\s+/', '_', $str);
     }
 
-    if(empty($_POST['shortname'])) {
-
-        $msg['msg_shortname'] = _('NAS short name cannot empty.');
-        show_error_message('id', $nasid, null, $msg, 'freeradius_nas.php');
-    exit;
-    }
     if($nas_old['shortname'] != $_POST['shortname']) {
 
         $str = strip_tags($_POST['shortname']);
@@ -155,28 +138,14 @@ if (!empty($_POST['save']) && !empty($_POST['nas'])) {
     }
 }
 
-###################################################################################################
-    //Save new NAS
-###################################################################################################
-if (isset($_POST['savenew'])) {
+####### New ####### 
+if (isset($_POST['new'])) {
     
     $nas = array();
 
-    if(empty($_POST['nasname'])) {
-
-        $msg['msg_nasname'] = _('Name cannot empty.');
-        show_error_message('action', 'newnas', null, $msg, 'freeradius_nas.php');
-    exit;
-    }
     $str = strip_tags($_POST['nasname']);
     $nas['nasname'] = preg_replace('/\s+/', '_', $str);
 
-    if(empty($_POST['shortname'])) {
-
-        $msg['msg_shortname'] = _('NAS short name cannot empty.');
-        show_error_message('action', 'newnas', null, $msg, 'freeradius_nas.php');
-    exit;
-    }
     $str = strip_tags($_POST['shortname']);
     $nas['shortname'] = preg_replace('/\s+/', '_', $str);
 

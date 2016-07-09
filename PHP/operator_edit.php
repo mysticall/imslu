@@ -52,18 +52,13 @@ if($admin_permissions || $sysadmin_permissions) {
     }
 
 
-###################################################################################################
-    // PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
     $page['title'] = 'Edit operator';
     $page['file'] = 'operator_edit.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
+    ####### Display messages #######
     echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
@@ -80,10 +75,23 @@ if($admin_permissions || $sysadmin_permissions) {
             header("Location: profile.php");
             exit;
         }
-        $get_operator = $Operator->get($db, $operid);
+        $operator = $Operator->get($db, $operid);
 
     $form =
-"    <form action='operator_apply.php' method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"alias\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('alias'))."\");
+        document.getElementById(\"alias\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form action='operator_apply.php' onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
@@ -96,8 +104,7 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"alias\" id=\"alias\" value=\"{$get_operator['alias']}\" onkeyup=\"user_exists('alias', 'operators')\">
-              <label id=\"hint\"></label>
+              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" value=\"{$operator['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$operator['operid']}', '"._('That alias is already being used.')."')\">
             </td>
           </tr>
           <tr>
@@ -105,7 +112,7 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($get_operator['name'])."\" >
+              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($operator['name'])."\" >
             </td>
           </tr>
           <tr>
@@ -113,7 +120,7 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">
+              <input id=\"password1\" name=\"password1\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
             </td>
           </tr>
           <tr>
@@ -121,7 +128,8 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">
+              <input id=\"password2\" name=\"password2\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
+              <span id=\"pass_msg\"></span>
             </td>
           </tr>
           <tr>
@@ -139,7 +147,7 @@ $languages_unable_set = 0;
 // Search for operator languarge
 foreach ($array as $key => $value) {
             
-    if ($key == $get_operator['lang']) {
+    if ($key == $operator['lang']) {
 
         $found[$key] = $value;
 
@@ -182,7 +190,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('theme')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'theme', $get_operator['theme'], $THEMES)."\n
+".combobox('input select', 'theme', $operator['theme'], $THEMES)."\n
             </td>
           </tr>
           <tr>
@@ -190,7 +198,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('url (after login)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"url\" maxlength=\"255\" value=\"".chars($get_operator['url'])."\">
+              <input class=\"input\" type=\"text\" name=\"url\" maxlength=\"255\" value=\"".chars($operator['url'])."\">
             </td>
           </tr>
           <tr>
@@ -198,7 +206,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('group')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'type', $get_operator['type'], $OPERATOR_GROUPS)."\n
+".combobox('input select', 'type', $operator['type'], $OPERATOR_GROUPS)."\n
             </td>
           </tr>
           <tr>
@@ -214,9 +222,8 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"hidden\" name=\"operid\" value=\"{$get_operator['operid']}\">
-              <input type=\"hidden\" name=\"alias_old\" value=\"".chars($get_operator['alias'])."\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
+              <input type=\"hidden\" name=\"old\" value='".json_encode($operator)."'>
+              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
               <input type=\"submit\" name=\"delete\" id=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>

@@ -38,25 +38,18 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
-###################################################################################################
-// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'Edit request';
 $page['file'] = 'request_edit.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
+####### Display messages #######
 echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
-###################################################################################################
-    // Edit requests
-###################################################################################################
 
+####### Edit User #######
 if (!empty($_POST['requestid'])) {
 
     # !!! Prevent problems !!!
@@ -84,9 +77,7 @@ if (!empty($_POST['requestid'])) {
         exit;
     }
 
-#####################################################
-    // Get avalible operators
-#####################################################   
+####### Get avalible operators #######
     $sql = 'SELECT `operid`, `name` 
             FROM `operators`
             WHERE `type` = ? OR type = ?';
@@ -114,7 +105,9 @@ if (!empty($_POST['requestid'])) {
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label></label>
+              <label class=\"info_right\">
+                <a href=\"requests.php\">["._('back')."]</a>
+              </label>
             </th>
           </tr>
           <tr>
@@ -201,7 +194,7 @@ $form .=
               <label>"._('name')." </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($request['name'])."\" size=\"35\">
+              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($request['name'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
@@ -209,7 +202,7 @@ $form .=
               <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" value=\"".chars($request['address'])."\" size=\"35\">
+              <input class=\"input\" type=\"text\" name=\"address\" value=\"".chars($request['address'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
@@ -217,7 +210,7 @@ $form .=
               <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"".chars($request['phone_number'])."\" size=\"35\">
+              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"".chars($request['phone_number'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
@@ -225,7 +218,7 @@ $form .=
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"55\" rows=\"3\">".chars($request['notes'])."</textarea>
+              <textarea name=\"notes\" cols=\"45\" rows=\"2\">".chars($request['notes'])."</textarea>
             </td>
           </tr>
         </tbody>

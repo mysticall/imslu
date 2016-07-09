@@ -47,86 +47,73 @@ $admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 $db = new PDOinstance();
 
-if (isset($_POST['edit'])) {
+####### Edit ####### 
+if (!empty($_POST['edit'])) {
 
-	$operator = array();
+    $update = array();
 
-	//admin or system admin can change alias
-	if($admin_permissions || $sysadmin_permissions) {
+    //admin or system admin can change alias
+    if($admin_permissions || $sysadmin_permissions) {
 
-		if(empty($_POST['alias'])) {
+        if($_SESSION['data']['alias'] != $_POST['alias']) {
 
-			$_SESSION['msg'] .=  _('Alias cannot empty.').'<br>';
-		}
-		if (!empty($_POST['alias']) && ($_POST['alias'] != $_SESSION['data']['alias'])) {
+            // Add audit
+            add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The alias is changed.", "Old alias - {$_SESSION['data']['alias']}", "New alias - {$_POST['alias']}");
 
-		// Add audit
-		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The alias is changed.", "Old alias - {$_SESSION['data']['alias']}", "New alias - {$_POST['alias']}");
+            $str = strip_tags($_POST['alias']);
+            $update['alias'] = preg_replace('/\s+/', '_', $str);
+        }
+    }
+    if($_SESSION['data']['name'] != $_POST['name']) {
 
-        $str = strip_tags($_POST['alias']);
-        $operator['alias'] = preg_replace('/\s+/', '_', $str);
-		}
-	}
+        $update['name'] = strip_tags($_POST['name']);
+        $_SESSION['data']['name'] = $update['name'];
+    }
+    if (!empty($_POST['password1'])) {
 
-	$operator['name'] = strip_tags($_POST['name']);
-    $_SESSION['data']['name'] = $operator['name'];
+        // Add audit
+        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The password on {$_SESSION['data']['alias']} is changed.");
+        $_SESSION['msg'] .= _s('The password of %s is changed.', $_SESSION['data']['alias']).'<br>';
 
-	if (!empty($_POST['p1']) && !empty($_POST['p2'])) {
+        $update['passwd'] = md5($_POST['password1']);
+    }
+    if($_SESSION['data']['url'] != $_POST['url']) {
 
-		if ($_POST['p1'] !== $_POST['p2']) {
+        $update['url'] = strip_tags($_POST['url']);
+        $_SESSION['data']['url'] = $update['url'];
+    }
+    if($_SESSION['data']['lang'] !=  $_POST['lang']) {
 
-			$_SESSION['msg'] .= _('Both passwords must be equal.').'<br>';
-		}
-		elseif ($_POST['p1'] === $_POST['p2']) {
-
-			$password = $_POST['p1'];
-			$random_salt = hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
-			$password1 = hash('sha512', $password.$random_salt);
-
-			// Add audit
-			add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The password on {$_SESSION['data']['alias']} is changed.");
-			$_SESSION['msg'] .= _s('The password of %s is changed.', $_SESSION['data']['alias']).'<br>';
-
-			$operator['passwd'] = $password1;
-			$operator['salt'] = $random_salt;
-		}
-	}
-
-	$operator['url'] = strip_tags($_POST['url']);
-	$_SESSION['data']['url'] = $operator['url'];
-
-	if($_POST['lang'] != $_SESSION['data']['lang']) {
-
-		$operator['lang'] = $_POST['lang'];
+        $update['lang'] = $_POST['lang'];
         $_SESSION['data']['lang'] = $_POST['lang'];
         setcookie( 'lang', $_POST['lang'], time() + (86400 * 7), "/"); // 86400 = 1 day
-	}
-	if($_POST['theme'] != $_SESSION['data']['theme']) {
+    }
+    if($_SESSION['data']['theme'] != $_POST['theme']) {
 
-		$operator['theme'] = $_POST['theme'];
+        $update['theme'] = $_POST['theme'];
         $_SESSION['data']['theme'] = $_POST['theme'];
         setcookie( 'theme', $_POST['theme'], time() + (86400 * 7), "/"); // 86400 = 1 day
-	}
+    }
 
-    $id = $_SESSION['data']['operid'];
+    if (!empty($update)) {
 
-    $i= 1;
-    foreach($operator as $key => $value) {
-        $keys[$i] = $key;
-        $values[$i] = $value;
+        $i= 1;
+        foreach($update as $key => $value) {
+            $keys[$i] = $key;
+            $values[$i] = $value;
 
         $i++;
+        }
+
+        $sql = 'UPDATE `operators` SET '.implode(' = ?, ', $keys).' = ? WHERE `operid` = ?';
+
+        // Apply changes
+        array_push($values, $_SESSION['data']['operid']);
+        $db->prepare_array($sql, $values);
     }
-    
-    $sql = 'UPDATE `operators` SET '.implode(' = ?, ', $keys).' = ? WHERE `operid` = ?';
-
-    // Apply changes
-    array_push($values, $id);
-    $db->prepare_array($sql, $values);
-
 
     // Logout operator if ->
-    if(!empty($operator['passwd']) || (!empty($operator['alias']) && $_SESSION['data']['alias'] != $operator['alias'])) {
+    if(!empty($update['passwd']) || !empty($update['alias'])) {
 
         $db->destroy_session_handler();
     }

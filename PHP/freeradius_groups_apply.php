@@ -47,9 +47,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     $db = new PDOinstance();
 
 
-###################################################################################################
-    // Delete Freeradius Group
-###################################################################################################
+####### Delete ####### 
 if(!empty($_POST['delete']) && !empty($_POST['del'])) {
 
     $group = $_POST['group'];
@@ -74,10 +72,8 @@ if(!empty($_POST['delete']) && !empty($_POST['del'])) {
     exit;
 }
 
-###################################################################################################
-    // Save changes
-###################################################################################################
 
+####### Edit #######
 if (!empty($_POST['change_group'])) {
     
     $group = $_POST['group'];
@@ -314,18 +310,10 @@ if (!empty($_POST['change_group'])) {
     exit;
 }
 
-###################################################################################################
-    // Save new freeradius group
-###################################################################################################
-if (!empty($_POST['add_new_group'])) {
 
-    if(empty($_POST['new_groupname'])) {
+####### New #######
+if (!empty($_POST['new'])) {
 
-        $msg['msg_groupname'] = _('Name cannot empty.');
-        show_error_message('action', 'addgroup', null, $msg, 'freeradius_groups.php');
-    exit;
-    }
-    
     $check = 0;
     $reply = 0;
 
@@ -359,7 +347,7 @@ if (!empty($_POST['add_new_group'])) {
         }
     }
 
-    $str = strip_tags($_POST['new_groupname']);
+    $str = strip_tags($_POST['groupname']);
     $groupname = preg_replace('/\s+/', '_', $str);
 
     // INSERT INTO radgroupcheck
@@ -400,7 +388,7 @@ if (!empty($_POST['add_new_group'])) {
     $db->dbh->commit();
 
     // Add audit
-    add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_FREERADIUS, "Group {$_POST['new_groupname']} is added.");
+    add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_FREERADIUS, "Group {$_POST['groupname']} is added.");
 
     $_SESSION['msg'] = _('The new group is added successfully.');
     unset($_POST);

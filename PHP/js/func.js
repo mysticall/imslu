@@ -60,11 +60,11 @@ function change_input(form_name, id, name, value) {
 }
 
 
-function confirm_delete(form_name, selected) {
+function confirm_delete(form_name, selected, message) {
 
 	if (selected == "delete") {
 
-		if(confirm('WARNING: All selected will be deleted!')) {
+		if(confirm(message)) {
 			
 			document.forms[form_name].submit();
 		}
@@ -148,94 +148,75 @@ function add_attribute(id, name, selected) {
 	}
 }
 
-/**
- * This function is used for add new User on Form
- * 
- * @param id - variable for <table id="id">
- * @param selected - variable for <select> </select> - for auto find selected use: this[this.selectedIndex].value 
- **/
-function add_pppoe(id, selected) {
-	
-	var new_tr = document.createElement("tr");
-	
-	new_tr.innerHTML = 	"<td class='dt right'>" +
-						"  <label>"+ 'Username' + "</label>" +
-						"</td>";
-	
-	new_tr.innerHTML += "<td class='dd'>" +
-						"  <input class='input' type='text' name='" + 'pppoe' + "[" + 'username' + "]' id='username' onkeyup=\"user_exists(\'username\', \'radcheck\')\"><label id='hint'></label>" +
-						"</td>";
+function checkPass(message1, message2) {
 
-	new_tr2 = document.createElement("tr");
-	
-	new_tr2.innerHTML = "<td class='dt right'>" +
-						"  <label>"+ 'Password' + "</label>" +
-						"</td>";
-	
-   new_tr2.innerHTML += "<td class='dd'>" +
-						"  <input id=\"password\" class='input' type='text' name='" + 'pppoe' + "[" + 'password' + "]' >" +
-						"  <label class=\"generator\" onclick=\"generatepassword(document.getElementById('password'), 8);\" >Generate</label>" +
-						"</td>";
-						
-	if (selected) {
-		
-		document.getElementById(id).appendChild(new_tr);
-		document.getElementById(id).appendChild(new_tr2);
-	}
+    var password1 = document.getElementById("password1");
+    var password2 = document.getElementById("password2");
+    var msg = document.getElementById("pass_msg");
+
+    if (password1.value != "" && password2.value != "" && password1.value == password2.value) {
+
+        document.getElementById("save").disabled = false;
+        password2.style.backgroundColor = "#cef3d1";
+        msg.style.color = "#00c500";
+        msg.innerHTML = message1;
+    }
+    else if (password1.value != "" && password2.value == "") {
+        document.getElementById("save").disabled = true;
+    }
+    else {
+        document.getElementById("save").disabled = true;
+        password2.style.backgroundColor = "#FF5555";
+        msg.style.color = "#DC0000";
+        msg.innerHTML = message2;
+    }
 }
 
 /**
  *
- * This function is used to check the username in table radcheck
+ * This function is used to check value in a mysql database
  * 
  **/
-function user_exists(id, table) {
-	
-	var value = document.getElementById(id).value;
-	var xmlhttp;
-	
-    if (value.length < 3) {
-    	document.getElementById("hint").innerHTML = "";
-        document.getElementById("save").disabled = true;
-    }
-    
-    if (value.length == 0) {
-        document.getElementById("save").disabled = false;
-    }
+function value_exists(id, table, valueid, msg) {
 
-	if (value.length >= 3) {
-		
-		if (window.XMLHttpRequest) {
-			// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp = new XMLHttpRequest();
-        }
-        else {
-        	// code for IE6, IE5
-            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-		
-        xmlhttp.onreadystatechange = function() {
-        	
-            if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-            	
-                var response = xmlhttp.responseText.replace(/(\r\n|\n|\r)/gm,"");
-                
-                if (response == "free") {
-                	document.getElementById("hint").innerHTML = "&nbsp; &nbsp;<span style='color: #00c500; font-weight:bold;'>" + response + "</span>";
-                	document.getElementById("save").disabled = false;
-                }
-                if (response == "taken") {
-                	document.getElementById("hint").innerHTML = "&nbsp; &nbsp;<span style='color: #ff0000; font-weight:bold;'>" + response + "</span>";
-                	document.getElementById("save").disabled = true;
+	var value = document.getElementById(id).value;
+	var xmlhttp = new XMLHttpRequest();
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+
+            if (xmlhttp.responseText == 0) {
+
+                add_new_msg(msg);
+                document.getElementById("save").disabled = true;
+            }
+            if (xmlhttp.responseText == 1) {
+
+                document.getElementById("save").disabled = false;
+                if (document.getElementById("msg")) {
+                    document.getElementById("msg").remove();
                 }
             }
-        };
+        }
+    };
 
-        var post = "table="+table +"&value="+encodeURIComponent(value);
-
-		xmlhttp.open("POST", "is_exists.php", true);
-	    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");	
-		xmlhttp.send(post);
-	}
+    xmlhttp.open("GET", "value_exists.php?table="+table+"&value="+value+"&valueid="+valueid, true);
+    xmlhttp.send();
 }
 
+function add_new_msg(message) {
+
+    if (document.getElementById("msg")) {
+		var msg = document.createTextNode(message);
+        var item = document.getElementById("msg");
+        item.replaceChild(msg, item.childNodes[0]);
+	}
+    else {
+        var msg = document.createElement("DIV");
+        msg.id = "msg";
+        msg.className = "msg";
+        msg.innerHTML = "<label>" + message + "</label>";
+        var item = document.getElementById("middle_container");
+        item.insertBefore(msg, item.childNodes[0]);
+    }
+}

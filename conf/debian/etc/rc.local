@@ -1,0 +1,101 @@
+#!/bin/bash
+
+. /etc/imslu/config.sh
+. /etc/imslu/scripts/functions.sh
+
+####### IMQ #######
+# https://github.com/imq/linuximq/wiki
+# modprobe imq
+# $IP link set dev imq0 up
+# $IP link set dev imq1 up
+
+##### ADD VLANS #####
+vconfig_add
+
+####### ipset #######
+# https://wiki.archlinux.org/index.php/Ipset
+# http://blog.ls20.com/securing-your-server-using-ipset-and-dynamic-blocklists/
+
+$IPSET create -exist allowed hash:ip
+$IPSET create -exist lan hash:net --hashsize 64
+$IPSET create -exist peers hash:net
+$IPSET flush peers
+
+# wget -O /tmp/peers http://ipacct.com/f/peers
+wget -O /tmp/peers "http://ip.ludost.net/cgi/process?country=1&country_list=bg&format_template=prefix&format_name=&format_target=&format_default="
+
+if [[ -f /tmp/peers && -s /tmp/peers ]]; then
+    sed -i '/#/d' /tmp/peers
+
+    for subnet in $(cat /tmp/peers); do
+        $IPSET add peers ${subnet}
+    done
+    rm /tmp/peers
+fi
+
+####### iptables #######
+$IPTABLES -F
+$IPTABLES -F -t mangle
+$IPTABLES -F -t nat
+$IPTABLES -F -t raw
+
+$IPTABLES -X
+$IPTABLES -X -t mangle
+$IPTABLES -X -t nat
+$IPTABLES -X -t raw
+
+$IPTABLES -Z
+$IPTABLES -Z -t mangle
+$IPTABLES -Z -t nat
+$IPTABLES -Z -t raw
+
+# Set default policy for chain FORWARD to DROP
+$IPTABLES -P FORWARD DROP
+# Incoming packets - download
+$IPTABLES -t filter -A FORWARD -i ${IFACE_EXTERNAL}+ -m state --state ESTABLISHED,RELATED -j ACCEPT
+# Outgoing packets - upload
+$IPTABLES -t filter -A FORWARD -i ppp+ -m set --match-set allowed src -j ACCEPT
+$IPTABLES -t filter -A FORWARD -i ${IFACE_INTERNAL}+ -m set --match-set allowed src -j ACCEPT
+# Incoming packets - backup rules
+$IPTABLES -t filter -A FORWARD -o ppp+ -m set --match-set allowed dst -j ACCEPT
+$IPTABLES -t filter -A FORWARD -o ${IFACE_INTERNAL}+ -m set --match-set allowed dst -j ACCEPT
+
+# nat
+# Redirect expiret users to warning page
+# $IPTABLES -t nat -A PREROUTING -i ${IFACE_INTERNAL}+ -p tcp -m multiport --ports 80,443 -m set --match-set allowed src -j DNAT --to 85.187.218.234:443
+$IPTABLES -t nat -A POSTROUTING -s 10.0.0.0/8 -o ${IFACE_EXTERNAL}+ -j SNAT --to 85.187.218.234
+$IPTABLES -t nat -A POSTROUTING -s 172.16.0.0/12 -o ${IFACE_EXTERNAL}+ -j SNAT --to 85.187.218.234
+$IPTABLES -t nat -A POSTROUTING -s 192.168.0.0/16 -o ${IFACE_EXTERNAL}+ -j SNAT --to 85.187.218.234
+
+### shaper ###
+$IPTABLES -t mangle -A PREROUTING -i ppp+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
+$IPTABLES -t mangle -A PREROUTING -i ${IFACE_INTERNAL}+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
+$IPTABLES -t mangle -A PREROUTING -i ${IFACE_EXTERNAL}+ -m set ! --match-set peers src -j TOS --set-tos 0x2
+
+# Incoming packets - download
+#$IPTABLES -t mangle -A POSTROUTING -o ppp+ -m set --match-set lan dst -j IMQ --todev ${IFACE_IMQ0:3}
+#$IPTABLES -t mangle -A POSTROUTING -o ${IFACE_INTERNAL}+ -m set --match-set lan dst -j IMQ --todev ${IFACE_IMQ0:3}
+$IPTABLES -t mangle -A FORWARD -o ppp+ -m set --match-set lan dst -j IMQ --todev ${IFACE_IMQ0:3}
+$IPTABLES -t mangle -A FORWARD -o ${IFACE_INTERNAL}+ -m set --match-set lan dst -j IMQ --todev ${IFACE_IMQ0:3}
+# Outgoing packets - upload
+#$IPTABLES -t mangle -A PREROUTING -i ppp+ -m set --match-set lan src -j IMQ --todev ${IFACE_IMQ1:3}
+#$IPTABLES -t mangle -A PREROUTING -i ${IFACE_INTERNAL}+ -m set --match-set lan src -j IMQ --todev ${IFACE_IMQ1:3}
+$IPTABLES -t mangle -A FORWARD -i ppp+ -m set --match-set lan src -j IMQ --todev ${IFACE_IMQ1:3}
+$IPTABLES -t mangle -A FORWARD -i ${IFACE_INTERNAL}+ -m set --match-set lan src -j IMQ --todev ${IFACE_IMQ1:3}
+
+
+sysctl -p
+
+# change hashsize on the fly
+# https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
+echo 32768 > /sys/module/nf_conntrack/parameters/hashsize
+
+# check current hashsize
+#cat /sys/module/nf_conntrack/parameters/hashsize
+
+# check current tracked connections
+#cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count
+
+/etc/imslu/scripts/global_rules.sh
+/etc/imslu/scripts/arp-scan.sh&
+exit 0

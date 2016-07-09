@@ -83,32 +83,30 @@ class Operator {
         }
         else {
 
-            $sql = 'SELECT passwd,salt FROM operators WHERE alias = ? LIMIT 1';
+            $sql = 'SELECT passwd FROM operators WHERE alias = ? LIMIT 1';
             $sth = $db->dbh->prepare($sql);
             $sth->bindParam(1, $operator['alias'], PDO::PARAM_STR);
             $sth->bindColumn('passwd', $db_password);
-            $sth->bindColumn('salt', $salt);
             $sth->execute();
 
-            if ($sth->rowCount() == 1) { 
+            if ($sth->rowCount() == 1) {
 
                 $sth->fetch(PDO::FETCH_ASSOC);
-                $operator['password'] = hash('sha512', $operator['password'].$salt);
 
-                if ($db_password == $operator['password']) {
+                if ($db_password == md5($operator['password'])) {
 
                     return true;
                 }
                 else {
 
                     $this->attempt_failed($operator, $db);
-                    $GLOBALS['msg'] = _('The user name or password is incorrect.');
+                    $GLOBALS['msg'] = _('The username or password is incorrect.');
                     return false;
                 }
             }
             else {
                 $this->attempt_failed($operator, $db);
-                $GLOBALS['msg'] = _('The user name or password is incorrect.');
+                $GLOBALS['msg'] = _('The username or password is incorrect.');
                 return false;
             }
         }
@@ -116,7 +114,7 @@ class Operator {
 
     private function get_data($operator, $db) {
 
-        $sql = 'SELECT operid,alias,name,url,lang,theme,refresh,type FROM operators WHERE alias = ? LIMIT 1';
+        $sql = 'SELECT operid,alias,name,url,lang,theme,type FROM operators WHERE alias = ? LIMIT 1';
         $sth = $db->dbh->prepare($sql);
         $sth->bindParam(1, $operator['alias']);
         $sth->execute();
@@ -291,7 +289,7 @@ class Operator {
 			// Show info for operator System Admin
 			if ($sysadmin_permissions) {
 				
-				$sql = 'SELECT operid,alias,name,url,lang,theme,refresh,type FROM operators WHERE operid = ? LIMIT 1';
+				$sql = 'SELECT operid,alias,name,url,lang,theme,type FROM operators WHERE operid = ? LIMIT 1';
 				$sth = $db->dbh->prepare($sql);
 				$sth->bindParam(1, $operid);
 				$sth->execute();
@@ -302,7 +300,7 @@ class Operator {
 			// Show info for selected operator if are in Operators_Groups - Cashiers and Network Technicians for operator Admin
 			if ($admin_permissions) {
 				
-				$sql = 'SELECT operid,alias,name,url,lang,theme,refresh,type FROM operators WHERE operid = ? AND type < ? LIMIT 1';
+				$sql = 'SELECT operid,alias,name,url,lang,theme,type FROM operators WHERE operid = ? AND type < ? LIMIT 1';
 				$sth = $db->dbh->prepare($sql);
 				$sth->bindParam(1, $operid);
 				$sth->bindValue(2, OPERATOR_TYPE_ADMIN);
@@ -359,7 +357,6 @@ class Operator {
 	 * @param string $operator['url']
 	 * @param string $operator['lang']
 	 * @param string $operator['theme']
-	 * @param int $operator['refresh']
 	 * @param int $operator['type']
 	 */
 	public function create($db, $operator) {
@@ -419,7 +416,6 @@ class Operator {
 	 * @param string $operator['url']
 	 * @param string $operator['lang']
 	 * @param string $operator['theme']
-	 * @param int $operator['refresh']
 	 * @param int $operator['type']
 	 * @param int $id - operid
 	 */
@@ -436,7 +432,7 @@ class Operator {
 		}
 
 		//Grant all privilege on LINUX Admin to update operators
-		if ($sysadmin_permissions || $admin_permissions) {
+		if (!empty($operator) && $sysadmin_permissions || $admin_permissions) {
 
 			$i = 1;
 			foreach($operator as $key => $value) {
@@ -450,12 +446,14 @@ class Operator {
 
 			array_push($values, $id);
 			$db->prepare_array($sql, $values);
-			
-			$sql2 = 'UPDATE operators_groups SET opergrpid = ? WHERE operid = ?';
-			$sth = $db->dbh->prepare($sql2);
-			$sth->bindParam(1, $operator['type']);
-			$sth->bindParam(2, $id);
-			$sth->execute();
+
+            if (!empty($operator['type'])) {
+                $sql2 = 'UPDATE operators_groups SET opergrpid = ? WHERE operid = ?';
+                $sth = $db->dbh->prepare($sql2);
+                $sth->bindParam(1, $operator['type']);
+                $sth->bindParam(2, $id);
+                $sth->execute();
+            }
 		}
 	}
 

@@ -43,10 +43,7 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
-###################################################################################################
-    // Save new request
-###################################################################################################
-
+####### New #######
 if (!empty($_POST['new'])) {
 
     $operid = $_POST['operid'];
@@ -77,10 +74,8 @@ if (!empty($_POST['new'])) {
     exit;
 }
 
-###################################################################################################
-    // Edit request
-###################################################################################################
 
+####### Edit #######
 if (!empty($_POST['edit'])) {
 
     // see $request_status in /include/common.php
@@ -110,13 +105,7 @@ if (!empty($_POST['edit'])) {
         $sth->bindValue(':requestid', $_POST['requestid'], PDO::PARAM_INT);
         $sth->execute();
 
-        $_SESSION['new_request'] = array (
-            'user_name'     => $name,
-            'address'       => $address,
-            'phone_number'  => $phone_number,
-            'notes'         => $notes
-            );
-        header("Location: user_new.php");
+        header("Location: user_new.php?name={$name}&address={$address}&phone_number={$phone_number}&notes={$notes}");
         exit;
     }
 

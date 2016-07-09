@@ -1,0 +1,19 @@
+require-pap
+refuse-chap
+refuse-mschap
+refuse-mschap-v2
+refuse-eap
+
+plugin radius.so
+plugin radattr.so
+
+noaccomp
+nobsdcomp
+nodefaultroute
+nodeflate
+noendpoint
+noktune
+novjccomp
+receive-all
+
+logfile /var/log/pppoe-server.log

@@ -35,11 +35,11 @@ $msg = !empty($GLOBALS['msg']) ? $GLOBALS['msg'] : '';
 $GLOBALS['$msg'] = null;
 
 
-if (!empty($_POST['alias']) && !empty($_POST['p'])) {
+if (!empty($_POST['alias']) && !empty($_POST['password'])) {
 
     $operator = array(
         'alias' => $_POST['alias'],
-        'password' => $_POST['p'],
+        'password' => $_POST['password'],
         'ip' => $_SERVER['REMOTE_ADDR'],
         'browser' => $_SERVER['HTTP_USER_AGENT'],
         'block_ip' => $block_ip
@@ -52,7 +52,7 @@ if (!empty($_POST['alias']) && !empty($_POST['p'])) {
         exit;
     }
 }
-elseif (!empty($_POST['login']) && (empty($_POST['alias']) || empty($_POST['p']))) {
+elseif (!empty($_POST['login']) && (empty($_POST['alias']) || empty($_POST['password']))) {
 
     $msg = _('Enter a name and password.');
 }
@@ -78,7 +78,6 @@ $css = (!empty($_COOKIE['theme']) && ($_COOKIE['theme'] != 'originalgreen')) ? "
 
 $form .= 
 "   $css
-	<script type=\"text/javascript\" src=\"js/sha512.js\"></script>
 	<script type=\"text/javascript\" src=\"js/func.js\"></script>
 </head>
   <body>
@@ -88,7 +87,7 @@ $form .=
         <input class=\"login_input\" type=\"text\" name=\"alias\">
         <label class=\"login_label\">"._('password').":</label>
         <input class=\"login_input\" type=\"password\" name=\"password\">
-        <input type=\"submit\" class=\"login_submit\" name=\"login\" value=\""._('login')."\" onclick=\"formhash(this.form, this.form.password, 'p')\">
+        <input type=\"submit\" class=\"login_submit\" name=\"login\" value=\""._('login')."\">
       </div>
       <div class=\"login_msg\">
         <label>{$msg}</label>

@@ -21,7 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-if (!empty($_POST['table']) && !empty($_POST['value'])) {
+if (!empty($_GET['table']) && !empty($_GET['value'])) {
 	
 	//enable debug mode
 	//error_reporting(E_ALL); ini_set('display_errors', 'On');
@@ -37,35 +37,42 @@ if (!empty($_POST['table']) && !empty($_POST['value'])) {
 
 	$db = new PDOinstance();
 
-	$table = $_POST['table'];
-	$value = $_POST['value'];
+	$table = $_GET['table'];
+	$value = $_GET['value'];
+    $valueid = $_GET['valueid'];
 
-	if ($table == 'radcheck') {
-		
-		$sql = 'SELECT `username` FROM `radcheck` WHERE `username` = ? GROUP BY username LIMIT 1';
+	if ($table == 'ip_username') {
+
+		$sql = 'SELECT username FROM ip WHERE id != ? AND username = ? LIMIT 1';
 	}
-	
+
+	if ($table == 'ip_ip') {
+
+		$sql = 'SELECT ip FROM ip WHERE id != ? AND userid != 0 AND ip = ? LIMIT 1';
+	}
+
 	if ($table == 'radgroupcheck') {
-		
-		$sql = 'SELECT `groupname` FROM `radgroupcheck` WHERE `groupname` = ? GROUP BY groupname LIMIT 1';
+
+		$sql = 'SELECT groupname FROM radgroupcheck WHERE id != ? AND groupname = ? GROUP BY groupname LIMIT 1';
 	}
 
     if ($table == 'operators') {
-        
-        $sql = 'SELECT `alias` FROM `operators` WHERE `alias` = ? LIMIT 1';
+
+        $sql = 'SELECT alias FROM operators WHERE operid != ? AND alias = ? LIMIT 1';
     }
 
 	$sth = $db->dbh->prepare($sql);
-	$sth->bindParam(1, $value, PDO::PARAM_STR);
+	$sth->bindParam(1, $valueid, PDO::PARAM_INT);
+    $sth->bindParam(2, $value, PDO::PARAM_STR);
 	$sth->execute();
 
 	if ($sth->rowCount() == 1) {
 
-		echo "taken";
+		echo 0;
 	}
 	else {
 
-		echo "free";
+		echo 1;
 	}
 }
 else {

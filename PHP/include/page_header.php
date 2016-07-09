@@ -39,8 +39,7 @@ else {
 }
 
 $html .=
-"    <script type=\"text/javascript\" src=\"js/sha512.js\"></script>
-    <script type=\"text/javascript\" src=\"js/func.js\"></script>
+"    <script type=\"text/javascript\" src=\"js/func.js\"></script>
     <script type=\"text/javascript\" src=\"js/password_generator.js\"></script>
     <script type=\"text/javascript\" src=\"js/calendar/calendar.js\"></script>
     <script type=\"text/javascript\" src=\"js/calendar/calendar-en.js\"></script>
@@ -54,6 +53,6 @@ $html .=
 ".$menu->right_menu('right_menu')."
       <ul>"._('version').": <br>{$VERSION}</ul>
     </div>
-    <div class=\"middle_container\">\n";
+    <div id=\"middle_container\" class=\"middle_container\">\n";
 
 echo $html;

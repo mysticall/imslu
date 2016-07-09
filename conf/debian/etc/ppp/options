@@ -1,0 +1,18 @@
+ms-dns 10.0.2.1
+ms-dns 8.8.8.8
+asyncmap 0
+auth
+lock
+show-password
+mru 1492
+netmask 255.255.255.255
+noipdefault
+-vj
+debug
+mtu 1492
+name imslu
+proxyarp
+lcp-echo-interval 30
+lcp-echo-failure 3
+noipx
++ipv6

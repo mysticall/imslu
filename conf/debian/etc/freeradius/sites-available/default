@@ -1,0 +1,43 @@
+authorize {
+    preprocess
+    sql
+    pap
+
+    if (!"%{control:Calling-Station-Id}") {
+
+        %{sql: UPDATE radcheck SET value='%{Calling-Station-Id}' WHERE username='%{User-Name}' AND attribute='Calling-Station-Id'}
+        %{sql: UPDATE ip SET mac='%{Calling-Station-Id}' WHERE username='%{User-Name}'}
+
+        update control {
+            Calling-Station-Id := "%{Calling-Station-Id}"
+        }
+    }
+    checkval
+}
+
+authenticate {
+    Auth-Type PAP {
+        pap
+    }
+}
+
+preacct {
+    acct_unique
+}
+
+accounting {
+    sql
+    sqlippool
+}
+
+session {
+}
+
+post-auth {
+    sql
+    sqlippool
+	Post-Auth-Type REJECT {
+        sql
+		attr_filter.access_reject
+	}
+}

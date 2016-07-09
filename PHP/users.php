@@ -169,7 +169,7 @@ if (isset($_GET['show'])) {
 
                 $form .= 
 "          <tr class=\"even_row\">
-            <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
+            <td><a href=\"user.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
             <td>$user_location</td>
             <td>".chars($rows[$i]['address'])."</td>
             <td>".chars($rows[$i]['phone_number'])."</td>
@@ -182,7 +182,7 @@ if (isset($_GET['show'])) {
 
                 $form .= 
 "          <tr class=\"odd_row\">
-            <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
+            <td><a href=\"user.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
             <td>$user_location</td>
             <td>".chars($rows[$i]['address'])."</td>
             <td>".chars($rows[$i]['phone_number'])."</td>

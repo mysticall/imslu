@@ -36,18 +36,13 @@ if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['i
 # Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'Operator profile';
 $page['file'] = 'profile.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-	// Display messages
-#####################################################
+####### Display messages #######
 echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
@@ -55,7 +50,20 @@ $_SESSION['msg'] = null;
 $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 $form =
-"    <form action=\"profile_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"alias\") && document.getElementById(\"alias\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('alias'))."\");
+        document.getElementById(\"alias\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form action=\"profile_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
@@ -69,7 +77,7 @@ $form =
             </td>
             <td class=\"dd\">\n";
 $form .= (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']) ?
-"              <input class=\"input\" type=\"text\" name=\"alias\" id=\"alias\" value=\"{$_SESSION['data']['alias']}\" onkeyup=\"user_exists('alias', 'operators')\">
+"              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" value=\"{$_SESSION['data']['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$_SESSION['data']['operid']}', '"._('That alias is already being used.')."')\">
               <label id=\"hint\"></label>\n" :
 "              <input class=\"input\" type=\"text\" name=\"alias\" value=\"{$_SESSION['data']['alias']}\">\n";
 $form .= 
@@ -88,7 +96,7 @@ $form .=
               <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password1\">
+              <input id=\"password1\" name=\"password1\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
             </td>
           </tr>
           <tr>
@@ -96,7 +104,8 @@ $form .=
               <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password2\">
+              <input id=\"password2\" name=\"password2\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
+              <span id=\"pass_msg\"></span>
             </td>
           </tr>
           <tr>
@@ -173,7 +182,7 @@ $form .=
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
+              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>

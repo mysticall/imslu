@@ -36,36 +36,38 @@ if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['i
 # Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 
-//System Admin or Admin have acces to location
-if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
+$db = new PDOinstance();
 
-    $db = new PDOinstance();
-
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'The location of User';
 $page['file'] = 'user_location.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 
-#####################################################
-	// Display messages
-#####################################################
-	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
-	$_SESSION['msg'] = null;
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+$_SESSION['msg'] = null;
 
 
-###################################################################################################
-// New location
-###################################################################################################
-
+####### New #######
 if(isset($_POST['action']) && $_POST['action'] == 'newlocation') {
 
     $form =
-"    <form name=\"new_location\" action=\"user_location_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"name\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('name'))."\");
+        document.getElementById(\"name\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form name=\"new_location\" action=\"user_location_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"thead\">
           <tr class=\"header_top\">
@@ -78,10 +80,8 @@ if(isset($_POST['action']) && $_POST['action'] == 'newlocation') {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\">";
-    $form .= (isset($_POST['msg_name'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_name']}</span>\n" : "\n";
-    $form .=
-"            </td>
+              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\">
+            </td>
           </tr>
           <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
@@ -98,10 +98,8 @@ if(isset($_POST['action']) && $_POST['action'] == 'newlocation') {
     echo $form;
 }
 
-###################################################################################################
-// Edit the location
-###################################################################################################
 
+####### Edit #######
 if(!empty($_POST['id'])) {
 	
 	$id = $_POST['id'];
@@ -113,7 +111,20 @@ if(!empty($_POST['id'])) {
 	$get_location = $sth->fetch(PDO::FETCH_ASSOC);
 
     $form =
-"    <form name=\"edit_location\" action=\"user_location_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"name\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('name'))."\");
+        document.getElementById(\"name\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form name=\"edit_location\" action=\"user_location_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"thead\">
           <tr class=\"header_top\">
@@ -126,10 +137,7 @@ if(!empty($_POST['id'])) {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($get_location['name'])."\">";
-    $form .= (isset($_POST['msg_name'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_name']}</span>\n" : "\n";
-    $form .=
-"            </td>
+              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\" value=\"".chars($get_location['name'])."\">            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
@@ -156,11 +164,8 @@ if(!empty($_POST['id'])) {
     echo $form;
 }
 
-###################################################################################################
-// Set CTable variable and create dynamic html table
-###################################################################################################
 
-	// Set CTable variable
+####### Set CTable variable #######
 	$table = new Table();
 	$table->form_name = 'location';
 	$table->table_name = 'user_location';
@@ -189,9 +194,4 @@ if(!empty($_POST['id'])) {
 	echo $table->ctable();
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
-
-}
-else {
-	header('Location: profile.php');
-}
 ?>

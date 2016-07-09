@@ -40,6 +40,8 @@ body, form, table {
 .left { text-align: left; }
 .right { text-align: right; }
 
+.bold { font-weight: bold; }
+
 .top_container {
 	height: 33px;
 	width: 99.8%;
@@ -134,6 +136,9 @@ body, form, table {
 }
 .dd {
 	width: 69%;
+}
+.dd2 {
+	width: 5%;
 }
 
 /* Messages */

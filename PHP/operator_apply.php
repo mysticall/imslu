@@ -49,151 +49,108 @@ if($admin_permissions || $sysadmin_permissions) {
 
 	$db = new PDOinstance();
 
-###################################################################################################
-	// Delete Operator
-###################################################################################################
-	if(!empty($_POST['delete']) && !empty($_POST['del'])) {
+    ####### Delete ####### 
+    if(!empty($_POST['delete']) && !empty($_POST['del'])) {
 
-		$operator['operid'] = $_POST['operid'];
-		$operator['alias'] = $_POST['alias'];
-		$operator['type'] = $_POST['type'];
+        $old = json_decode($_POST['old'], true);
 
 		// Add audit
-		add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_OPERATOR, "Operator {$operator['alias']} is deleted.", "ID - {$operator['operid']}, Alias - {$operator['alias']}, Name - {$_POST['name']}");
+		add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_OPERATOR, "Operator {$old['alias']} is deleted.", $_POST['old']);
 
-		$Operator->delete($db, $operator);
+		$Operator->delete($db, $old);
 
 		$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
 		header("Location: operators.php");
 		exit;
-	}
+    }
 
-###################################################################################################
-	// Update Operator changes
-###################################################################################################
 
-	if (!empty($_POST['edit']) && !empty($_POST['operid'])) {
+    ####### Edit ####### 
+    if (!empty($_POST['edit'])) {
 
-		$operid = $_POST['operid'];
-		$operator = array();
+        $old = json_decode($_POST['old'], true);
+		$update = array();
 
 		//admin or system admin can change alias
-		if($_POST['alias'] != $_POST['alias_old']) {
+		if($old['alias'] != $_POST['alias']) {
 
-			if(empty($_POST['alias'])) {
-
-				$_SESSION['msg'] .= _('Alias cannot empty.').'<br>';
-                header("Location: operator_edit.php?operid={$operid}");
-                exit;
-			}
-			else {
-
-                $str = strip_tags($_POST['alias']);
-                $operator['alias'] = preg_replace('/\s+/', '_', $str);
-
-				// Add audit
-				add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The alias is changed.", "Old alias - {$_POST['alias_old']}", "New alias - {$operator['alias']}");
-			}
-		}
-
-		$operator['name'] = strip_tags($_POST['name']);
-	
-		if (!empty($_POST['p1']) || !empty($_POST['p2'])) {
-
-			if ($_POST['p1'] !== $_POST['p2']) {
-
-				$_SESSION['msg'] .= _('Both passwords must be equal.').'<br>';
-			}
-			elseif ($_POST['p1'] === $_POST['p2']) {
-
-				$password = $_POST['p1'];
-				$random_salt = hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
-				$password1 = hash('sha512', $password.$random_salt);
-
-				// Add audit
-				add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The password on {$_POST['alias_old']} is changed.");
-				$_SESSION['msg'] .= _s('The password on %s is changed.', chars($_POST['alias_old'])).'<br>';
-
-				$operator['passwd'] = $password1;
-				$operator['salt'] = $random_salt;
-			}
-		}
-
-		$operator['url'] = strip_tags($_POST['url']);
-		$operator['lang'] = $_POST['lang'];
-		$operator['theme'] = $_POST['theme'];
-		$operator['type'] = $_POST['type'];
-
-		// Apply changes
-		$Operator->update($db, $operator, $operid);
-	
-		// Logout operator if ->
-		if(($operid == $_SESSION['data']['operid'] && !empty($operator['passwd'])) || ($_POST['alias_old'] == $_SESSION['data']['alias'] && $operator['alias'] != $_SESSION['data']['alias'])) {
-
-			$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
-
-			$db->destroy_session_handler();
-            exit;
-		}
-		else {
-
-			$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
-			header("Location: operators.php");
-            exit;
-		}
-	}
-
-###################################################################################################
-	// Save new operator
-###################################################################################################
-
-	if (!empty($_POST['new'])) {
-	
-		if(empty($_POST['alias'])) {
-
-            $_SESSION['msg'] .= _('Alias cannot empty.').'<br>';
-            header("Location: operator_add.php");
-            exit;
-		}
-
-		$operator = array();
-        $str = strip_tags($_POST['alias']);
-		$operator['alias'] = preg_replace('/\s+/', '_', $str);
-		$operator['name'] = strip_tags($_POST['name']);
-
-		if (($_POST['p1'] !== $_POST['p2']) || empty($_POST['p1'])) {
-			
-			$_SESSION['msg'] .= (empty($_POST['p1']) || empty($_POST['p1'])) ? _('Please enter a password.') :_('Both passwords must be equal.');
-            header("Location: operator_add.php");
-            exit;
-		}
-
-		if ($_POST['p1'] === $_POST['p2']) {
-
-			$password = $_POST['p1'];
-			$random_salt = hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
-			$password1 = hash('sha512', $password.$random_salt);
-
-			$operator['passwd'] = $password1;
-			$operator['salt'] = $random_salt;
-
-			if(!empty($_POST['url'])) {
-				$operator['url'] = strip_tags($_POST['url']);
-			}
-		
-			$operator['lang'] = $_POST['lang'];
-			$operator['theme'] = $_POST['theme'];
-			$operator['type'] = $_POST['type'];
+            $str = strip_tags($_POST['alias']);
+            $update['alias'] = preg_replace('/\s+/', '_', $str);
 
 			// Add audit
-			add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_OPERATOR, "Operator {$operator['alias']} is added.");
+			add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The alias is changed.", "Old alias - {$old['alias']}", "New alias - {$update['alias']}");
+        }
+        if($old['name'] != $_POST['name']) {
+            $update['name'] = strip_tags($_POST['name']);
+        }
+        if (!empty($_POST['password1'])) {
 
-			$Operator->create($db, $operator);
-		}	
-	}
+           	$password = md5($_POST['password1']);
 
-	header("Location: operators.php");
+            // Add audit
+            add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_OPERATOR, "The password on {$old['alias']} is changed.");
+            $_SESSION['msg'] .= _s('The password on %s is changed.', $old['alias']).'<br>';
+
+            $update['passwd'] = $password;
+        }
+        if($old['url'] != $_POST['url']) {
+            $update['url'] = strip_tags($_POST['url']);
+        }
+        if($old['lang'] != $_POST['lang']) {
+            $update['lang'] = $_POST['lang'];
+        }
+        if($old['theme'] != $_POST['theme']) {
+            $update['theme'] = $_POST['theme'];
+        }
+        if($old['type'] != $_POST['type']) {
+            $update['type'] = $_POST['type'];
+        }
+
+        // Apply changes
+        $Operator->update($db, $update, $old['operid']);
+
+        // Logout operator if ->
+        if(($old['operid'] == $_SESSION['data']['operid'] && !empty($update['passwd'])) || (!empty($update['alias']) && $old['alias'] == $_SESSION['data']['alias'] && $update['alias'] != $_SESSION['data']['alias'])) {
+
+            $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+
+            $db->destroy_session_handler();
+            exit;
+        }
+        else {
+
+            $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+          header("Location: operators.php");
+            exit;
+        }
+    }
+
+
+    ####### New #######
+    if (!empty($_POST['new'])) {
+
+        $operator = array();
+        $str = strip_tags($_POST['alias']);
+        $operator['alias'] = preg_replace('/\s+/', '_', $str);
+        $operator['name'] = strip_tags($_POST['name']);
+        $operator['passwd'] = md5($_POST['password1']);
+
+        if(!empty($_POST['url'])) {
+            $operator['url'] = strip_tags($_POST['url']);
+        }
+
+        $operator['lang'] = $_POST['lang'];
+        $operator['theme'] = $_POST['theme'];
+        $operator['type'] = $_POST['type'];
+
+        // Add audit
+        add_audit($db, AUDIT_ACTION_ADD, AUDIT_RESOURCE_OPERATOR, "Operator {$operator['alias']} is added.");
+
+        $Operator->create($db, $operator);
+    }
+
+    header("Location: operators.php");
     exit;
 }
 ?>

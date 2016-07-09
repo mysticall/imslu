@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -42,15 +42,9 @@ if ($_SESSION['form_key'] !== $_POST['form_key']) {
 # Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 
-//System Admin or Admin have acces to location
-if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
-
-    $db = new PDOinstance();
+$db = new PDOinstance();
     
-###################################################################################################
-    // Delete the location
-###################################################################################################
-
+####### Delete ####### 
 if(isset($_POST['delete']) && isset($_POST['del'])) {
 
     $id = $_POST['id'];
@@ -68,20 +62,11 @@ if(isset($_POST['delete']) && isset($_POST['del'])) {
     exit;
 }
 
-###################################################################################################
-    // Update the location
-###################################################################################################
 
+####### Edit #######
 if (!empty($_POST['save_edited']) && !empty($_POST['id'])) {
 
     $id = $_POST['id'];
-
-    if(empty($_POST['name'])) {
-
-        $msg['msg_name'] = _('Name cannot empty.');
-        show_error_message('id', $id, null, $msg, 'user_location.php');
-    exit;
-    }
         
     $name = strip_tags($_POST['name']);
 
@@ -97,18 +82,8 @@ if (!empty($_POST['save_edited']) && !empty($_POST['id'])) {
     exit;
 }
 
-###################################################################################################
-//Save new location
-###################################################################################################
-
+####### New ####### 
 if (!empty($_POST['save_new'])) {
-
-    if(empty($_POST['name'])) {
-
-        $msg['msg_name'] = _('Name cannot empty.');
-        show_error_message('action', 'newlocation', null, $msg, 'user_location.php');
-    exit;
-    }
     
     $name = strip_tags($_POST['name']);
 
@@ -123,5 +98,4 @@ if (!empty($_POST['save_new'])) {
 }
 
     header("Location: user_location.php");
-
-}
+?>

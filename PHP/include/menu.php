@@ -66,22 +66,28 @@ $top_menu = array (
 
 $right_menu = array (
 	1 => array (
-        'name'  => 	_('static IP addresses'),
+        'name'  => 	_('IP addresses'),
         'class' => 	'#',
-        'link'  => 	'static_ippool.php',
+        'link'  => 	'ip_addresses.php',
         'img'   =>	'ip_pub.gif',
         'check_permissions' => $sysadmin_permissions,
         'submenu' => array(
             1 => array(
-                'name' => _('traffic control'),
-                'link' => 'traffic_control.php',
+                'name' => _('kinds of traffic'),
+                'link' => 'kind_traffic.php',
                 'img'  => 'wired.png',
                 'check_permissions' => TRUE,
-            )				
-        )			
+            ),
+            2 => array(
+                'name' => _('services'),
+                'link' => 'services.php',
+                'img'  => 'wired.png',
+                'check_permissions' => TRUE,
+            )
+        )
     ),
 	2 => array (
-        'name'  => _('freeRadius'),
+        'name'  => _('FreeRadius'),
         'class' => '#',
         'link'  => '#',
         'img'   => 'vpn.png',
@@ -93,13 +99,7 @@ $right_menu = array (
                 'img'  => 'network-server.png',
                 'check_permissions' => TRUE,
             ),
-            2 => array(
-                'name' => _('IP addresses'),
-                'link' => 'freeradius_sqlippool.php',
-                'img'  => 'ip_pub.gif',
-                'check_permissions' => TRUE,
-            ),
-			3 => array(
+			2 => array(
                 'name' => _('groups'),
                 'link' => 'freeradius_groups.php',
                 'img'  => 'preferences-desktop-peripherals.png',
@@ -108,7 +108,7 @@ $right_menu = array (
         )			
     ),
 	3 => array (
-        'name'  => _('administration'),
+        'name'  => _('Administration'),
         'class' => '#',
         'link'  => 'administration.php',
         'img'   => 'system.png',
@@ -147,7 +147,7 @@ $right_menu = array (
         )
     ),
 	4 => array (
-        'name'  => _('users'),
+        'name'  => _('Users'),
         'class' => '#',
         'link'  => 'users.php',
         'img'   => 'user.png',
@@ -162,7 +162,7 @@ $right_menu = array (
         )
     ),	
 	5 => array (
-        'name'  => _('payments'),
+        'name'  => _('Payments'),
         'class' => '#',
         'link'  => 'payments.php',
         'img'   => 'payment.gif',

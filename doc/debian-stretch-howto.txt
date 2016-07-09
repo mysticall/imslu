@@ -1,0 +1,485 @@
+apt-get install build-essential fakeroot libncurses5-dev
+apt-get build-dep linux
+
+Mini HOWTO for IMSLU (Internet Management System for LAN Users) on Debian/GNU Linux
+
+	Copyright © 2013 IMSLU Developers
+    
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.3
+    or any later version published by the Free Software Foundation;
+    with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+    A copy of the license is included in the section entitled "GNU
+    Free Documentation License".
+__________________________________________________________________
+
+   Table of Contents
+   
+   1 Intro
+
+		1.1 About IMSLU
+		1.2 IMSLU Developers
+			1.2.1 Others
+		1.3 Legal Notice
+		1.4 Other Information
+
+	2 Installation and configuration
+
+		2.1 Requirements
+		2.2 Download and install
+		2.3 System upgrade
+		2.4 Database server
+		2.5 Apache2 and PHP5
+		2.6 bind9
+		2.7 Roaring Penguin PPPoE server
+		2.8 FreeRadius client
+		2.9 FreeRadius server
+		
+	3 Scripts
+
+	4 User Interface
+
+___________________________________________________
+
+
+Chapter 1. Intro
+
+1.1 About IMSLU
+
+
+1.2 IMSLU Developers
+
+	* PHP Code:
+	Fahri Hasan
+	fahri_hasan@hotmail.com
+
+	* Python Code:
+	Fahri Hasan
+		     
+	* Design:
+     Fahri Hasan
+     
+	* HTML, JavaScript, CSS:
+     Fahri Hasan
+     
+	* Images:
+     
+	* Documentation:
+     Fahri Hasan
+     
+	* Beta testing:
+	 Veselin Alexandrov
+     Fahri Hasan
+
+	* http://www.linux-bg.org/forum/index.php?topic=45276:
+	 Naka
+	 gat3way
+	 edmon
+	   
+1.2.1 Others
+
+	IMSLU uses elements of other software:
+		- http://www.zabbix.com/
+		- http://www.zabbix.com/rn2.0.4.php
+		- http://www.wikihow.com/Create-a-Secure-Login-Script-in-PHP-and-MySQL
+		- http://www.wikihow.com/Create-a-Secure-Session-Managment-System-in-PHP-and-MySQL
+		- http://pajhome.org.uk/crypt/md5/sha512.html - BSD License
+	   
+	Used selected content or guides:
+		- (russian) http://habrahabr.ru/post/111399/
+		- (en) Linux Advanced Routing & Traffic Control HOWTO - http://www.lartc.org/lartc.html
+		- (bugarian) http://myfreesoft.net/phpBB2/viewtopic.php?t=751
+		- (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=364103812
+		- (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=386924398
+		- Debian advanced router for ISP – firewall, traffic shaping, smp_affinity, taskset, sysctl and more … http://itservice-bg.net/?p=1122
+		- (russian) http://linuxsnippets.net/ru/node/268
+		- https://www.digitalocean.com/community/tutorials/how-to-create-a-ssl-certificate-on-apache-for-debian-7
+		
+		
+1.3 Legal Notice
+
+	Copyright © 2016 IMSLU Developers
+	
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+ 
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+ 
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+__________________________________________________________________
+
+Chapter 2 Installation and configuration
+
+####### 2.1 Requirements #######
+
+	* OS - Linux, yet is fully compatible with Debian Wheezy
+		- http://www.debian.org/
+		
+	* Apache2
+		- http://www.apache.org/
+		
+	* PHP >= 5.4
+		- http://php.net/
+		
+	* Database Server - during the development was used MariaDB
+		- https://mariadb.org/
+
+	* xtables-addons
+		- http://xtables-addons.sourceforge.net/
+	
+	* Freeradius
+		- http://freeradius.org/
+
+	* Roaring Penguin PPPoE server
+		- http://www.roaringpenguin.com/products/pppoe
+	
+	* Point-to-Point Protocol (PPP) - daemon
+		- http://ppp.samba.org/
+		
+	* Python
+
+		
+	* Recommended	
+	 
+	
+	* Debian minimal install of a base system
+
+		- http://www.debian.org/doc/books
+
+
+####### 2.2 Download and install #######
+
+mkdir ~/src
+cd ~/src
+
+Download from:
+https://sourceforge.net/projects/imslu/
+tar -zxvf imslu_0.1-alpha.tar.gz
+OR
+Get the latest development version.
+git clone https://github.com/mysticall/imslu.git
+
+AS ROOT in user ~/src:
+ln -s $(pwd -P) ~/src
+
+mkdir /usr/share/imslu
+cp -r ~/src/imslu/PHP/* /usr/share/imslu
+
+mkdir /etc/imslu
+cp -r ~/src/imslu/conf/debian/imslu/* /etc/imslu/
+chmod +x /etc/imslu/scripts/*
+
+mkdir /etc/imslu/backup
+chown www-data:www-data /etc/imslu/backup
+
+mkdir /var/log/imslu
+cp ~/src/imslu/conf/cron/imslu /etc/cron.d/
+
+### System settings ###
+
+apt-get install ethtool
+
+install -c -m 755 ~/src/imslu/conf/debian/etc/rc.local /etc
+install -c -m 644 ~/src/imslu/conf/debian/etc/sysctl.conf /etc
+install -c -m 644 ~/src/imslu/conf/debian/etc/network/interfaces /etc/network
+
+
+####### 2.3 System upgrade #######
+
+Info:
+-----------
+First back up the database!
+Follow strictly these steps to upgrade:
+-----------
+
+. /etc/imslu/config.sh
+cd $SQL_BACKUP_DIR; $MYSQLDUMP $database -u $user -p${password} > $(date +"%Y-%m-%d-%H:%M:%S")_${database}_full-dump.sql
+
+### FROM 0.1-alpha TO 0.1-alpha-1 ### 
+mysql $database -u $user -p${password} < database/upgrades/mysql/01_patch-0.1-alpha-1.sql
+
+### FROM 0.1-alpha-1 TO 0.2-alpha ### 
+mysql $database -u $user -p${password} < database/upgrades/mysql/02_patch_from_0.1-alpha-1_to_0.2-alpha-step1.sql
+
+php5 database/upgrades/mysql/from_0.1-alpha-1_to_0.2-alpha.php
+
+
+
+####### 2.4 MariaDB #######
+
+apt-get update
+apt-get install mariadb-server
+
+-----------
+CREATE IMSLU Database
+-----------
+mysql -u root -p
+CREATE DATABASE imslu DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON imslu.* TO imslu@localhost IDENTIFIED BY 'imslu_password';
+quit;
+
+-----------
+CREATE Tables and inser data
+-----------
+cd database/mysql
+
+mysql $database -u $user -p${password} < 01_schema.sql
+mysql $database -u $user -p${password} < 02_data.sql
+mysql $database -u $user -p${password} < 03_example_static_ip-addresses.sql
+mysql $database -u $user -p${password} < 04_freeradius_schema.sql
+mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
+
+
+####### 2.5 Apache2 and PHP5 #######
+
+apt-get install libapache2-mod-php5 php5-mysql
+
+-----------
+EDIT Debian Session garbage collection
+-----------
+#STOP cron
+
+nano /etc/cron.d/php5
+just comment #
+
+And start PHP default garbage collection 
+nano /etc/php5/apache2/php.ini
+--------------------------------------------------------------------------------
+session.gc_probability = 1
+--------------------------------------------------------------------------------
+
+Uncomment and set default timezone
+nano /etc/php5/apache2/php.ini
+-----------
+date.timezone = "Europe/Sofia"
+-----------
+
+mkdir /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+
+The most important line is "Common Name". Enter your official domain name here or, if you don't have one yet, your site's IP address.
+
+example:
+-----------
+Generating a 2048 bit RSA private key
+............................................................+++
+...........................................................+++
+writing new private key to '/etc/apache2/ssl/apache.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:BG
+State or Province Name (full name) [Some-State]:Sofia
+Locality Name (eg, city) []:Sofia
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:imslu
+Organizational Unit Name (eg, section) []:imslu
+Common Name (e.g. server FQDN or YOUR name) []:192.168.1.253
+Email Address []:webmaster@localhost
+-----------
+
+a2enmod ssl
+rm /var/www/html/index.html
+ln -s /etc/imslu/apache-ssl.conf /etc/apache2/sites-enabled/imslu-ssl.conf
+cp /etc/imslu/index.php /var/www/html
+
+/etc/init.d/apache2 restart
+
+
+####### 2.6 bind9 #######
+
+https://wiki.debian.org/Bind9
+
+apt-get install bind9 
+
+nano /etc/bind/named.conf.options 
+Add after "listen-on-v6 { any; };"
+--------------------------------------------------------------------------------
+        listen-on { 127.0.0.1; 10.111.2.1; };
+
+        allow-transfer { none; };
+        allow-query { 127.0.0.1; 192.168.11.0/24; 10.111.1.0/24; 10.111.2.0/24; };
+        allow-recursion { 127.0.0.1; 192.168.11.0/24; 10.111.1.0/24; 10.111.2.0/24; };
+
+        // Do not make public version of BIND
+        version none;
+--------------------------------------------------------------------------------
+
+Bind Chroot
+
+/etc/init.d/bind9 stop
+
+nano /etc/default/bind9
+--------------------------------------------------------------------------------
+OPTIONS="-u bind -t /var/bind9/chroot"
+--------------------------------------------------------------------------------
+
+mkdir -p /var/bind9/chroot/{etc,dev,var/cache/bind,var/run/named}
+mknod /var/bind9/chroot/dev/null c 1 3
+mknod /var/bind9/chroot/dev/random c 1 8
+chmod 660 /var/bind9/chroot/dev/{null,random}
+mv /etc/bind /var/bind9/chroot/etc
+ln -s /var/bind9/chroot/etc/bind /etc/bind
+chown -R bind:bind /etc/bind/*
+chmod 775 /var/bind9/chroot/var/{cache/bind,run/named}
+chgrp bind /var/bind9/chroot/var/{cache/bind,run/named}
+
+nano /etc/init.d/bind9
+--------------------------------------------------------------------------------
+PIDFILE=/var/bind9/chroot/var/run/named/named.pid
+--------------------------------------------------------------------------------
+
+echo "\$AddUnixListenSocket /var/bind9/chroot/dev/log" > /etc/rsyslog.d/bind-chroot.conf
+
+
+/etc/init.d/rsyslog restart; /etc/init.d/bind9 start
+
+
+####### 2.7 Roaring Penguin PPPoE server #######
+
+apt-get install ppp
+apt-get build-dep pppoe
+
+cd ~/src
+apt-get source pppoe
+cd rp-pppoe-3.8/src
+./configure
+
+Add kernel pppoe support:
+sed -i 's/\/\* \#undef HAVE_LINUX_KERNEL_PPPOE \*\//\#define HAVE_LINUX_KERNEL_PPPOE 1/' config.h
+
+cd ..
+fakeroot make -f debian/rules PLUGIN_PATH=/usr/lib/pppd/2.4.7/rp-pppoe.so
+fakeroot make -f debian/rules binary
+cd ..
+dpkg -i pppoe_3.8-3_amd64.deb
+
+
+Hold PPPoE Server version on current:
+echo pppoe hold | dpkg --set-selections
+
+If need to recompile and reinstall PPPoE Server:
+echo pppoe install | dpkg --set-selections
+
+
+Copy PPPoE server configuration files:
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/options /etc/ppp
+install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/pppoe-server-options /etc/ppp
+
+
+Start rules for connected users
+nano /etc/ppp/ip-up.d/0001shaper
+--------------------------------------------------------------------------------
+#!/bin/bash
+
+/etc/imslu/scripts/ppp_on.py $1 $5
+
+exit 0
+--------------------------------------------------------------------------------
+chmod +x /etc/ppp/ip-up.d/0001shaper
+
+Clear tc rulen on external interface for disconnected users
+nano /etc/ppp/ip-down.d/0001shaper
+--------------------------------------------------------------------------------
+#!/bin/bash
+
+/etc/imslu/scripts/ppp_off.py $1 $5
+
+exit 0
+--------------------------------------------------------------------------------
+chmod +x /etc/ppp/ip-down.d/0001shaper
+
+
+####### 2.8 FreeRadius client #######
+
+apt-get install libfreeradius-client-dev
+
+echo "127.0.0.1 my_isp_radius_secret" > /etc/radiusclient/servers
+install -c -m 644 ~/src/imslu/conf/debian/etc/radiusclient/radiusclient.conf /etc/radiusclient
+install -c -m 644 ~/src/imslu/conf/debian/etc/radiusclient/port-id-map /etc/radiusclient
+
+
+####### 2.9 FreeRadius server #######
+
+apt-get install freeradius freeradius-mysql
+
+Setting up a FreeRadius server:
+
+rm /etc/freeradius/sites-enabled/inner-tunnel
+echo '' > /etc/freeradius/huntgroups
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/freeradius/radiusd.conf /etc/freeradius
+install -c -m 644 ~/src/imslu/conf/debian/etc/freeradius/sql.conf /etc/freeradius
+install -c -m 644 ~/src/imslu/conf/debian/etc/freeradius/sqlippool.conf /etc/freeradius
+install -c -m 644 ~/src/imslu/conf/debian/etc/freeradius/sites-available/default /etc/freeradius/sites-available
+
+/etc/init.d/freeradius start
+chmod 755 /var/log/freeradius
+
+
+####### 3 Scripts #######
+
+Install system tools:
+
+apt-get install sudo vlan arp-scan arping
+
+
+PHP use sudo to start scripts, that need root access
+Add to /etc/sudoers as exsample:
+nano /etc/sudoers
+--------------------------------------------------------------------------------
+# Cmnd alias specification
+Cmnd_Alias      FUNCTIONS_PHP = /etc/imslu/scripts/functions-php.sh
+Cmnd_Alias      ARPING = /usr/sbin/arping
+
+# Allow members of group www-data to execute commands
+%www-data ALL=NOPASSWD: FUNCTIONS_PHP, ARPING
+--------------------------------------------------------------------------------
+/etc/init.d/sudo restart
+
+python-mysql.connector is python implementation of MySQL Client/Server protocol.
+For more details see:
+http://dev.mysql.com/doc/refman/5.5/en/connector-python.html
+http://www.python.org/dev/peps/pep-0249/
+
+Log all lines started whit "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " in "/var/log/ip_status.log".
+The system will use this file to determine which IP address is active.
+
+nano /etc/rsyslog.d/ip_status.conf
+--------------------------------------------------------------------------------
+:msg, regex, "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " -/var/log/ip_status.log
+& ~
+--------------------------------------------------------------------------------
+/etc/init.d/rsyslog restart
+
+
+####### 3.1 config.py #######
+
+Edit config files:
+- /etc/imslu/scripts/config.py
+- /etc/imslu/config.php
+- /etc/imslu/database_config.php
+
+
+####### User Interface #######
+
+Group:    System administrators
+User:     sadmin
+Password: sadmin
+
+Group:    Administrators
+User:     admin
+Password: admin

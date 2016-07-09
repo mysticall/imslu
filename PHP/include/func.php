@@ -134,42 +134,4 @@ function chars($value, $double_encode = TRUE) {
 
     return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8', $double_encode);
 }
-
-/**
- * Show Error Messages on profile.php or operators.php
- *
- * @param int $operid Operator id
- * @param string $action - name=" save, addnew, delete ... "
- * @param array $msg multidimensional array with messages data
- * @param string $msg['msg_alias'] for empty Alias
- * @param string $msg['msg_password'] for not equal passwords
- */
-function show_error_message($id_name, $id_value, $name_value, $msg, $action) {
-    
-    if (isset($action)) {
-        
-        $form = "<form name=\"myform\" method=\"post\" action=\"".chars($action)."\">";
-    }
-    else {
-
-        $form = "<form name=\"myform\" method=\"post\">";
-    }
-
-    if (isset($id_name, $id_value)) {
-        $form .= "<input type=\"hidden\" name=\"".chars($id_name)."\" value=\"".chars($id_value)."\">";
-    }
-    if (isset($name_value)) {
-        $form .= "<input type=\"hidden\" name=\"".chars($name_value)."\" value=\"".chars($name_value)."\">";
-    }
-    
-    foreach ($msg as $key => $value) {
-        
-        $form .= "<input type=\"hidden\" name=\"".chars($key)."\" value=\"".chars($value)."\">";
-    }
-    
-    $form .= "<script language=\"JavaScript\">document.myform.submit(); </script> </form>";
-
-    echo $form;
-}
-
 ?>

@@ -77,8 +77,7 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
     $table->info_field2 = _('username').": ".chars($username);
     $table->info_field3 =
 "              <label class=\"info_right\">
-                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
-                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
+                <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
                 <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
                 <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
               </label>\n";

@@ -41,18 +41,14 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 	$db = new PDOinstance();
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
+    ####### PAGE HEADER #######
 	$page['title'] = 'freeRadius groups';
 	$page['file'] = 'freeradius_groups.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
 
 
-#####################################################
-	// Display messages 
-#####################################################
+    ####### Display messages #######
 	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 	$_SESSION['msg'] = null;
 
@@ -60,7 +56,24 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 
-	$sql = 'SELECT pool_name FROM radippool GROUP BY pool_name';
+    // array - Freeradisu operators
+    $freeradius_op = array(
+    '=' => '=',
+    ':=' => ':=',
+    '+=' => '+=',
+    '==' => '==',
+    '!=' => '!=',
+    '&gt;' => '&gt;',
+    '&gt;=' => '&gt;=',
+    '&lt;' => '&lt;',
+    '&lt;=' => '&lt;=',
+    '=~' => '=~',
+    '!~' => '!~',
+    '=*' => '=*',
+    '!*' => '!*'
+    );
+
+	$sql = 'SELECT pool FROM ip GROUP BY pool';
 	$sth = $db->dbh->prepare($sql);
 	$sth->execute();
 	$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -69,7 +82,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 		for ($i = 0; $i < count($rows); ++$i) {
 
-			$pool_name[$rows[$i]['pool_name']] = $rows[$i]['pool_name'];
+			$pool[$rows[$i]['pool']] = $rows[$i]['pool'];
 		}
 	}
 	else {
@@ -81,10 +94,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 		exit;
 	}
 
-###################################################################################################
-	// Add new Freeradius Goup
-###################################################################################################	
 
+    ####### New #######
     if (!empty($_POST['action']) && $_POST['action'] == 'addgroup') {
 
     	// Radgroupcheck
@@ -98,20 +109,29 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
     	// Radgroupreply
     	$radgroupreply_attributes = array(
-    		'' => '',
-    		'PPPD-Downstream-Speed-Limit-1' => 'PPPD-Downstream-Speed-Limit-1',
-    		'PPPD-Upstream-Speed-Limit-1' => 'PPPD-Upstream-Speed-Limit-1',
-    		'PPPD-Downstream-Speed-Limit-2' => 'PPPD-Downstream-Speed-Limit-2',
-    		'PPPD-Upstream-Speed-Limit-2' => 'PPPD-Upstream-Speed-Limit-2'
+    		'' => ''
     		);
 
     $form =
-"    <form name=\"edit_user\" action=\"freeradius_groups_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"groupname\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('name'))."\");
+        document.getElementById(\"groupname\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form name=\"edit_user\" action=\"freeradius_groups_apply.php\" onsubmit=\"return validateForm();\"  method=\"post\">
       <table class=\"tableinfo\">
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>"._('new freeRadius group')."</label>
+              <label>"._('new FreeRadius group')."</label>
             </th>
           </tr>
           <tr>
@@ -119,11 +139,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"new_groupname\" id=\"new_groupname\" onkeyup=\"user_exists('new_groupname', 'radgroupcheck')\">
-              <label id=\"hint\"></label>";
-    $form .= (isset($_POST['msg_groupname'])) ? "&nbsp;<span class=\"red\">{$_POST['msg_groupname']}</span>\n" : "\n";
-    $form .=
-"            </td>
+              <input class=\"input\" type=\"text\" name=\"groupname\" id=\"groupname\" onkeyup=\"value_exists('groupname', 'radgroupcheck', '', '"._('The groupname is already being used!')."')\">
+            </td>
           </tr>
           <tr class=\"odd_row\">
             <td class=\"dt right\">
@@ -143,20 +160,11 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label> Auth-Type </label>
-".combobox('input select', 'op[Auth-Type]', ':=', $freeradius_op)."
-            </td>
-			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupcheck[Auth-Type]\" value=\"CHAP\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
               <label> Pool-Name </label>
 ".combobox('input select', 'op[Pool-Name]', ':=', $freeradius_op)."
             </td>
 			<td class=\"dd\">
-".combobox('input select', 'radgroupcheck[Pool-Name]', null, $pool_name)."
+".combobox('input select', 'radgroupcheck[Pool-Name]', null, $pool)."
             </td>
           </tr>
         </thead>
@@ -218,29 +226,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 ".combobox('input select', 'op[Acct-Interim-Interval]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Acct-Interim-Interval]\" value=\"180\">
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label> PPPD-Downstream-Speed-Limit </label>
-".combobox('input select', 'op[PPPD-Downstream-Speed-Limit]', null, $freeradius_op)."
-            </td>
-			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[PPPD-Downstream-Speed-Limit]\">
-              <label style=\"font-weight: bold;\"> Kbit </label> &nbsp 
-              <label style=\"color: red;\">"._('If empty, shaper will not work!')."</label>
-            </td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">
-              <label> PPPD-Upstream-Speed-Limit </label>
-".combobox('input select', 'op[PPPD-Upstream-Speed-Limit]', null, $freeradius_op)."
-            </td>
-			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[PPPD-Upstream-Speed-Limit]\">
-              <label style=\"font-weight: bold;\"> Kbit </label>&nbsp 
-              <label style=\"color: red;\">"._('If empty, shaper will not work!')."</label>
+              <input class=\"input\" type=\"text\" name=\"radgroupreply[Acct-Interim-Interval]\" value=\"60\">
             </td>
           </tr>
         </tbody>
@@ -251,7 +237,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"add_new_group\" id=\"save\" value=\""._('save')."\">
+              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>
@@ -261,10 +247,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
         echo $form;
     }
 
-###################################################################################################
-	// Edit Freeradius Goup
-###################################################################################################	
 
+    ####### Edit #######
     if (!empty($_POST['groupname'])) {
 		
     	$groupname = $_POST['groupname'];
@@ -278,7 +262,6 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     	// Radgroupcheck
     	$radgroupcheck_attributes = array(
     		'' => '',
-    		'Auth-Type' => 'Auth-Type',
     		'Pool-Name' => 'Pool-Name',
     		'NAS-IP-Address' => 'NAS-IP-Address',
     		'NAS-Identifier' => 'NAS-Identifier',
@@ -327,7 +310,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 ".combobox('input select', "op[{$group_radgroupcheck[$i]['attribute']}]", $group_radgroupcheck[$i]['op'], $freeradius_op)."
             </td>
             <td class=\"dd\">
-".combobox('input select', 'radgroupcheck[Pool-Name]', $group_radgroupcheck[$i]['value'], $pool_name)."
+".combobox('input select', 'radgroupcheck[Pool-Name]', $group_radgroupcheck[$i]['value'], $pool)."
             </td>
           </tr>\n";
 
@@ -366,13 +349,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     		'Service-Type' => 'Service-Type',
     		'Framed-MTU' => 'Framed-MTU',
     		'Framed-Compression' => 'Framed-Compression',
-    		'Acct-Interim-Interval' => 'Acct-Interim-Interval',
-    		'PPPD-Downstream-Speed-Limit' => 'PPPD-Downstream-Speed-Limit',
-    		'PPPD-Upstream-Speed-Limit' => 'PPPD-Upstream-Speed-Limit',
-    		'PPPD-Downstream-Speed-Limit-1' => 'PPPD-Downstream-Speed-Limit-1',
-    		'PPPD-Upstream-Speed-Limit-1' => 'PPPD-Upstream-Speed-Limit-1',
-    		'PPPD-Downstream-Speed-Limit-2' => 'PPPD-Downstream-Speed-Limit-2',
-    		'PPPD-Upstream-Speed-Limit-2' => 'PPPD-Upstream-Speed-Limit-2'
+    		'Acct-Interim-Interval' => 'Acct-Interim-Interval'
     		);
 
     	for ($i = 0; $i < count($group_radgroupreply); ++$i) {
@@ -462,8 +439,8 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 		
 			// Set $table->td_array
 			$values = explode(',', $groupname[$i]['GROUP_CONCAT(value)']);
-			$groups[$i] = array('groupname' => chars($groupname[$i]['groupname'])) + array('Auth-Type' => chars($values[0])) + array('Pool-Name' => chars($values[1]));
-		}	
+			$groups[$i] = array('groupname' => chars($groupname[$i]['groupname']), 'pool' => chars($values[0]));
+		}
 	}
 	else {
 
@@ -475,7 +452,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 	$table->form_name = 'groups';
 	$table->table_name = 'freeradius_groups';
 	$table->info_field1 = _('total').": ";
-	$table->info_field2 = _('freeRadius groups');
+	$table->info_field2 = _('FreeRadius groups');
 	
 	$items1 = array(
 		'' => '',
@@ -488,8 +465,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 	$table->onclick_id = true;
 	$table->th_array = array(
 		1 => _('name'),
-		2 => 'Auth-Type',
-		3 => 'Pool-Name'
+		2 => 'pool'
 		);
 
 	$table->th_array_style = 'style="table-layout: fixed; width: 33%;"';

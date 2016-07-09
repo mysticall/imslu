@@ -1,0 +1,12 @@
+ALTER TABLE operators DROP salt;
+ALTER TABLE operators DROP refresh;
+UPDATE operators SET passwd=MD5('sadmin') WHERE alias='sadmin';
+UPDATE operators SET passwd=MD5('admin') WHERE alias='admin';
+DROP TABLE traffic;
+DROP TABLE static_ippool;
+DROP TABLE switches;
+ALTER TABLE users DROP trafficid;
+ALTER TABLE users DROP switchid;
+ALTER TABLE users DROP pppoe;
+DROP TABLE radippool;
+DROP TABLE radreply;

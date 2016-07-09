@@ -50,18 +50,13 @@ if($admin_permissions || $sysadmin_permissions) {
     }
 
 
-###################################################################################################
-    // PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
     $page['title'] = 'Edit operator';
     $page['file'] = 'operator_edit.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
+    ####### Display messages #######
     echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
@@ -69,7 +64,26 @@ if($admin_permissions || $sysadmin_permissions) {
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
         $form =
-"    <form action=\"operator_apply.php\" method=\"post\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"alias\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('alias'))."\");
+        document.getElementById(\"alias\").focus();
+        return false;
+    }
+    if (document.getElementById(\"password1\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('password'))."\");
+        document.getElementById(\"password1\").focus();
+        return false;
+    }
+}
+//-->
+</script>
+    <form action=\"operator_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
@@ -82,8 +96,7 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"alias\" id=\"alias\" onkeyup=\"user_exists('alias', 'operators')\">
-              <label id=\"hint\"></label>
+              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" onkeyup=\"value_exists('alias', 'operators', '', '"._('That alias is already being used.')."')\">
             </td>
           </tr>
           <tr>
@@ -99,7 +112,7 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password1\" id=\"password1\">
+              <input id=\"password1\" name=\"password1\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
             </td>
           </tr>
           <tr>
@@ -107,7 +120,8 @@ if($admin_permissions || $sysadmin_permissions) {
               <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"password\" name=\"password2\" id=\"password2\">
+              <input id=\"password2\" name=\"password2\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
+              <span id=\"pass_msg\"></span>
             </td>
           </tr>
           <tr>
