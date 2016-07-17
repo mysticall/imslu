@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -58,14 +58,12 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 
     ####### PAGE HEADER #######
-    $page['title'] = 'freeRadius nas';
-    $page['file'] = 'freeradius_nas.php';
+    $page['title'] = 'FreeRadius NAS';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
-
     ####### Display messages #######
-    echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
     // Security key for comparison
@@ -73,7 +71,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 
     ####### New #######
-    if(!empty($_POST['action']) && $_POST['action'] == 'newnas') {
+    if(!empty($_GET['new'])) {
 
         $form =
 "<script type=\"text/javascript\">
@@ -96,11 +94,12 @@ function validateForm() {
 //-->
 </script>
     <form action=\"freeradius_nas_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
               <label>"._('New NAS').": </label>
+              <label class=\"info_right\"><a href=\"freeradius_nas.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -108,7 +107,7 @@ function validateForm() {
               <label>"._('NAS name')." * </label>
             </td>
             <td class=\"dd\">
-              <input id=\"nasname\" name=\"nasname\" class=\"input\" type=\"text\">
+              <input id=\"nasname\" type=\"text\" name=\"nasname\">
             </td>
           </tr>
           <tr>
@@ -116,7 +115,7 @@ function validateForm() {
               <label>"._('NAS short name')." * </label>
             </td>
             <td class=\"dd\">
-              <input id=\"shortname\" name=\"shortname\" class=\"input\" type=\"text\">
+              <input id=\"shortname\" type=\"text\" name=\"shortname\">
             </td>
           </tr>
           <tr>
@@ -124,7 +123,7 @@ function validateForm() {
               <label>"._('NAS type')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'type', null, $nas_type)."
+".combobox('', 'type', null, $nas_type)."
             </td>
           </tr>
           <tr>
@@ -132,7 +131,7 @@ function validateForm() {
               <label>"._('NAS ports')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"ports\">
+              <input type=\"text\" name=\"ports\">
             </td>
           </tr>
           <tr>
@@ -140,7 +139,7 @@ function validateForm() {
               <label>"._('NAS secret')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"secret\" value=\"secret\">
+              <input type=\"text\" name=\"secret\" value=\"secret\">
             </td>
           </tr>
           <tr>
@@ -148,7 +147,7 @@ function validateForm() {
               <label>"._('NAS server')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"server\">
+              <input type=\"text\" name=\"server\">
             </td>
           </tr>
           <tr>
@@ -156,7 +155,7 @@ function validateForm() {
               <label>"._('NAS SNMP community')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"community\">
+              <input type=\"text\" name=\"community\">
             </td>
           </tr>
           <tr>
@@ -164,7 +163,7 @@ function validateForm() {
               <label>"._('NAS description')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"description\" size=\"50\" maxlength=\"200\" value=\"RADIUS Client\">
+              <input type=\"text\" name=\"description\" value=\"RADIUS Client\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -172,7 +171,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>
@@ -180,17 +179,19 @@ function validateForm() {
     </form>\n";
 
         echo $form;
-}
-
-
+    }
     ####### Edit #######
-    if (!empty($_POST['id'])) {
+    elseif (!empty($_GET['id'])) {
 
-        $nasid = $_POST['id'];
+        settype($_GET['id'], "integer");
+        if($_GET['id'] == 0) {
+            header("Location: freeradius_nas.php");
+            exit;
+        }
 
         $sql = 'SELECT id,nasname,shortname,type,ports,secret,server,community,description FROM nas WHERE id = ? LIMIT 1';
         $sth = $db->dbh->prepare($sql);
-        $sth->bindParam(1, $nasid, PDO::PARAM_INT);
+        $sth->bindParam(1, $_GET['id'], PDO::PARAM_INT);
         $sth->execute();
         $get_nas = $sth->fetch(PDO::FETCH_ASSOC);
 
@@ -215,11 +216,12 @@ function validateForm() {
 //-->
 </script>
     <form action=\"freeradius_nas_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
               <label>"._('NAS').": ".chars($get_nas['nasname'])."</label>
+              <label class=\"info_right\"><a href=\"freeradius_nas.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -243,7 +245,7 @@ function validateForm() {
               <label>"._('NAS type')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'type', $get_nas['type'], $nas_type)."
+".combobox('', 'type', $get_nas['type'], $nas_type)."
             </td>
           </tr>
           <tr>
@@ -251,7 +253,7 @@ function validateForm() {
               <label>"._('NAS ports')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"ports\" value=\"".chars($get_nas['ports'])."\">
+              <input type=\"text\" name=\"ports\" value=\"".chars($get_nas['ports'])."\">
             </td>
           </tr>
           <tr>
@@ -259,7 +261,7 @@ function validateForm() {
               <label>"._('NAS secret')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"secret\" value=\"".chars($get_nas['secret'])."\">
+              <input type=\"text\" name=\"secret\" value=\"".chars($get_nas['secret'])."\">
             </td>
           </tr>
           <tr>
@@ -267,7 +269,7 @@ function validateForm() {
               <label>"._('NAS server')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"server\" value=\"".chars($get_nas['server'])."\">
+              <input type=\"text\" name=\"server\" value=\"".chars($get_nas['server'])."\">
             </td>
           </tr>
           <tr>
@@ -275,7 +277,7 @@ function validateForm() {
               <label>"._('NAS SNMP community')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"community\" value=\"".chars($get_nas['community'])."\">
+              <input type=\"text\" name=\"community\" value=\"".chars($get_nas['community'])."\">
             </td>
           </tr>
           <tr>
@@ -283,7 +285,7 @@ function validateForm() {
               <label>"._('NAS description')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"description\" size=\"50\" maxlength=\"200\" value=\"".chars($get_nas['description'])."\">
+              <input type=\"text\" name=\"description\" value=\"".chars($get_nas['description'])."\">
             </td>
           </tr>
           <tr>
@@ -291,7 +293,7 @@ function validateForm() {
               <label class=\"red\">"._('delete')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -300,8 +302,8 @@ function validateForm() {
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"nas\" value='".serialize($get_nas)."'>
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
+              <input class=\"button\" type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
         </tbody>
@@ -309,26 +311,18 @@ function validateForm() {
     </form>\n";
 
         echo $form;
-}
+    }
+    else {
 
-
-####### Set Table variable #######
+    ####### Set Table variable #######
     $table = new Table();
-	$table->form_name = 'nas';
-	$table->table_name = 'freeradius_nas';
 	$table->colspan = 9;
+    $table->action = 'freeradius_nas.php';
 	$table->info_field1 = _('total').": ";
-	$table->info_field2 = _('freeRadius nas');
-	
-	$items1 = array(
-		'' => '',
-		'newnas' => _('new nas')
-		);
-
-	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
-
-	$table->info_field3 = $combobox_form_submit;
-	$table->onclick_id = true;
+	$table->info_field2 = _('FreeRadius NAS');
+	$table->info_field3 = "<label class=\"info_right\"><a href=\"freeradius_nas.php?new=1\">["._('new NAS')."]</a></label>";
+    $table->link_action = 'freeradius_nas.php';
+	$table->link = TRUE;
 	$table->th_array = array(
 		1 => _('id'),
 		2 => _('nas name'),
@@ -349,7 +343,7 @@ function validateForm() {
 	$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
 	echo $table->ctable();
 
-
+    }
     require_once dirname(__FILE__).'/include/page_footer.php';
 }
 else {

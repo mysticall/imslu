@@ -185,8 +185,6 @@ cp ~/src/imslu/conf/cron/imslu /etc/cron.d/
 
 ### System settings ###
 
-apt-get install ethtool
-
 install -c -m 755 ~/src/imslu/conf/debian/etc/rc.local /etc
 install -c -m 644 ~/src/imslu/conf/debian/etc/sysctl.conf /etc
 install -c -m 644 ~/src/imslu/conf/debian/etc/network/interfaces /etc/network
@@ -206,11 +204,15 @@ cd $SQL_BACKUP_DIR; $MYSQLDUMP $database -u $user -p${password} > $(date +"%Y-%m
 ### FROM 0.1-alpha TO 0.1-alpha-1 ### 
 mysql $database -u $user -p${password} < database/upgrades/mysql/01_patch-0.1-alpha-1.sql
 
-### FROM 0.1-alpha-1 TO 0.2-alpha ### 
+### FROM 0.1-alpha-1 TO 0.2-alpha ###
+STEP 1:
 mysql $database -u $user -p${password} < database/upgrades/mysql/02_patch_from_0.1-alpha-1_to_0.2-alpha-step1.sql
-
 php5 database/upgrades/mysql/from_0.1-alpha-1_to_0.2-alpha.php
 
+STEP 2:
+rm /etc/rsyslog.d/ip_status.conf
+rm /etc/ppp/ip-up.d/0001shaper
+rm /etc/ppp/ip-down.d/0001shaper
 
 
 ####### 2.4 MariaDB #######
@@ -232,7 +234,6 @@ CREATE Tables and inser data
 cd database/mysql
 
 mysql $database -u $user -p${password} < 01_schema.sql
-mysql $database -u $user -p${password} < 02_data.sql
 mysql $database -u $user -p${password} < 03_example_static_ip-addresses.sql
 mysql $database -u $user -p${password} < 04_freeradius_schema.sql
 mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
@@ -379,28 +380,10 @@ Copy PPPoE server configuration files:
 install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/options /etc/ppp
 install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/pppoe-server-options /etc/ppp
 
-
-Start rules for connected users
-nano /etc/ppp/ip-up.d/0001shaper
---------------------------------------------------------------------------------
-#!/bin/bash
-
-/etc/imslu/scripts/ppp_on.py $1 $5
-
-exit 0
---------------------------------------------------------------------------------
-chmod +x /etc/ppp/ip-up.d/0001shaper
-
-Clear tc rulen on external interface for disconnected users
-nano /etc/ppp/ip-down.d/0001shaper
---------------------------------------------------------------------------------
-#!/bin/bash
-
-/etc/imslu/scripts/ppp_off.py $1 $5
-
-exit 0
---------------------------------------------------------------------------------
-chmod +x /etc/ppp/ip-down.d/0001shaper
+install -c -m 644 ~/src/imslu/conf/debian/etc/imslu/scripts/0001_up_imslu /etc/ppp/ip-up.d/
+install -c -m 644 ~/src/imslu/conf/debian/etc/imslu/scripts/0001_down_imslu /etc/ppp/ip-down.d/
+chmod a+x /etc/ppp/ip-up.d/0001_up_imslu
+chmod a+x /etc/ppp/ip-down.d/0001_down_imslu
 
 
 ####### 2.8 FreeRadius client #######
@@ -434,7 +417,7 @@ chmod 755 /var/log/freeradius
 
 Install system tools:
 
-apt-get install sudo vlan arp-scan arping
+apt-get install sudo vlan arp-scan arping ethtool
 
 
 PHP use sudo to start scripts, that need root access
@@ -450,17 +433,13 @@ Cmnd_Alias      ARPING = /usr/sbin/arping
 --------------------------------------------------------------------------------
 /etc/init.d/sudo restart
 
-python-mysql.connector is python implementation of MySQL Client/Server protocol.
-For more details see:
-http://dev.mysql.com/doc/refman/5.5/en/connector-python.html
-http://www.python.org/dev/peps/pep-0249/
 
-Log all lines started whit "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " in "/var/log/ip_status.log".
+Log all lines started whit "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " in "/var/log/ip_activity.log".
 The system will use this file to determine which IP address is active.
 
-nano /etc/rsyslog.d/ip_status.conf
+nano /etc/rsyslog.d/ip_activity.conf
 --------------------------------------------------------------------------------
-:msg, regex, "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " -/var/log/ip_status.log
+:msg, regex, "^\[ *[0-9]*\.[0-9]*\] IP_STATUS: " -/var/log/ip_activity.log
 & ~
 --------------------------------------------------------------------------------
 /etc/init.d/rsyslog restart

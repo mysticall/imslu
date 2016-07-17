@@ -45,7 +45,6 @@ $disabled = ($admin_permissions) ? '' : ' disabled';
 
 ####### PAGE HEADER #######
 $page['title'] = 'Edit User';
-$page['file'] = 'user_edit.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
@@ -88,21 +87,18 @@ if (!empty($_GET['userid'])) {
         exit;
     }
 
-    ####### Get user info, ip adresses and payment #######
-    $sql = 'SELECT users.*, payments.id as payment_id, payments.expires, location.name as location_name, services.name as service, services.price as price 
+    ####### Get user info and payment #######
+    $sql = 'SELECT users.*, payments.id, payments.expires
             FROM users
-            LEFT JOIN (SELECT id, userid, expires FROM payments WHERE userid = :payments_userid ORDER BY id DESC, expires DESC LIMIT 1) AS payments
+            LEFT JOIN payments
             ON users.userid = payments.userid
-            LEFT JOIN services ON users.service = services.name
-            LEFT JOIN location ON users.locationid = location.id
-            WHERE users.userid = :userid LIMIT 1';
+            WHERE users.userid = :userid ORDER BY payments.id DESC, payments.expires DESC LIMIT 1';
     $sth = $db->dbh->prepare($sql);
-    $sth->bindValue(':payments_userid', $userid, PDO::PARAM_INT);
     $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
     $sth->execute();
     $user = $sth->fetch(PDO::FETCH_ASSOC);
 
-    if(!$user) {
+    if(empty($user)) {
 
         header("Location: users.php");
         exit;
@@ -129,14 +125,23 @@ if (!empty($_GET['userid'])) {
     }
     unset($rows);
 
-    // Get info for online IP Addresses
-    $cmd = "cat /tmp/imslu_online_ip_addresses.tmp";
+    ### activity ###
+    $cmd = "cat /tmp/ip_activity";
     $result = shell_exec($cmd);
     foreach (explode("\n", $result) as $value) {
         
-        $ip_status[$value] = $value;
+        $activity_[$value] = $value;
     }
-    
+
+    if ($USE_PPPoE) {
+        $cmd = "cat /tmp/ip_activity_pppoe";
+        $result = shell_exec($cmd);
+        foreach (explode("\n", $result) as $value) {
+        
+            $activity_[$value] = $value;
+        }
+    }
+
     ####### Get avalible locations #######
     $sql = 'SELECT id,name FROM location';
     $sth = $db->dbh->prepare($sql);
@@ -174,7 +179,7 @@ function validateForm() {
 //-->
 </script>
     <form name=\"edit\" action=\"user_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -189,15 +194,15 @@ function validateForm() {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"name\" class=\"input\" type=\"text\" name=\"name\" value=\"".chars($user['name'])."\" size=\"25\">
+              <input id=\"name\" type=\"text\" name=\"name\" value=\"".chars($user['name'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('the location')."</label>
+              <label>"._('location')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'locationid', $user['locationid'], $location)."
+".combobox('', 'locationid', $user['locationid'], $location)."
             </td>
           </tr>
           <tr>
@@ -205,7 +210,7 @@ function validateForm() {
               <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" value=\"".chars($user['address'])."\" size=\"25\">
+              <input type=\"text\" name=\"address\" value=\"".chars($user['address'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
@@ -213,7 +218,7 @@ function validateForm() {
               <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"".chars($user['phone_number'])."\" size=\"25\">
+              <input type=\"text\" name=\"phone_number\" value=\"".chars($user['phone_number'])."\" size=\"25\">
             </td>
           </tr>
           <tr>
@@ -221,7 +226,7 @@ function validateForm() {
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"45\" rows=\"2\">".chars($user['notes'])."</textarea>
+              <textarea name=\"notes\" rows=\"2\">".chars($user['notes'])."</textarea>
             </td>
           </tr>
           <tr>
@@ -230,7 +235,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">\n";
 
-    $form .= ($admin_permissions || $cashier_permissions) ? combobox('input select', 'service', $user['service'], $services)."\n" : "<label style=\"font-weight: bold;\">".chars($services[$user['service']])."</label>\n";
+    $form .= ($admin_permissions || $cashier_permissions) ? combobox('', 'service', $user['service'], $services)."\n" : "<label style=\"font-weight: bold;\">".chars($services[$user['service']])."</label>\n";
     $form .= 
 "            </td>
           </tr>
@@ -239,7 +244,7 @@ function validateForm() {
               <label>"._('pay')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"pay\" value=\"";
+              <input type=\"text\" name=\"pay\" value=\"";
     $form .= ($user['pay'] != 0.00) ? $user['pay'] : '';
     $form .= "\" $disabled>
             </td>
@@ -249,10 +254,10 @@ function validateForm() {
               <label>"._('free internet access')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"free_access\" value=\"y\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"free_access\" value=\"y\" ";
     $form .= ($user['free_access'] == 'y') ? 'checked' : '';
     $form .= " $disabled> "._('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"free_access\" value=\"n\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"free_access\" value=\"n\" ";
     $form .= ($user['free_access'] == 'n') ? 'checked' : '';
     $form .= " $disabled> "._('No')."
             </td>
@@ -262,10 +267,10 @@ function validateForm() {
               <label>"._('not excluding')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"not_excluding\" value=\"y\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"not_excluding\" value=\"y\" ";
     $form .= ($user['not_excluding'] == 'y') ? 'checked' : '';
     $form .= " $disabled> "._('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"not_excluding\" value=\"n\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"not_excluding\" value=\"n\" ";
     $form .= ($user['not_excluding'] == 'n') ? 'checked' : '';
     $form .= " $disabled> "._('No')."
             </td>
@@ -275,7 +280,7 @@ function validateForm() {
               <label>"._('active until')."</label>
             </td>
             <td class=\"dd\" $expired>
-              <input class=\"input\" type=\"text\" name=\"expires\" id=\"expires\" value=\"{$user['expires']}\" $disabled>\n";
+              <input type=\"text\" name=\"expires\" id=\"expires\" value=\"{$user['expires']}\" $disabled>\n";
 
     $form .= (empty($disabled)) ? "
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
@@ -311,15 +316,15 @@ function validateForm() {
               <label style=\"color: red;\">"._('delete user')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del_user\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del_user\">
             </td>
           </tr>
           <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
             </td>
             <td class=\"dd\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">\n";
+              <input class=\"button\" type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">\n";
     }
     else {
 
@@ -328,7 +333,7 @@ function validateForm() {
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
             </td>
             <td class=\"dd\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">\n";
+              <input class=\"button\" type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">\n";
     }
 
         $form .=
@@ -359,16 +364,18 @@ function validateForm() {
     if (!empty($ip)) {
         for ($i = 0; $i < count($ip); ++$i) {
 
-            $ip_status = (!empty($ip_status[$ip[$i]['ip']])) ? "&nbsp;&nbsp;<span style=\"color: #00c500; font-weight:bold;\">"._('online')."</span>" : "&nbsp;&nbsp;<span style=\"color: #ff0000; font-weight:bold;\">"._('offline')."</span>";
-            $sessions = (!empty($ip[$i]['username'])) ? "<label class=\"link\" onClick=\"location.href='user_pppoe_sessions.php?userid={$userid}&username={$ip[$i]['username']}'\">["._('sessions')."]</label>" : "";
+            $ip_activity = (!empty($activity_[$ip[$i]['ip']])) ? "<span style=\"color: #00c500; font-weight:bold;\">"._('online')."</span>" : "<span style=\"color: #ff0000; font-weight:bold;\">"._('offline')."</span>";
+            $sessions = (!empty($ip[$i]['username'])) ? "<a class=\"link\" href=\"user_pppoe_sessions.php?userid={$userid}&username={$ip[$i]['username']}\">["._('sessions')."]</a>" : "";
+            $kill = (!empty($ip[$i]['username']) && !empty($activity_[$ip[$i]['ip']])) ? "<a class=\"link\" href=\"pppd_kill.php?userid={$userid}&ip={$ip[$i]['ip']}\">[ kill ]</a>" : "";
 
             $form .=
 "          <tr>
             <td class=\"right\">
+              $kill
               $sessions
-              <label class=\"link\" onClick=\"location.href='ping.php?resource=arping&ipaddress={$ip[$i]['ip']}&vlan={$ip[$i]['vlan']}'\">[arping]</label>
-              <label class=\"link\" onClick=\"location.href='ping.php?resource=ping&ipaddress={$ip[$i]['ip']}'\">[ping]</label>
-              <label class=\"dt\">{$ip[$i]['ip']} $ip_status</label>
+              <a class=\"link\" href=\"ping.php?resource=arping&ipaddress={$ip[$i]['ip']}&vlan={$ip[$i]['vlan']}\">[arping]</a>
+              <a class=\"link\" href=\"ping.php?resource=ping&ipaddress={$ip[$i]['ip']}\">[ping]</a>
+              <label class=\"dt\">{$ip[$i]['ip']} $ip_activity</label>
             </td>
             <td>".chars($ip[$i]['vlan'])."</td>
             <td>".chars($ip[$i]['mac'])."</td>
@@ -385,7 +392,7 @@ function validateForm() {
             $form .=
 "           </td>
             <td>
-              <label class=\"link\" onClick=\"location.href='ip_edit.php?id={$ip[$i]['id']}'\">["._('change')."]</label>
+              <a class=\"link\" href=\"ip_edit.php?id={$ip[$i]['id']}\">["._('change')."]</a>
             </td>
           </tr>
           <tr>
@@ -401,8 +408,8 @@ function validateForm() {
           <tr class=\"odd_row\" >
             <td class=\"right\" colspan=\"10\">
               <input type=\"hidden\" name=\"userid\" value=\"{$userid}\">
-".combobox('input select', 'pool', false, $pool)."
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('new')."\">
+".combobox('', 'pool', false, $pool)."
+              <input class=\"button\" type=\"submit\" name=\"new\" value=\""._('new')."\">
             </td>
           </tr>
     </form>

@@ -42,12 +42,11 @@ $disabled = ($admin_permissions) ? '' : ' disabled';
 
 ####### PAGE HEADER #######
 $page['title'] = 'New IP';
-$page['file'] = 'ip_new.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
@@ -70,6 +69,24 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
     $sth->execute();
     $ip = $sth->fetch(PDO::FETCH_ASSOC);
 
+    if (empty($ip)) {
+        echo
+"      <table>
+        <tbody id=\"thead\">
+          <tr class=\"header_top\">
+            <th>
+              <label class=\"info_right\"><a href=\"user.php?userid={$_GET['userid']}\">["._('back')."]</a></label>
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <label style=\"font-size:18px; font-weight:bold; color: #ff0000;\">".
+              _('Please contact your system administrator. No available IP addresses on this pool.')
+              ."<label>
+            </td>
+          </tr>";
+        exit;
+    }
 
     ####### FreeRadius Groups #######
     //Check available Freeradius Groups if $USE_PPPoE == True
@@ -123,7 +140,7 @@ function validateForm() {
 //-->
 </script>
     <form id=\"edit\" action=\"ip_new_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -137,7 +154,7 @@ function validateForm() {
               <label>"._('IP address')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"ip\" class=\"input\" type=\"text\" name=\"ip\" value=\"{$ip['ip']}\" size=\"15\" onkeyup=\"value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."')\">
+              <input id=\"ip\" type=\"text\" name=\"ip\" value=\"{$ip['ip']}\" onkeyup=\"value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."')\">
             </td>
           </tr>
           <tr>
@@ -145,7 +162,7 @@ function validateForm() {
               <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"vlan\" value=\"{$ip['vlan']}\" size=\"15\">
+              <input type=\"text\" name=\"vlan\" value=\"{$ip['vlan']}\">
             </td>
           </tr>
           <tr>
@@ -153,7 +170,7 @@ function validateForm() {
               <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"mac\" value=\"{$ip['mac']}\" size=\"15\">
+              <input type=\"text\" name=\"mac\" value=\"{$ip['mac']}\">
             </td>
           </tr>
           <tr>
@@ -161,10 +178,10 @@ function validateForm() {
               <label>"._('free mac')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"free_mac\" value=\"y\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"free_mac\" value=\"y\"";
     $form .= ($ip['free_mac'] == 'y') ? ' checked>' : '>';
     $form .= _('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"free_mac\" value=\"n\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"free_mac\" value=\"n\"";
     $form .= ($ip['free_mac'] == 'n') ? ' checked>' : '>';
     $form .= _('No')."
             </td>
@@ -179,7 +196,7 @@ function validateForm() {
               <label>"._('FreeRadius group')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'groupname', null, $groupname)."
+".combobox('', 'groupname', null, $groupname)."
             </td>
           </tr>
           <tr>
@@ -187,7 +204,7 @@ function validateForm() {
               <label>"._('username')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"username\" class=\"input\" type=\"text\" name=\"username\" value=\"{$ip['username']}\" size=\"15\" onkeyup=\"value_exists('username', 'ip_username', '{$ip['id']}', '"._('The username is already being used!')."')\">
+              <input id=\"username\" type=\"text\" name=\"username\" value=\"{$ip['username']}\" onkeyup=\"value_exists('username', 'ip_username', '{$ip['id']}', '"._('The username is already being used!')."')\">
             </td>
           </tr>
           <tr>
@@ -195,8 +212,8 @@ function validateForm() {
               <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"pass\" class=\"input\" type=\"text\" name=\"pass\" value=\"{$ip['pass']}\" size=\"15\">
-              <label class=\"generator\" onclick=\"generatepassword(document.getElementById('pass'), 8);\" >"._('generate')."</label>
+              <input id=\"pass\" type=\"text\" name=\"pass\" value=\"{$ip['pass']}\">
+              <label class=\"link\" onclick=\"generatepassword(document.getElementById('pass'), 8);\" >"._('generate')."</label>
             </td>
           </tr>\n";
     }
@@ -215,7 +232,7 @@ function validateForm() {
               <label>"._('protocol')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'protocol', $ip['protocol'], $protocol)."
+".combobox('', 'protocol', $ip['protocol'], $protocol)."
             </td>
           </tr>
           <tr>
@@ -223,10 +240,10 @@ function validateForm() {
               <label>"._('stopped')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"stopped\" value=\"y\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"stopped\" value=\"y\"";
     $form .= ($ip['stopped'] == 'y') ? ' checked' : '';
     $form .= " $disabled> "._('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"stopped\" value=\"n\"";
+              <input class=\"checkbox\" type=\"radio\" name=\"stopped\" value=\"n\"";
     $form .= ($ip['stopped'] == 'n') ? ' checked' : '';
     $form .= " $disabled> "._('No')."
             </td>
@@ -236,14 +253,14 @@ function validateForm() {
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"55\" rows=\"3\">".chars($ip['notes'])."</textarea>
+              <textarea name=\"notes\" rows=\"2\">".chars($ip['notes'])."</textarea>
             </td>
           </tr>
         <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
             </td>
             <td class=\"dd\">
-              <input id=\"save\" name=\"new\" type=\"submit\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"userid\" value=\"{$_GET['userid']}\">
             </td>

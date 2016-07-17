@@ -26,41 +26,48 @@ $admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
 
 $top_menu = array (
-    1 => array (
-        'name'  => _('logout'),
-        'class' => 'logout',
-        'link'  => 'logout.php',
-        'img'   => 'log-out.png',
-        'check_permissions' => TRUE,
-    ),				
-	2 => array (
-        'name'  => _('profile'),
-        'class' => 'profile',
-        'link'  => 'profile.php',
-        'img'   => 'avatar-default.png',
-        'check_permissions'=>	TRUE,
-    ),
-	3 => array (
+	1 => array (
         'name'  => 	_('ping'),
         'class' => 	'ping',
         'link'  => 	'ping.php',
         'img'   =>	'network-transmit-receive.png',
         'check_permissions' => TRUE,
 			),
-	4 => array (
+	2 => array (
         'name'  => 	_('tickets'),
         'class' => 	'tikets',
         'link'  => 	'tickets.php',
         'img'   =>	'dialog-error.png',
         'check_permissions' => TRUE,
     ),
-    5 => array (
+    3 => array (
         'name'  => _('requests'),
         'class' => 'requests',
         'link'  => 'requests.php',
         'img'   => 'emblem-documents.png',
         'check_permissions' => TRUE,
-    )
+    ),
+    4 => array (
+        'name'  => _('logout'),
+        'class' => 'logout',
+        'link'  => 'logout.php',
+        'img'   => 'log-out.png',
+        'check_permissions' => TRUE,
+    ),
+    5 => array (
+        'name'  => _('profile'),
+        'class' => 'profile',
+        'link'  => 'profile.php',
+        'img'   => 'avatar-default.png',
+        'check_permissions'=>   TRUE,
+    ),
+    6 => array (
+        'name'  => _('search'),
+        'class' => 'search',
+        'link'  => 'search.php',
+        'img'   => 'search.png',
+        'check_permissions'=>   TRUE,
+    ),
 );
 
 
@@ -94,7 +101,7 @@ $right_menu = array (
         'check_permissions' => $sysadmin_permissions,
         'submenu' => array(
             1 => array(
-                'name' => _('nas'),
+                'name' => _('NAS'),
                 'link' => 'freeradius_nas.php',
                 'img'  => 'network-server.png',
                 'check_permissions' => TRUE,
@@ -121,7 +128,7 @@ $right_menu = array (
                 'check_permissions' => TRUE,
             ),
             2 => array(
-                'name' => _('the location'),
+                'name' => _('location'),
                 'link' => 'user_location.php',
                 'img'  => 'weather-clear-night.png',
                 'check_permissions' => TRUE,
@@ -139,7 +146,7 @@ $right_menu = array (
                 'check_permissions' => TRUE,
             ),
             5 => array(
-                'name' => _('freeRadius logs'),
+                'name' => _('FreeRadius logs'),
                 'link' => 'freeradius_logs.php',
                 'img'  => 'accessories-dictionary.png',
                 'check_permissions' => TRUE,

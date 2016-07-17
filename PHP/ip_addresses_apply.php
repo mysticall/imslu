@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -52,11 +52,10 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
         $id = $_POST['id'];
 
-        $sql = 'DELETE FROM `ip` WHERE id = :id AND userid = :userid';
+        $sql = 'DELETE FROM `ip` WHERE id = :id AND userid=0';
         $db->dbh->beginTransaction();
         $sth = $db->dbh->prepare($sql);
         $sth->bindParam(':id', $value, PDO::PARAM_INT);
-        $sth->bindValue(':userid', 0, PDO::PARAM_INT);
 
         foreach ($id as $value) {
 
@@ -211,7 +210,7 @@ function validateForm() {
 //-->
 </script>
     <form action=\"ip_addresses_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -223,7 +222,7 @@ function validateForm() {
               <label>"._('pool')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"pool\" name=\"pool\" class=\"input\" type=\"text\">
+              <input id=\"pool\" class=\"input\" type=\"text\" name=\"pool\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -232,7 +231,7 @@ function validateForm() {
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"id\" value='".serialize($_POST['id'])."'>
-              <input type=\"submit\" name=\"edit\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"edit\" value=\""._('save')."\">
             </td>
           </tr>     
         </tbody>

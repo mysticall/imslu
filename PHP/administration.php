@@ -70,7 +70,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
           <tr class=\"header_top\">
             <th  colspan=\"2\">
               <label>"._('check for vlan, mac')."</label>&nbsp;
-              <input type=\"submit\" name=\"start_vlan_mac_check\" value=\""._('start')."\">
+              <input class=\"input\" type=\"submit\" name=\"start_vlan_mac_check\" value=\""._('start')."\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
             </th>
           </tr>

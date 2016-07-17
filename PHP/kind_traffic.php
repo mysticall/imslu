@@ -42,9 +42,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     $db = new PDOinstance();
 
     ####### PAGE HEADER #######
-
     $page['title'] = 'Kind Traffic';
-    $page['file'] = 'kind_traffic.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
@@ -68,12 +66,12 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
         $js = "";
         $form =
 "    <form name=\"kind_traffic\" action=\"kind_traffic_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>"._('kinds of traffic')."</label>
-              <label class=\"info_right\"><a href=\"kind_traffic.php?new=1\">[ "._('new traffic')." ]</a></label>
+              <label class=\"info_right\"><a href=\"kind_traffic.php?new=1\">["._('new traffic')."]</a></label>
             </th>
           </tr>\n";
 
@@ -85,7 +83,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label>"._('id')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"hidden\" name=\"kind_traffic[$i][kind_trafficid]\" value=\"{$kind_traffic[$i]['kind_trafficid']}\">
+              <input type=\"hidden\" name=\"kind_traffic[$i][kind_trafficid]\" value=\"{$kind_traffic[$i]['kind_trafficid']}\">
               <label style=\"font-weight: bold;\"> {$kind_traffic[$i]['kind_trafficid']} </label>
             </td>
           </tr>
@@ -110,7 +108,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label style=\"color: red;\">"._('delete')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"kind_traffic[$i][del]\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"kind_traffic[$i][del]\">
             </td>
           </tr>\n";
 
@@ -130,8 +128,8 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"old\" value='".json_encode($kind_traffic)."'>
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"edit\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
         </tbody>
@@ -155,12 +153,12 @@ function validateForm() {
 
         $form =
 "    <form name=\"kind_traffic\" action=\"kind_traffic_apply.php\" onsubmit=\"return(validateForm());\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>"._('kinds of traffic')."</label>
-              <label class=\"info_right\"><a href=\"kind_traffic.php\">[ "._('back')." ]</a></label>
+              <label class=\"info_right\"><a href=\"kind_traffic.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -191,7 +189,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>

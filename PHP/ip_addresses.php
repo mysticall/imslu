@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -40,12 +40,11 @@ require_once dirname(__FILE__).'/include/config.php';
 if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
     $db = new PDOinstance();
-    $pool = (!empty($_GET['pools'])) ? $_GET['pool'] : '';
+    $pool = (!empty($_GET['pool'])) ? $_GET['pool'] : '';
     $order_by = (!empty($_GET['order_by'])) ? $_GET['order_by'] : '';
 
     ####### PAGE HEADER #######
     $page['title'] = 'IP addresses';
-    $page['file'] = 'ip_addresses.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
@@ -82,14 +81,13 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
     $form =
 "    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <label style=\"margin: 1px 3px 1px;\">"._('pool').combobox('input select', 'pool', $pool, $combobox1)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('order by').combobox('input select', 'order_by', $order_by, $combobox2)."</label>
-              <input type=\"hidden\" name=\"show\" id=\"show\">
-              <label class=\"generator\" style=\"margin: 1px 5px 1px;\" onclick=\"document.getElementById('show').value = 'true'; this.form.submit()\">"._('show')."</label>
+              <label>"._('pool').combobox('middle', 'pool', $pool, $combobox1)."</label>
+              <label>"._('order by').combobox('middle', 'order_by', $order_by, $combobox2)."</label>
+              <input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\">
               <label class=\"info_right\"><a href=\"ip_addresses.php?new=1\">["._('new pool')."]</a></label>
             </th>
           </tr>
@@ -111,10 +109,10 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 <!--
 function validateForm() {
 
-    if (document.getElementById(\"pool\").value == \"\") {
+    if (document.getElementById(\"pool2\").value == \"\") {
 
         add_new_msg(\""._s('Please fill the required field: %s', _('pool'))."\");
-        document.getElementById(\"pool\").focus();
+        document.getElementById(\"pool2\").focus();
         return false;
     }
     if (document.getElementById(\"ipaddress_start\").value == \"\") {
@@ -127,7 +125,7 @@ function validateForm() {
 //-->
 </script>
     <form action=\"ip_addresses_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -139,7 +137,7 @@ function validateForm() {
               <label>"._('pool')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"pool\" name=\"pool\" class=\"input\" type=\"text\" value=\"{$pool}\">
+              <input id=\"pool2\" type=\"text\" name=\"pool\" value=\"{$pool}\">
             </td>
           </tr>
           <tr>
@@ -147,7 +145,7 @@ function validateForm() {
               <label>"._('start IP address')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"ipaddress_start\" name=\"ipaddress_start\" class=\"input\" type=\"text\" value=\"{$ipaddress_start}\">
+              <input id=\"ipaddress_start\" type=\"text\" name=\"ipaddress_start\" value=\"{$ipaddress_start}\">
             </td>
           </tr>
           <tr>
@@ -155,7 +153,7 @@ function validateForm() {
               <label>"._('end IP address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"ipaddress_end\" value=\"{$ipaddress_end}\">
+              <input type=\"text\" name=\"ipaddress_end\" value=\"{$ipaddress_end}\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -163,7 +161,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>        
         </tbody>
@@ -180,10 +178,12 @@ function validateForm() {
         $table = new Table();
         $table->form_name = 'ip_addresses';
         $table->action = 'ip_addresses_apply.php';
-        $table->table_name = 'ip_addresses';
         $table->colspan = 13;
+        
         $table->info_field1 = _('total').": ";
         $table->info_field2 = _('IP addresses');
+        $table->link_action = 'ip_edit.php';
+        $table->link = TRUE;
 
         $items1 = array(
             '' => '',
@@ -191,7 +191,7 @@ function validateForm() {
             'change_pool' => _('change pool')
             );
 
-        $combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('ip_addresses', this[this.selectedIndex].value, '". _('WARNING: All selected IP addresses will be deleted!') ."')") ."</label>";
+        $combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('', 'action', $items1, "confirm_delete('ip_addresses', this[this.selectedIndex].value, '". _('WARNING: All selected IP addresses will be deleted!') ."')") ."</label>";
 
         $table->info_field3 = $combobox_form_submit;
         $table->checkbox = true;
@@ -225,7 +225,6 @@ function validateForm() {
 
         echo $table->ctable();
     }
-
     }
     require_once dirname(__FILE__).'/include/page_footer.php';
 }

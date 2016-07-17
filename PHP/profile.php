@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -38,12 +38,11 @@ require_once dirname(__FILE__).'/include/config.php';
 
 ####### PAGE HEADER #######
 $page['title'] = 'Operator profile';
-$page['file'] = 'profile.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 // Security key for comparison
@@ -64,7 +63,7 @@ function validateForm() {
 //-->
 </script>
     <form action=\"profile_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
@@ -79,7 +78,7 @@ function validateForm() {
 $form .= (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']) ?
 "              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" value=\"{$_SESSION['data']['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$_SESSION['data']['operid']}', '"._('That alias is already being used.')."')\">
               <label id=\"hint\"></label>\n" :
-"              <input class=\"input\" type=\"text\" name=\"alias\" value=\"{$_SESSION['data']['alias']}\">\n";
+"              <input type=\"text\" name=\"alias\" value=\"{$_SESSION['data']['alias']}\">\n";
 $form .= 
 "            </td>
           </tr>
@@ -88,7 +87,7 @@ $form .=
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"{$_SESSION['data']['name']}\">
+              <input type=\"text\" name=\"name\" value=\"{$_SESSION['data']['name']}\">
             </td>
           </tr>
           <tr>
@@ -174,7 +173,7 @@ $form .=
               <label>"._('url (after login)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"url\" maxlength=\"255\" value=\"{$_SESSION['data']['url']}\">
+              <input type=\"text\" name=\"url\" maxlength=\"255\" value=\"{$_SESSION['data']['url']}\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -182,7 +181,7 @@ $form .=
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"edit\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>

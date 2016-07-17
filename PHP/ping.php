@@ -68,19 +68,19 @@ switch($_GET['resource']) {
 
     echo
 "    <form method=\"get\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <label style=\"margin: 1px 3px 1px;\">".combobox('input select', 'resource', null, $resource)."</label>
-              <label style=\"margin: 1px 3px 1px;\">
-               <input class=\"input\" type=\"text\" name=\"packetsize\" value=\"$packetsize\" maxlength=\"5\" size=\"5\">
+              <label>".combobox('middle', 'resource', null, $resource)."</label>
+              <label>
+               <input class=\"middle\" type=\"text\" name=\"packetsize\" value=\"$packetsize\" maxlength=\"5\" size=\"5\">
               </label>
-              <label style=\"margin: 1px 3px 1px;\">
-               <input class=\"input\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"3\" size=\"3\">
+              <label>
+               <input class=\"middle\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"3\" size=\"3\">
               </label>
-               <input class=\"input\" type=\"text\" name=\"ipaddress\" value=\"$ipaddress\">
-              <input type=\"submit\" value=\""._('start')."\">
+               <input class=\"middle\" type=\"text\" name=\"ipaddress\" value=\"$ipaddress\">
+              <input class=\"button\" type=\"submit\" value=\""._('start')."\">
             </th>
           </tr>
         </tbody>

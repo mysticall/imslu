@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -49,7 +49,7 @@ require_once dirname(__FILE__).'/include/page_header.php';
 
 
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
@@ -120,7 +120,7 @@ function validateForm() {
 //-->
 </script>
     <form name=\"new_user\" action=\"user_new_apply.php\" onsubmit=\"return(validateForm());\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -132,7 +132,7 @@ function validateForm() {
               <label>"._('name')." * </label>
             </td>
             <td class=\"dd\">
-              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\" value=\"{$name}\" size=\"25\">
+              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\" value=\"{$name}\">
             </td>
           </tr>
           <tr>
@@ -140,7 +140,7 @@ function validateForm() {
               <label>"._('the location')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'locationid', null, $location)."
+".combobox('', 'locationid', null, $location)."
             </td>
           </tr>
           <tr>
@@ -148,7 +148,7 @@ function validateForm() {
               <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" value=\"{$address}\" size=\"25\">
+              <input type=\"text\" name=\"address\" value=\"{$address}\">
             </td>
           </tr>
           <tr>
@@ -156,7 +156,7 @@ function validateForm() {
               <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"{$phone_number}\" size=\"25\">
+              <input type=\"text\" name=\"phone_number\" value=\"{$phone_number}\">
             </td>
           </tr>
           <tr>
@@ -164,7 +164,7 @@ function validateForm() {
               <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
-              <textarea name=\"notes\" cols=\"45\" rows=\"2\">{$notes}</textarea>
+              <textarea name=\"notes\" rows=\"2\">{$notes}</textarea>
             </td>
           </tr>
           <tr>
@@ -172,7 +172,7 @@ function validateForm() {
               <label>"._('service')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'service', null, $services)."
+".combobox('', 'service', null, $services)."
             </td>
           </tr>
           <tr>
@@ -180,7 +180,7 @@ function validateForm() {
               <label>"._('pay')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"pay\" $disabled>
+              <input type=\"text\" name=\"pay\" $disabled>
             </td>
           </tr>
           <tr>
@@ -188,8 +188,8 @@ function validateForm() {
               <label>"._('free internet access')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"free_access\" value=\"y\" $disabled> "._('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"free_access\" value=\"n\" checked> "._('No')."
+              <input class=\"checkbox\" type=\"radio\" name=\"free_access\" value=\"y\" $disabled> "._('Yes')."
+              <input class=\"checkbox\" type=\"radio\" name=\"free_access\" value=\"n\" checked> "._('No')."
             </td>
           </tr>
           <tr>
@@ -197,8 +197,8 @@ function validateForm() {
               <label>"._('not excluding')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"radio\" name=\"not_excluding\" value=\"y\" $disabled> "._('Yes')."
-              <input class=\"input\" type=\"radio\" name=\"not_excluding\" value=\"n\" checked> "._('No')."
+              <input class=\"checkbox\" type=\"radio\" name=\"not_excluding\" value=\"y\" $disabled> "._('Yes')."
+              <input class=\"checkbox\" type=\"radio\" name=\"not_excluding\" value=\"n\" checked> "._('No')."
             </td>
           </tr>
         </tbody>
@@ -208,7 +208,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input id=\"save\" name=\"new\" type=\"submit\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>

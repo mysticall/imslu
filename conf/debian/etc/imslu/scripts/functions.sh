@@ -13,18 +13,18 @@ ppoe_rem () {
 
     for PID in $(ps -C pppd -o pid=); do
 
-        kill -HUP ${PID}
+        kill -9 ${PID}
     done
     sleep 5
     for PID in $(ps -C pppoe-server -o pid=); do
 
-    kill -HUP ${PID}
+    kill -9 ${PID}
     done
 }
 
 vconfig_add () {
 
-    if $USE_VLANS; then
+    if [[ $USE_VLANS -eq 0 ]]; then
 
         modprobe 8021q
         vconfig set_name_type DEV_PLUS_VID
@@ -56,7 +56,7 @@ vconfig_add () {
             done
 
             # Start PPPoE servers
-            if $USE_PPPoE; then
+            if [[ $USE_PPPoE -eq 0 ]]; then
 
                 ppoe_add ${IFACE}
             fi
@@ -68,14 +68,14 @@ vconfig_add () {
 
 vconfig_rem () {
 
-    if $USE_VLANS; then
+    if [[ $USE_VLANS -eq 0 ]]; then
 
         local padding="0000"
         local VLAN_ID
         local IFACE
 
         # Stop PPPoE sessions and PPPoE servers
-        if $USE_PPPoE; then
+        if [[ $USE_PPPoE -eq 0 ]]; then
 
             ppoe_rem
         fi

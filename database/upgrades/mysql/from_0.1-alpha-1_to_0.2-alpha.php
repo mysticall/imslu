@@ -119,14 +119,13 @@ $sth->execute();
 $static_ippool = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 $db->dbh->beginTransaction();
-$sql = "INSERT INTO ip (userid, ip, vlan, mac, free_mac, pool, protocol) VALUES (:userid, :ip, :vlan, :mac, :free_mac, :pool, :protocol)";
+$sql = "INSERT INTO ip (userid, ip, mac, free_mac, pool, protocol) VALUES (:userid, :ip, :mac, :free_mac, :pool, :protocol)";
 
 for ($i = 0; $i < count($static_ippool); ++$i) {
 
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':userid', $static_ippool[$i]['userid']);
     $sth->bindValue(':ip', $static_ippool[$i]['ipaddress']);
-    $sth->bindValue(':vlan', $static_ippool[$i]['vlan']);
     $sth->bindValue(':mac', $static_ippool[$i]['mac']);
     $sth->bindValue(':free_mac', $static_ippool[$i]['free_mac']);
     $sth->bindValue(':pool', $static_ippool[$i]['pool_name']);

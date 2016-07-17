@@ -156,7 +156,9 @@ CREATE TABLE `payments` (
   `expires`       datetime     NOT NULL,
   `sum`           double(10,2) NOT NULL DEFAULT '0.00',
   `notes`         text         NOT NULL DEFAULT '',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  INDEX (userid),
+  INDEX (expires)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --

@@ -211,10 +211,13 @@ tc_filter_delete () {
 
 case "$1" in
 pppd_kill)
-    IFACE=$(ip address show | ip address show | grep "$2" | grep -o "ppp\w*")
+    ip=$2
+    IFACE=$(ip address show | ip address show | grep "${ip}/32" | grep -o "ppp\w*")
     if [ -f /var/run/${IFACE}.pid ]; then
         PID=$(cat /var/run/${IFACE}.pid)
-        kill -HUP $PID
+        kill -9 $PID
+        sed -i "/${ip}/d" /tmp/ip_activity_pppoe
+        sed -i "/${ip}/d" /tmp/ip_activity
     fi
 	;;
 

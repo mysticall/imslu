@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  *
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -42,65 +42,10 @@ $admin_permissions = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 if ($sysadmin_permissions || $admin_permissions) {
 
 	$db = new PDOinstance();
+    $fromdate = (!empty($_GET['fromdate'])) ? $_GET['fromdate'] : date("Y-m-d", strtotime("-3 days")).' 00:00';
+    $todate = (!empty($_GET['todate'])) ? $_GET['todate'] : date('Y-m-d H:i');
 
-
-###################################################################################################
-	// Delet attempts from IP
-###################################################################################################
-
-	if (!empty($_POST['action']) && $_POST['action'] == 'delete' && !empty($_POST['attempt_ip'])) {
-
-		$sql = 'DELETE FROM `login_attempts` WHERE attempt_ip = :attempt_ip';
-		$db->dbh->beginTransaction();
-		$sth = $db->dbh->prepare($sql);
-		$sth->bindParam(':attempt_ip', $value, PDO::PARAM_INT);
-
-		$attempt_ip = $_POST['attempt_ip'];
-
-		foreach ($attempt_ip as $value) {
-
-			$sth->execute();
-		}
-
-		$db->dbh->commit();
-
-		unset($_POST);
-	}
-
-###################################################################################################
-	// Backup and delete
-###################################################################################################
-	if (isset($_POST['action']) && ($_POST['action'] == 'backup' || $_POST['action'] == 'backup_delete')) {
-
-		$alias = CWebOperator::$data['alias'];
-		$info = ($_POST['action'] == 'backup_delete') ? "_PHP-backup-DELETE_".$alias."_" : "_PHP_".$alias."_";
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import sqldump
-sqldump.mysqldump(tabe_name = 'login_attempts', info = '$info')
-END";
-
-		$result = shell_exec($command);
-		$_SESSION['msg'] = (empty($result)) ? _s('Backup of table %s success.', 'login_attempts').'<br>' : _s('Backup of table %s failed', 'login_attempts').' - '.$result.'<br>';
-
-		if(($_POST['action'] == 'backup_delete') && empty($result)) {
-
-			$sql = 'DELETE FROM `login_attempts`';
-			$sth = $db->dbh->exec($sql);
-
-			$_SESSION['msg'] .= _s('The contents of the table %s was deleted.', 'login_attempts').'<br>';
-		}
-
-		unset($_POST);
-	}
-
-###################################################################################################
-	// Reset attempts from IP
-###################################################################################################
-
+    #######  Reset attempts from IP #######
 	if (!empty($_POST['action']) && $_POST['action'] == 'reset' && !empty($_POST['attempt_ip'])) {
 
 		$sql = 'UPDATE `login_attempts` SET attempt_failed = :attempt_failed WHERE attempt_ip = :attempt_ip';
@@ -122,23 +67,23 @@ END";
 	}
 
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-	
+    ####### PAGE HEADER #######
 	$page['title'] = 'Login attempts';
-	$page['file'] = 'login_attempts.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
 
+    ####### Display messages #######
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    $_SESSION['msg'] = null;
+
 	$form =
-"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">
-      <table class=\"tableinfo\">
+"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
               <label style=\"margin: 1px 3px 1px;\">"._('from date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"fromdate\" id=\"fromdate\" size=\"17\" value=\"".date("Y-m-d", strtotime("-3 days"))." 00:00\">
+                <input style=\"width: 120px;\" type=\"text\" name=\"fromdate\" id=\"fromdate\" value=\"{$fromdate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -152,7 +97,7 @@ END";
                 </script>
               </label>
               <label>"._('to date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"todate\" id=\"todate\" size=\"17\" value=\"".date('Y-m-d H:i')."\">
+                <input style=\"width: 120px;\" type=\"text\" name=\"todate\" id=\"todate\" value=\"{$todate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -165,8 +110,7 @@ END";
                 });
                 </script>
               </label>
-              <input type=\"hidden\" name=\"show\" value=\"true\">
-              <label class=\"generator\" style=\"margin: 1px 5px 1px;\" onclick=\"this.form.submit()\">"._('show')."</label>
+              <input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\">
             </th>
           </tr>
         </tbody>
@@ -176,29 +120,17 @@ END";
 	echo $form;
 
 
-#####################################################
-	// Display messages
-#####################################################
-	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
-	$_SESSION['msg'] = null;
+    ####### Set CTable variables #######
+	if (!empty($_GET['show'])) {
 
-###################################################################################################
-	// Set CTable variables and create dynamic html table
-###################################################################################################	
-
-	if (isset($_POST['show'])) {
-		
-		$fromdate = (!empty($_POST['fromdate'])) ? strtotime($_POST['fromdate']) : strtotime(date("Y-m-d", strtotime("-3 days")));
-		$todate = (!empty($_POST['todate'])) ? strtotime($_POST['todate']) : time();
-		
 		// Select user IP Addresses
 		$sql = "SELECT attempt_ip, attempt_failed, attempt_time, alias 
 				FROM login_attempts
 				WHERE attempt_time > :fromdate AND attempt_time < :todate
 				ORDER BY attempt_time DESC";
 		$sth = $db->dbh->prepare($sql);
-		$sth->bindValue(':fromdate', $fromdate, PDO::PARAM_INT);
-		$sth->bindValue(':todate', $todate, PDO::PARAM_INT);
+		$sth->bindValue(':fromdate', strtotime($fromdate), PDO::PARAM_INT);
+		$sth->bindValue(':todate', strtotime($todate), PDO::PARAM_INT);
 		$sth->execute();
 		$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
@@ -211,30 +143,19 @@ END";
 		}
 
         $table = new Table();
-		$table->form_name = 'login_attempts';
-		$table->table_name = 'login_attempts';
+        $table->form_name = 'login_attempts';
 		$table->colspan = 5;
+        $table->checkbox = TRUE;
 		$table->info_field1 = _('total').": ";
 		$table->info_field2 = _('Login attempts');
 
-		if ($sysadmin_permissions) {
-			$items1 = array(
-				'' => '',
-				'reset' => _('reset selected'),
-				'backup' => _('backup'),
-				'backup_delete' => _('backup and delete'),
-				'delete' => _('delete selected')
-				);
-		}
-		else {
-			$items1 = array(
-				'' => '',
-				'reset' => _('reset selected')
-				);
-		}
-		
-		$combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('login_attempts', this[this.selectedIndex].value)") ."</label> \n";
-	
+        $items1 = array(
+            '' => '',
+            'reset' => _('reset selected')
+            );
+
+		$combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('', 'action', $items1, "confirm_delete('login_attempts', this[this.selectedIndex].value)") ."</label> \n";
+
 		$table->info_field3 = $combobox_form_submit;
 		$table->checkbox = true;
 
@@ -249,7 +170,6 @@ END";
 
 		echo $table->ctable();
 	}
-
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
 }

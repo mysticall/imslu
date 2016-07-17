@@ -74,29 +74,29 @@ function pppoe_update($db, $pppoe_old, $pppoe_new) {
 
     $db->dbh->beginTransaction();
 
-    if (!empty($pppoe_old['pass']) && !empty($pppoe_new['pass'])) {
+    if (isset($pppoe_old['pass']) && $pppoe_old['pass'] !=  $pppoe_new['pass']) {
 
         $password = strip_tags($pppoe_new['pass']);
 
         $sql = 'UPDATE radcheck SET value = :value WHERE username = :username AND attribute = :attribute';
         $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':value', $password, PDO::PARAM_STR);
+        $sth->bindValue(':value', $password);
         $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
         $sth->bindValue(':attribute', 'Cleartext-Password');
         $sth->execute();
     }
 
-    if (!empty($pppoe_old['mac']) && !empty($pppoe_new['mac'])) {
+    if (isset($pppoe_old['mac']) && $pppoe_old['mac'] != $pppoe_new['mac']) {
 
         $sql = 'UPDATE radcheck SET value = :value WHERE username = :username AND attribute = :attribute';
         $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':value', $pppoe_new['mac'], PDO::PARAM_STR);
+        $sth->bindValue(':value', $pppoe_new['mac']);
         $sth->bindValue(':username', $pppoe_old['username'], PDO::PARAM_STR);
         $sth->bindValue(':attribute', 'Calling-Station-Id');
         $sth->execute();
     }
 
-    if (!empty($pppoe_old['groupname']) && !empty($pppoe_new['groupname'])) {
+    if (isset($pppoe_old['groupname']) && $pppoe_old['groupname'] != $pppoe_new['groupname']) {
 
         $sql = 'UPDATE radusergroup SET groupname = :groupname WHERE username = :username';
         $sth = $db->dbh->prepare($sql);
@@ -105,7 +105,7 @@ function pppoe_update($db, $pppoe_old, $pppoe_new) {
         $sth->execute();
     }
 
-    if (!empty($pppoe_old['username']) && !empty($pppoe_new['username'])) {
+    if ($pppoe_old['username'] != $pppoe_new['username']) {
 
         $str = strip_tags($pppoe_new['username']);
         $username = preg_replace('/\s+/', '_', $str);

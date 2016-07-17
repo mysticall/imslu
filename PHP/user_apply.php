@@ -204,7 +204,7 @@ if (!empty($_POST['edit'])) {
         $sth = $db->dbh->prepare($sql);
         $sth->bindValue(':expires', $expires, PDO::PARAM_INT);
         $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
-        $sth->bindValue(':id', $old['payment_id'], PDO::PARAM_INT);
+        $sth->bindValue(':id', $old['id'], PDO::PARAM_INT);
         $sth->execute();
 
         // Start internet access

@@ -4,18 +4,11 @@ require_once dirname(__FILE__).'/classes/menu.php';
 
 $menu = new Menu();
 
-if (!isset($page['file'])) {
-    $page['file'] = basename($_SERVER['PHP_SELF']);
-}
-
-// page title
-$page_title = isset($page['title']) ? $page['title'] : 'IMSLU';
-
 $html =
 "<!doctype html>
 <html>
 <head>
-    <title>{$page_title}</title>
+    <title>{$page['title']}</title>
     <meta name=\"Author\" content=\"MSIUL Developers\">
     <meta charset=\"utf-8\">
     <link rel=\"stylesheet\" type=\"text/css\" href=\"css.css\"> \n";

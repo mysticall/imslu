@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -42,11 +42,9 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 	$db = new PDOinstance();
 
     ####### PAGE HEADER #######
-	$page['title'] = 'freeRadius groups';
-	$page['file'] = 'freeradius_groups.php';
+	$page['title'] = 'FreeRadius groups';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
-
 
     ####### Display messages #######
 	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
@@ -96,7 +94,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 
     ####### New #######
-    if (!empty($_POST['action']) && $_POST['action'] == 'addgroup') {
+    if (!empty($_GET['new'])) {
 
     	// Radgroupcheck
     	$radgroupcheck_attributes = array(
@@ -127,11 +125,12 @@ function validateForm() {
 //-->
 </script>
     <form name=\"edit_user\" action=\"freeradius_groups_apply.php\" onsubmit=\"return validateForm();\"  method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>"._('new FreeRadius group')."</label>
+              <label class=\"info_right\"><a href=\"freeradius_groups.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -139,7 +138,7 @@ function validateForm() {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"groupname\" id=\"groupname\" onkeyup=\"value_exists('groupname', 'radgroupcheck', '', '"._('The groupname is already being used!')."')\">
+              <input id=\"groupname\" type=\"text\" name=\"groupname\" onkeyup=\"value_exists('groupname', 'radgroupcheck', '', '"._('The groupname is already being used!')."')\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -155,16 +154,16 @@ function validateForm() {
               <label>"._('Add attribute')."</label>
             </td>
             <td class=\"dd\">
-".combobox_onchange('input select', 'add_attribute[radgroupcheck]', $radgroupcheck_attributes, 'add_attribute(\'thead\', \'radgroupcheck\', this[this.selectedIndex].value)')."
+".combobox_onchange('', 'add_attribute[radgroupcheck]', $radgroupcheck_attributes, 'add_attribute(\'thead\', \'radgroupcheck\', this[this.selectedIndex].value)')."
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label> Pool-Name </label>
-".combobox('input select', 'op[Pool-Name]', ':=', $freeradius_op)."
+".combobox('small', 'op[Pool-Name]', ':=', $freeradius_op)."
             </td>
 			<td class=\"dd\">
-".combobox('input select', 'radgroupcheck[Pool-Name]', null, $pool)."
+".combobox('', 'radgroupcheck[Pool-Name]', null, $pool)."
             </td>
           </tr>
         </thead>
@@ -181,52 +180,52 @@ function validateForm() {
               <label>"._('Add attribute')."</label>
             </td>
             <td class=\"dd\">
-".combobox_onchange('input select', 'add_attribute[radgroupreply]', $radgroupreply_attributes, 'add_attribute(\'tbody\', \'radgroupreply\', this[this.selectedIndex].value)')."
+".combobox_onchange('', 'add_attribute[radgroupreply]', $radgroupreply_attributes, 'add_attribute(\'tbody\', \'radgroupreply\', this[this.selectedIndex].value)')."
             </td>
           </tr>	
           <tr>
             <td class=\"dt right\">
               <label> Framed-Protocol </label>
-".combobox('input select', 'op[Framed-Protocol]', null, $freeradius_op)."
+".combobox('small', 'op[Framed-Protocol]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Framed-Protocol]\" value=\"PPP\">
+              <input type=\"text\" name=\"radgroupreply[Framed-Protocol]\" value=\"PPP\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label> Service-Type </label>
-".combobox('input select', 'op[Service-Type]', null, $freeradius_op)."
+".combobox('small', 'op[Service-Type]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Service-Type]\" value=\"Framed-User\">
+              <input type=\"text\" name=\"radgroupreply[Service-Type]\" value=\"Framed-User\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label> Framed-MTU </label>
-".combobox('input select', 'op[Framed-MTU]', null, $freeradius_op)."
+".combobox('small', 'op[Framed-MTU]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Framed-MTU]\" value=\"1500\">
+              <input type=\"text\" name=\"radgroupreply[Framed-MTU]\" value=\"1500\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label> Framed-Compression </label>
-".combobox('input select', 'op[Framed-Compression]', null, $freeradius_op)."
+".combobox('small', 'op[Framed-Compression]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Framed-Compression]\" value=\"None\">
+              <input type=\"text\" name=\"radgroupreply[Framed-Compression]\" value=\"None\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label> Acct-Interim-Interval </label>
-".combobox('input select', 'op[Acct-Interim-Interval]', null, $freeradius_op)."
+".combobox('small', 'op[Acct-Interim-Interval]', null, $freeradius_op)."
             </td>
 			<td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"radgroupreply[Acct-Interim-Interval]\" value=\"60\">
+              <input type=\"text\" name=\"radgroupreply[Acct-Interim-Interval]\" value=\"60\">
             </td>
           </tr>
         </tbody>
@@ -237,7 +236,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>
@@ -246,12 +245,10 @@ function validateForm() {
 
         echo $form;
     }
-
-
     ####### Edit #######
-    if (!empty($_POST['groupname'])) {
+    elseif (!empty( $_GET['groupname'])) {
 		
-    	$groupname = $_POST['groupname'];
+    	$groupname =  $_GET['groupname'];
 
     	$sql = 'SELECT groupname,attribute,op,value FROM radgroupcheck WHERE groupname = ?';
     	$sth = $db->dbh->prepare($sql);
@@ -276,11 +273,12 @@ function validateForm() {
 
             $form =
 "    <form name=\"change_group\" action=\"freeradius_groups_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
 				<label>"._('group').": ".chars($group_radgroupcheck[$i]['groupname'])."</label>
+				<label class=\"info_right\"><a href=\"freeradius_groups.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr class=\"odd_row\">
@@ -296,7 +294,7 @@ function validateForm() {
               <label>"._('Add attribute')."</label>
             </td>
             <td class=\"dd\">
-".combobox_onchange('input select', 'add_attribute[radgroupcheck]', $radgroupcheck_attributes, "add_attribute('thead', 'radgroupcheck', this[this.selectedIndex].value)")."
+".combobox_onchange('', 'add_attribute[radgroupcheck]', $radgroupcheck_attributes, "add_attribute('thead', 'radgroupcheck', this[this.selectedIndex].value)")."
             </td>
           </tr>\n";
             }
@@ -307,10 +305,10 @@ function validateForm() {
 "          <tr>
             <td class=\"dt right\">
 				<label>{$group_radgroupcheck[$i]['attribute']}</label>
-".combobox('input select', "op[{$group_radgroupcheck[$i]['attribute']}]", $group_radgroupcheck[$i]['op'], $freeradius_op)."
+".combobox('small', "op[{$group_radgroupcheck[$i]['attribute']}]", $group_radgroupcheck[$i]['op'], $freeradius_op)."
             </td>
             <td class=\"dd\">
-".combobox('input select', 'radgroupcheck[Pool-Name]', $group_radgroupcheck[$i]['value'], $pool)."
+".combobox('', 'radgroupcheck[Pool-Name]', $group_radgroupcheck[$i]['value'], $pool)."
             </td>
           </tr>\n";
 
@@ -321,10 +319,10 @@ function validateForm() {
 "          <tr>
             <td class=\"dt right\">
 				<label>{$group_radgroupcheck[$i]['attribute']}</label>
-".combobox('input select', "op[{$group_radgroupcheck[$i]['attribute']}]", $group_radgroupcheck[$i]['op'], $freeradius_op)."
+".combobox('small', "op[{$group_radgroupcheck[$i]['attribute']}]", $group_radgroupcheck[$i]['op'], $freeradius_op)."
             </td>
             <td class=\"dd\">
-				<input class=\"input\" type=\"text\" name=\"radgroupcheck[{$group_radgroupcheck[$i]['attribute']}]\" value=\"".chars($group_radgroupcheck[$i]['value'])."\">
+				<input type=\"text\" name=\"radgroupcheck[{$group_radgroupcheck[$i]['attribute']}]\" value=\"".chars($group_radgroupcheck[$i]['value'])."\">
             </td>
           </tr>\n";
 
@@ -370,7 +368,7 @@ function validateForm() {
               <label>"._('Add attribute')."</label>
             </td>
             <td class=\"dd\">
-".combobox_onchange('input select', 'add_attribute[radgroupreply]', $radgroupreply_attributes, "add_attribute('tbody', 'radgroupreply', this[this.selectedIndex].value)")."
+".combobox_onchange('', 'add_attribute[radgroupreply]', $radgroupreply_attributes, "add_attribute('tbody', 'radgroupreply', this[this.selectedIndex].value)")."
             </td>
           </tr>\n";
 		  }
@@ -379,10 +377,10 @@ function validateForm() {
 "          <tr>
             <td class=\"dt right\">
               <label>{$group_radgroupreply[$i]['attribute']}</label>
-".combobox('input select', 'op['. $group_radgroupreply[$i]['attribute'] .']', $group_radgroupreply[$i]['op'], $freeradius_op)."
+".combobox('small', 'op['. $group_radgroupreply[$i]['attribute'] .']', $group_radgroupreply[$i]['op'], $freeradius_op)."
             </td>
             <td class=\"dd\">
-				<input class=\"input\" type=\"text\" name=\"radgroupreply[{$group_radgroupreply[$i]['attribute']}]\" value=\"".chars($group_radgroupreply[$i]['value'])."\">
+				<input type=\"text\" name=\"radgroupreply[{$group_radgroupreply[$i]['attribute']}]\" value=\"".chars($group_radgroupreply[$i]['value'])."\">
             </td>
           </tr>\n";
 
@@ -396,7 +394,7 @@ function validateForm() {
               <label style=\"color: red;\">"._('delete')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -408,8 +406,8 @@ function validateForm() {
               <input type=\"hidden\" name=\"group_radgroupcheck\" value='".serialize($group_radgroupcheck)."'>
               <input type=\"hidden\" name=\"group_radgroupreply\" value='".serialize($group_radgroupreply)."'>
               <input type=\"hidden\" name=\"group\" value=\"".chars($groupname)."\">
-              <input type=\"submit\" name=\"change_group\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
+              <input class=\"button\" type=\"submit\" name=\"change_group\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
         </tfoot>
@@ -420,12 +418,9 @@ function validateForm() {
 	# Show freeRadius Group 
 	echo $form;
     }
+    else {
 
-
-###################################################################################################
-	// Set Table variable and create dynamic html table
-###################################################################################################	
-
+    ####### Set Table variable #######
 	//Check available groups
 	$sql = 'SELECT groupname, GROUP_CONCAT(value) FROM radgroupcheck GROUP BY groupname';
 
@@ -449,20 +444,12 @@ function validateForm() {
 
     $table = new Table();
 	// Create dynamic html table
-	$table->form_name = 'groups';
-	$table->table_name = 'freeradius_groups';
+	$table->action = 'freeradius_groups.php';
 	$table->info_field1 = _('total').": ";
 	$table->info_field2 = _('FreeRadius groups');
-	
-	$items1 = array(
-		'' => '',
-		'addgroup' => _('add group')
-		);
-
-	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
-
-	$table->info_field3 = $combobox_form_submit;
-	$table->onclick_id = true;
+	$table->info_field3 = "<label class=\"info_right\"><a href=\"freeradius_groups.php?new=1\">["._('new group')."]</a></label>";
+    $table->link_action = 'freeradius_groups.php';
+	$table->link = TRUE;
 	$table->th_array = array(
 		1 => _('name'),
 		2 => 'pool'
@@ -472,7 +459,7 @@ function validateForm() {
 	$table->td_array = $groups;
 	echo $table->ctable();
 
-
+    }
 	require_once dirname(__FILE__).'/include/page_footer.php';
 }
 else {

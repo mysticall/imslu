@@ -55,6 +55,12 @@ CREATE INDEX phone_number ON users (phone_number(15));
 ALTER TABLE users ADD service varchar(64) NOT NULL AFTER created;
 
 --
+-- payments
+--
+CREATE INDEX userid ON payments (userid);
+CREATE INDEX expires ON payments (expires);
+
+--
 -- FreeRadius
 --
 ALTER TABLE `radcheck` DROP FOREIGN KEY `c_radcheck_1`;

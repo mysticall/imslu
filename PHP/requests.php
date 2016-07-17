@@ -38,23 +38,17 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
-###################################################################################################
-// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'Requests';
-$page['file'] = 'requests.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 $form =
-"      <table class=\"tableinfo\">
+"      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
@@ -112,12 +106,11 @@ if ($rows) {
 
     $table = new Table();
     $table->form_name = 'requests';
-    $table->action = 'request_edit.php';
-    $table->table_name = 'requests';
     $table->colspan = 8;
     $table->info_field1 = _('total').": ";
     $table->info_field2 = _('requests');
-    $table->onclick_id = true;
+    $table->link_action = 'request_edit.php';
+    $table->link = TRUE;
     $table->th_array = array(
             1 => _('id'),
             2 => _('status'),

@@ -37,50 +37,24 @@ if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['i
 require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
+$fromdate = (!empty($_GET['fromdate'])) ? $_GET['fromdate'] : date("Y-m-d", strtotime("-3 days")).' 00:00';
+$todate = (!empty($_GET['todate'])) ? $_GET['todate'] : date('Y-m-d H:i');
+$action2 = (!empty($_GET['action'])) ? $_GET['action'] : '';
+$alias = (!empty($_GET['operator'])) ? $_GET['operator'] : '';
 
 $admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'Payments';
-$page['file'] = 'user_payments.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+$_SESSION['msg'] = null;
 
 //Only System Admin or Admin have full access to payments
 if ($admin_permissions) {
-
-###################################################################################################
-	// Reporting payments
-###################################################################################################
-
-	if (!empty($_POST['reporting']) && !empty($_POST['id']) && is_array($_POST['id'])) {
-
-		$sql = 'UPDATE `payments` SET reported = :reported WHERE id = :id';
-		$db->dbh->beginTransaction();
-		$sth = $db->dbh->prepare($sql);
-		$sth->bindValue(':reported', 1, PDO::PARAM_INT);
-		$sth->bindParam(':id', $value, PDO::PARAM_INT);
-
-		$id = $_POST['id'];
-
-		foreach ($id as $value) {
-
-			$sth->execute();
-		}
-
-		$db->dbh->commit();
-
-		// Add audit
-		add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Payments are reported.", json_encode($id));
-
-		$_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
-		unset($_POST);
-	}
-
 
 	$action = array(
 		'unreported' => _('unreported'),
@@ -118,15 +92,15 @@ else {
 }
 
 $form =
-"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">
-      <table class=\"tableinfo\">
+"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <label style=\"margin: 1px 3px 1px;\">".combobox('input select', 'action', null, $action)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('operator').combobox('input select', 'operator', null, $operator)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('from date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"fromdate\" id=\"fromdate\" size=\"17\" value=\"".date("Y-m").'-01 00:00'."\">
+              <label>".combobox('', 'action', $action2, $action)."</label>
+              <label>"._('operator').combobox('middle', 'operator', $alias, $operator)."</label>
+              <label>"._('from date')."
+                <input id=\"fromdate\" style=\"width: 120px;\" type=\"text\" name=\"fromdate\" value=\"{$fromdate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -140,7 +114,7 @@ $form =
                 </script>
               </label>
               <label>"._('to date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"todate\" id=\"todate\" size=\"17\" value=\"".date('Y-m-d H:i')."\">
+                <input id=\"todate\" style=\"width: 120px;\" type=\"text\" name=\"todate\" value=\"{$todate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -153,8 +127,7 @@ $form =
                 });
                 </script>
               </label>
-              <input type=\"hidden\" name=\"show\" value=\"true\">
-              <label class=\"generator\" style=\"margin: 1px 5px 1px;\" onclick=\"this.form.submit()\">"._('show')."</label>
+              <input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\">
             </th>
           </tr>
         </tbody>
@@ -162,26 +135,14 @@ $form =
     </form>\n";
 echo $form;
 
-#####################################################
-	// Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
-$_SESSION['msg'] = null;
-
-
-if (isset($_POST['show'])) {
+if (!empty($_GET['show'])) {
 
 	// Security key for comparison
 	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
-	
-	$fromdate = (!empty($_POST['fromdate'])) ? $_POST['fromdate'] : date("Y-m-d", strtotime("-3 days")).' 00:00';
-	$todate = (!empty($_POST['todate'])) ? $_POST['todate'] : date('Y-m-d H:i');
-	$operator = (!empty($_POST['operator'])) ? $_POST['operator'] : '';
 
+	if ($_GET['action'] == 'unreported') {
 
-	if ($_POST['action'] == 'unreported') {
-
-		$_operator = (!empty($operator)) ? ' AND operator2 = :operator2' : '';
+		$_operator = (!empty($alias)) ? ' AND operator2 = :operator2' : '';
 
 		// Select unreported payments
 		$sql = "SELECT *
@@ -194,11 +155,11 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':reported', 0, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator2', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator2', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
-		$payments_info = $sth->fetchAll(PDO::FETCH_ASSOC);
+		$payments = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 		// Select payments by operator
 		$sql = "SELECT operator2 as operator, SUM(sum) as totalsum
@@ -211,16 +172,16 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':reported', 0, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator2', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator2', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
 		$payments_operator = $sth->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	elseif ($_POST['action'] == 'reported') {
+	elseif ($_GET['action'] == 'reported') {
 
-		$_operator = (!empty($operator)) ? ' AND operator2 = :operator2' : '';
+		$_operator = (!empty($alias)) ? ' AND operator2 = :operator2' : '';
 
 		// Select reported payments
 		$sql = "SELECT * 
@@ -233,11 +194,11 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':reported', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator2', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator2', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
-		$payments_info = $sth->fetchAll(PDO::FETCH_ASSOC);
+		$payments = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 		// Select payments by operator
 		$sql = "SELECT operator2 as operator, SUM(sum) as totalsum
@@ -250,16 +211,16 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':reported', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator2', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator2', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
 		$payments_operator = $sth->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	elseif ($_POST['action'] == 'obligations') {
+	elseif ($_GET['action'] == 'obligations') {
 
-		$_operator = (!empty($operator)) ? ' AND operator1 = :operator1' : '';
+		$_operator = (!empty($alias)) ? ' AND operator1 = :operator1' : '';
 
 		// Select unpaid payments
 		$sql = "SELECT * 
@@ -272,11 +233,11 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':unpaid', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator1', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator1', $alias, PDO::PARAM_INT);
 		}
 		
 		$sth->execute();
-		$payments_info = $sth->fetchAll(PDO::FETCH_ASSOC);
+		$payments = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 		// Select payments by operator
 		$sql = "SELECT operator1 as operator, SUM(sum) as totalsum
@@ -289,16 +250,16 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':unpaid', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator1', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator1', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
 		$payments_operator = $sth->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	elseif ($_POST['action'] == 'limited') {
+	elseif ($_GET['action'] == 'limited') {
 
-		$_operator = (!empty($operator)) ? ' AND operator1 = :operator1' : '';
+		$_operator = (!empty($alias)) ? ' AND operator1 = :operator1' : '';
 
 		// Select limited access payments
 		$sql = "SELECT * 
@@ -311,11 +272,11 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':limited', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator1', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator1', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
-		$payments_info = $sth->fetchAll(PDO::FETCH_ASSOC);
+		$payments = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 		// Select payments by operator
 		$sql = "SELECT operator1 as operator, SUM(sum) as totalsum
@@ -328,7 +289,7 @@ if (isset($_POST['show'])) {
 		$sth->bindValue(':limited', 1, PDO::PARAM_INT);
 
 		if (!empty($_operator)) {
-			$sth->bindValue(':operator1', $operator, PDO::PARAM_INT);
+			$sth->bindValue(':operator1', $alias, PDO::PARAM_INT);
 		}
 
 		$sth->execute();
@@ -337,15 +298,15 @@ if (isset($_POST['show'])) {
 
 
 
-	if ($_POST['action'] == 'unreported' && isset($payments_info[0]) && $admin_permissions) {
+	if ($_GET['action'] == 'unreported' && isset($payments[0]) && $admin_permissions) {
 
 		$items1 = array(
 			'' => '',
 			'reporting' => _('reporting of selected'),
 			);
 
-		$report = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'reporting', $items1, null) ."</label>";
-		$checkbox = "<th style=\"table-layout: fixed; width: 3px;\"><input class=\"input\" type=\"checkbox\" id=\"all\" onclick=\"check_unchek('payments', 'all')\"></th> \n";
+		$report = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('', 'reporting', $items1, null) ."</label>";
+		$checkbox = "<th style=\"table-layout: fixed; width: 11px;\"><input id=\"all\" class=\"checkbox\" type=\"checkbox\" onclick=\"check_unchek('payments', 'all')\"></th> \n";
 		$colspan = 7;
 	}
 	else {
@@ -355,12 +316,12 @@ if (isset($_POST['show'])) {
 	}
 	
 	$form =
-"    <form name=\"payments\" action=\"payments.php\" method=\"post\">
-      <table class=\"tableinfo\">
+"    <form name=\"payments\" action=\"payments_apply.php\" method=\"post\">
+      <table>
         <thead id=\"thead\">
           <tr class=\"header_top\">
-            <th colspan=\"$colspan\">
-              <label style=\"float: left;\">". _('total').": ".count($payments_info)."</label>
+            <th colspan=\"{$colspan}\">
+              <label style=\"float: left;\">". _('total').": ".count($payments)."</label>
               $report
             </th>
           </tr> \n";
@@ -378,7 +339,7 @@ if (isset($_POST['show'])) {
         </thead>
         <tbody>\n";
 
-	if (isset($payments_info[0])) {
+	if (isset($payments[0])) {
 		
 
 
@@ -386,51 +347,28 @@ if (isset($_POST['show'])) {
 			'total' => ''
 			);
 
-		for ($i = 0; $i < count($payments_info); ++$i) {
+		for ($i = 0; $i < count($payments); ++$i) {
 
-			//$sum['operator2'] = (isset($sum['operator2']) && $payments_info[$i] == isset($sum['operator2']) ? $sum['operator2'] + $payments_info[$i]['sum'] : $sum['operator2'] = $payments_info[$i]['sum'];
-			$sum['total'] = $sum['total'] + $payments_info[$i]['sum'];
-			$red = ($payments_info[$i]['unpaid'] == 1 || $payments_info[$i]['limited'] == 1) ? "red" : "";
+			//$sum['operator2'] = (isset($sum['operator2']) && $payments[$i] == isset($sum['operator2']) ? $sum['operator2'] + $payments[$i]['sum'] : $sum['operator2'] = $payments[$i]['sum'];
+			$sum['total'] = $sum['total'] + $payments[$i]['sum'];
+            $class = ($i % 2 == 0) ? "class=\"even_row" : "class=\"odd_row";
+			$red = ($payments[$i]['unpaid'] == 1 || $payments[$i]['limited'] == 1) ? "red" : "";
 
-
-			if ($i % 2 == 0) {
-
-				$form .= 
-"          <tr class=\"even_row $red\"> \n";
+			$form .= 
+"          <tr $class $red\"> \n";
 
 				if (!empty($checkbox)) {
-					$form .= "            <td><input class=\"input\" type=\"checkbox\" id=\"checkbox\" name=\"id[{$payments_info[$i]['id']}]\" value=\"{$payments_info[$i]['id']}\"></td> \n";
+					$form .= "            <td><input id=\"checkbox\" class=\"checkbox\" type=\"checkbox\" name=\"id[{$payments[$i]['id']}]\" value=\"{$payments[$i]['id']}\"></td> \n";
 				}
 
 				$form .= 
-"            <td><a href=\"user_payments.php?userid={$payments_info[$i]['userid']}&id={$payments_info[$i]['id']}\">".chars($payments_info[$i]['name'])."</a></td>
-            <td>{$payments_info[$i]['date_payment1']}   ".chars($payments_info[$i]['operator1'])."</td>
-            <td>{$payments_info[$i]['date_payment2']}   ".chars($payments_info[$i]['operator2'])."</td>
-            <td>{$payments_info[$i]['expires']}</td>
-            <td>".chars($payments_info[$i]['notes'])."</td>
-            <td>{$payments_info[$i]['sum']}</td>
+"            <td><a href=\"user_payments.php?userid={$payments[$i]['userid']}&id={$payments[$i]['id']}\">".chars($payments[$i]['name'])."</a></td>
+            <td>{$payments[$i]['date_payment1']}   ".chars($payments[$i]['operator1'])."</td>
+            <td>{$payments[$i]['date_payment2']}   ".chars($payments[$i]['operator2'])."</td>
+            <td>{$payments[$i]['expires']}</td>
+            <td>".chars($payments[$i]['notes'])."</td>
+            <td>{$payments[$i]['sum']}</td>
           </tr> \n";
-
-			}
-			else {
-
-				$form .= 
-"          <tr class=\"odd_row $red\"> \n";
-
-				if (!empty($checkbox)) {
-					$form .= "            <td><input class=\"input\" type=\"checkbox\" id=\"checkbox\" name=\"id[{$payments_info[$i]['id']}]\" value=\"{$payments_info[$i]['id']}\"></td> \n";
-				}
-
-				$form .= 
-"            <td><a href=\"user_payments.php?userid={$payments_info[$i]['userid']}&id={$payments_info[$i]['id']}\">".chars($payments_info[$i]['name'])."</a></td>
-            <td>{$payments_info[$i]['date_payment1']}   ".chars($payments_info[$i]['operator1'])."</td>
-            <td>{$payments_info[$i]['date_payment2']}   ".chars($payments_info[$i]['operator2'])."</td>
-            <td>{$payments_info[$i]['expires']}</td>
-            <td>".chars($payments_info[$i]['notes'])."</td>
-            <td>{$payments_info[$i]['sum']}</td>
-          </tr> \n";
-
-			}
 		}
 
 		$count = count($payments_operator) - 1;
@@ -439,10 +377,10 @@ if (isset($_POST['show'])) {
 		$form .=
 "          <tr class=\"header\">
             <td colspan=\"".($colspan - 1)."\" style=\"text-align: right;\">
-              <label>".chars($payments_operator[$i]['operator']).": </label>
+              <label class=\"bold\">".chars($payments_operator[$i]['operator']).": </label>
             </td>
             <td>
-              <label>{$payments_operator[$i]['totalsum']}</label>
+              <label class=\"bold\">{$payments_operator[$i]['totalsum']}</label>
             </td>
           </tr> \n";
 		}
@@ -450,10 +388,10 @@ if (isset($_POST['show'])) {
 		$form .=
 "          <tr class=\"header\">
             <td colspan=\"".($colspan - 1)."\" style=\"text-align: right;\">
-              <label>"._('total sum').": </label>
+              <label class=\"bold\">"._('total sum').": </label>
             </td>
             <td>
-              <label>{$payments_operator[$count]['totalsum']}</label>
+              <label class=\"bold\">{$payments_operator[$count]['totalsum']}</label>
             </td>
           </tr> \n";
 	}

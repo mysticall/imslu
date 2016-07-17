@@ -55,7 +55,7 @@ function change_input(form_name, id, name, value) {
 
 	document.getElementById(id).name = name;
 	document.getElementById(id).value = value;
-	
+
 	document.forms[form_name].submit();
 }
 
@@ -180,7 +180,16 @@ function checkPass(message1, message2) {
 function value_exists(id, table, valueid, msg) {
 
 	var value = document.getElementById(id).value;
-	var xmlhttp = new XMLHttpRequest();
+	var xmlhttp;
+
+	if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+	}
+	else {
+		// code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
 
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {

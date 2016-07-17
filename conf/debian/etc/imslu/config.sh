@@ -31,7 +31,9 @@ IFACE_WARNING_PAGE=None
 
 
 ##### PPPoE server settings #####
-# boolean: false or true
+# /bin/false; echo $? #1
+# /bin/true; echo $?  #0
+# false OR true
 USE_PPPoE=true
 
 PPPOE_SERVER=/usr/sbin/pppoe-server

@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -52,44 +52,31 @@ if($admin_permissions || $sysadmin_permissions) {
 	}
 
 
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
 	$page['title'] = 'Operators';
-	$page['file'] = 'operators.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-	// Display messages
-#####################################################
-	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
-	$_SESSION['msg'] = null;
+    ####### Display messages #######
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    $_SESSION['msg'] = null;
 
 	// Security key for comparison
 	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-###################################################################################################
-// Set CTable variable and create dynamic html table
-###################################################################################################
-
-	// Set Table variable
+    ####### Set Table variable #######
 	$table = new Table();
 	$table->form_name = 'operators';
-    $table->action = 'operator_edit.php';
-    $table->method = 'get';
-	$table->table_name = 'operators';
 	$table->colspan = 5;
 	$table->info_field1 = _('total').": ";
 	$table->info_field2 = _('operators');
 	$table->info_field3 = "<label class=\"info_right\"><a href=\"operator_add.php\">["._('new operator')."]</a></label>";
-	$table->onclick_id = true;
+    $table->link_action = 'operator_edit.php';
+	$table->link = TRUE;
 	$table->th_array = array(1 => _('id'), 2 => _('alias'), 3 => _('name'), 4 => _('language'), 5 => _('group'));
 	$table->th_array_style = 'style="table-layout: fixed; width: 3%"';
 	$table->td_array = $Operator->get($db, null);
 	echo $table->ctable();
-
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
 }

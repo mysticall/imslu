@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -39,19 +39,17 @@ require_once dirname(__FILE__).'/include/config.php';
 $db = new PDOinstance();
 
 ####### PAGE HEADER #######
-$page['title'] = 'The location of User';
-$page['file'] = 'user_location.php';
+$page['title'] = 'Location';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
 ####### New #######
-if(isset($_POST['action']) && $_POST['action'] == 'newlocation') {
+if(!empty($_GET['new'])) {
 
     $form =
 "<script type=\"text/javascript\">
@@ -68,11 +66,12 @@ function validateForm() {
 //-->
 </script>
     <form name=\"new_location\" action=\"user_location_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>"._('new location')."</label>
+              <label class=\"info_right\"><a href=\"user_location.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -80,7 +79,7 @@ function validateForm() {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\">
+              <input id=\"name\" name=\"name\" type=\"text\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -88,7 +87,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"save_new\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"save_new\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>
@@ -97,16 +96,18 @@ function validateForm() {
 
     echo $form;
 }
-
-
 ####### Edit #######
-if(!empty($_POST['id'])) {
+elseif(!empty($_GET['id'])) {
 	
-	$id = $_POST['id'];
+    settype($_GET['id'], "integer");
+    if($_GET['id'] == 0) {
+        header("Location: freeradius_nas.php");
+        exit;
+    }
 
 	$sql = 'SELECT id,name FROM location WHERE id = ? LIMIT 1';
 	$sth = $db->dbh->prepare($sql);
-	$sth->bindParam(1, $id, PDO::PARAM_INT);
+	$sth->bindParam(1, $_GET['id'], PDO::PARAM_INT);
 	$sth->execute();
 	$get_location = $sth->fetch(PDO::FETCH_ASSOC);
 
@@ -125,11 +126,12 @@ function validateForm() {
 //-->
 </script>
     <form name=\"edit_location\" action=\"user_location_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>"._('edit location').": ".chars($get_location['name'])."</label>
+              <label class=\"info_right\"><a href=\"user_location.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -137,14 +139,14 @@ function validateForm() {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"name\" name=\"name\" class=\"input\" type=\"text\" value=\"".chars($get_location['name'])."\">            </td>
+              <input id=\"name\" name=\"name\" type=\"text\" value=\"".chars($get_location['name'])."\">            </td>
           </tr>
           <tr>
             <td class=\"dt right\">
               <label style=\"color: red;\">"._('delete')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -153,8 +155,8 @@ function validateForm() {
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"id\" value=\"{$get_location['id']}\">
-              <input type=\"submit\" name=\"save_edited\" id=\"save\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
+              <input class=\"button\" type=\"submit\" name=\"save_edited\" id=\"save\" value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
         </tbody>
@@ -163,28 +165,20 @@ function validateForm() {
 
     echo $form;
 }
-
+else {
 
 ####### Set CTable variable #######
 	$table = new Table();
 	$table->form_name = 'location';
-	$table->table_name = 'user_location';
 	$table->colspan = 2;
 	$table->info_field1 = _('total').": ";
-	$table->info_field2 = _('the location');
-
-	$items1 = array(
-		'' => '',
-		'newlocation' => _('new location')
-		);
-
-	$combobox_form_submit = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, null) ."</label>";
-
-	$table->info_field3 = $combobox_form_submit;
-	$table->onclick_id = true;
+	$table->info_field2 = _('location');
+    $table->info_field3 = "<label class=\"info_right\"><a href=\"user_location.php?new=1\">["._('new location')."]</a></label>";
+    $table->link_action = 'user_location.php';
+    $table->link = TRUE;
 	$table->th_array = array(
 		1 => _('id'),
-		2 => _('the location')
+		2 => _('location')
 		);
 
 	$sql = 'SELECT id,name FROM location';
@@ -192,6 +186,6 @@ function validateForm() {
 	$sth->execute();
 	$table->td_array = $sth->fetchAll(PDO::FETCH_ASSOC);
 	echo $table->ctable();
-
+}
 	require_once dirname(__FILE__).'/include/page_footer.php';
 ?>

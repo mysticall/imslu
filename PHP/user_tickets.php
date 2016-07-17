@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -38,27 +38,17 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
-###################################################################################################
-    // PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'User Tickets';
-$page['file'] = 'user_tikets.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 
-#####################################################
-    // Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
-
-###################################################################################################
-    // Edit User
-###################################################################################################
-
+####### Edit #######
 if (!empty($_GET['userid'])) {
 
     # !!! Prevent problems !!!
@@ -70,17 +60,13 @@ if (!empty($_GET['userid'])) {
         exit;
     }
 
-#####################################################
-    // Get user info and tickets
-#####################################################
-    $sql = 'SELECT `name`, `address`
-            FROM `users`
-            WHERE `userid` = :userid LIMIT 1';
+    ####### Get user info and tickets #######
+    $sql = 'SELECT name, address FROM users WHERE userid = :userid LIMIT 1';
     $sth = $db->dbh->prepare($sql);
     $sth->bindParam(':userid', $userid, PDO::PARAM_INT);
     $sth->execute();
     $rows = $sth->fetch(PDO::FETCH_ASSOC);
-    $user_info = "{$rows['name']}, {$rows['address']}";
+    $user = "{$rows['name']}, {$rows['address']}";
 
     $sql = 'SELECT `ticketid`, `status`, `add`, `assign`, `notes`
             FROM `tickets`
@@ -98,19 +84,17 @@ if (!empty($_GET['userid'])) {
 
         $table = new Table();
         $table->form_name = 'tickets';
-        $table->action = 'user_tickets_edit.php';
-        $table->table_name = 'tickets';
         $table->colspan = 5;
         $table->info_field1 = _('total').": ";
-        $table->info_field2 = _s('tickets of %s', chars($user_info));
+        $table->info_field2 = _s('tickets of %s', chars($user));
         $table->info_field3 = 
 "              <label class=\"info_right\">
-                <a href=\"user_tickets_add.php?userid={$userid}&new_ticket=1\">["._('new ticket')."]</a>
                 <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
-                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+                <a href=\"user_tickets_add.php?userid={$userid}&new=1\">["._('new ticket')."]</a>
               </label>\n";
 
-        $table->onclick_id = true;
+        $table->link_action = 'user_tickets_edit.php';
+        $table->link = TRUE;
         $table->th_array = array(
             1 => _('id'),
             2 => _('status'),
@@ -125,16 +109,14 @@ if (!empty($_GET['userid'])) {
     }
     else {
         echo
-"      <table class=\"tableinfo\">
+"      <table>
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
-              <label>". _s('tickets of %s', chars($user_info)) ."</label>
+              <label>". _s('tickets of %s', chars($user)) ."</label>
               <label class=\"info_right\">
-                <a href=\"user_tickets_add.php?userid={$userid}&new_ticket=1\">["._('new ticket')."]</a>
-                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
-                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
-                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
+                <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
+                <a href=\"user_tickets_add.php?userid={$userid}&new=1\">["._('new ticket')."]</a>
               </label>
             </th>
           </tr>

@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -40,20 +40,19 @@ $db = new PDOinstance();
 
 ####### PAGE HEADER #######
 $page['title'] = 'Edit request';
-$page['file'] = 'request_edit.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
-####### Edit User #######
-if (!empty($_POST['requestid'])) {
+####### Edit #######
+if (!empty($_GET['requestid'])) {
 
     # !!! Prevent problems !!!
-    $requestid = $_POST['requestid'];
+    $requestid = $_GET['requestid'];
     settype($requestid, "integer");
     if($requestid == 0) {
         
@@ -77,7 +76,7 @@ if (!empty($_POST['requestid'])) {
         exit;
     }
 
-####### Get avalible operators #######
+    ####### Get avalible operators #######
     $sql = 'SELECT `operid`, `name` 
             FROM `operators`
             WHERE `type` = ? OR type = ?';
@@ -100,8 +99,40 @@ if (!empty($_POST['requestid'])) {
     }
 
     $form =
-"    <form name=\"new_request\" action=\"request_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"name\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('name'))."\");
+        document.getElementById(\"name\").focus();
+        return false;
+    }
+    if (document.getElementById(\"address\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('address'))."\");
+        document.getElementById(\"address\").focus();
+        return false;
+    }
+    if (document.getElementById(\"phone_number\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('phone'))."\");
+        document.getElementById(\"phone_number\").focus();
+        return false;
+    }
+    if (document.getElementById(\"notes\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('notes'))."\");
+        document.getElementById(\"notes\").focus();
+        return false;
+    }
+    return true;
+}
+//-->
+</script>
+    <form name=\"new_request\" action=\"request_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -115,7 +146,7 @@ if (!empty($_POST['requestid'])) {
               <label>"._('status')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'status', $request['status'], $request_status)."
+".combobox('', 'status', $request['status'], $request_status)."
             </td>
           </tr>
           <tr>
@@ -131,7 +162,7 @@ if (!empty($_POST['requestid'])) {
               <label>"._('assign')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"assign\" id=\"assign\" value=\"{$request['assign']}\">
+              <input type=\"text\" name=\"assign\" id=\"assign\" value=\"{$request['assign']}\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -150,7 +181,7 @@ if (!empty($_POST['requestid'])) {
               <label>"._('end')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"end\" id=\"end\" value=\"{$request['end']}\">
+              <input type=\"text\" name=\"end\" id=\"end\" value=\"{$request['end']}\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -185,7 +216,7 @@ if (!empty($_POST['requestid'])) {
               <label>"._('operator')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'operid', $request['operid'], $operators);
+".combobox('', 'operid', $request['operid'], $operators);
 $form .=
 "            </td>
           </tr>
@@ -194,7 +225,7 @@ $form .=
               <label>"._('name')." </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" value=\"".chars($request['name'])."\" size=\"25\">
+              <input id=\"name\" type=\"text\" name=\"name\" value=\"".chars($request['name'])."\">
             </td>
           </tr>
           <tr>
@@ -202,7 +233,7 @@ $form .=
               <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" value=\"".chars($request['address'])."\" size=\"25\">
+              <input id=\"address\" type=\"text\" name=\"address\" value=\"".chars($request['address'])."\">
             </td>
           </tr>
           <tr>
@@ -210,7 +241,7 @@ $form .=
               <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" value=\"".chars($request['phone_number'])."\" size=\"25\">
+              <input id=\"phone_number\" type=\"text\" name=\"phone_number\" value=\"".chars($request['phone_number'])."\">
             </td>
           </tr>
           <tr>
@@ -218,7 +249,7 @@ $form .=
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"45\" rows=\"2\">".chars($request['notes'])."</textarea>
+              <textarea id=\"notes\" name=\"notes\" rows=\"2\">".chars($request['notes'])."</textarea>
             </td>
           </tr>
         </tbody>
@@ -229,7 +260,7 @@ $form .=
             <td class=\"dd\">
               <input type=\"hidden\" name=\"requestid\" value=\"{$request['requestid']}\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"edit\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>

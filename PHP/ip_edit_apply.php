@@ -122,7 +122,7 @@ if (!empty($_POST['edit'])) {
 
         if ($old['mac'] != $_POST['mac']) {
 
-            if (!IsValidMAC($_POST['mac'])) {
+            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
 
                 $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
                 header("Location: user.php?userid={$old['userid']}");
@@ -199,7 +199,7 @@ if (!empty($_POST['edit'])) {
         }
         if ($old['mac'] != $_POST['mac']) {
 
-            if (!IsValidMAC($_POST['mac'])) {
+            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
 
                 $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
                 header("Location: user.php?userid={$old['userid']}");
@@ -230,6 +230,8 @@ if (!empty($_POST['edit'])) {
 
         if(!empty($pppoe_old)) {
 
+            $pppoe_old['username'] = $old['username'];
+            $pppoe_new['username'] = $_POST['username'];
             $pppoe_old['ip'] = $old['ip'];
             pppoe_update($db, $pppoe_old, $pppoe_new);
         }
@@ -265,7 +267,7 @@ if (!empty($_POST['edit'])) {
 
         if ($old['mac'] != $_POST['mac']) {
 
-            if (!IsValidMAC($_POST['mac'])) {
+            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
 
                 $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
                 header("Location: user.php?userid={$old['userid']}");
@@ -348,13 +350,12 @@ if (!empty($_POST['edit'])) {
             // Add audit
             add_audit($db, AUDIT_ACTION_ENABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} allowed.");
 
-            $sql = 'SELECT users.free_access, payments.expires 
+            $sql = 'SELECT users.free_access, payments.expires
                     FROM users
-                    LEFT JOIN (SELECT userid, expires FROM payments WHERE userid = :payments_userid ORDER BY id DESC, expires DESC LIMIT 1) AS payments
+                    LEFT JOIN payments
                     ON users.userid = payments.userid
-                    WHERE users.userid = :userid LIMIT 1';
+                    WHERE users.userid = :userid ORDER BY payments.id DESC, payments.expires DESC LIMIT 1';
             $sth = $db->dbh->prepare($sql);
-            $sth->bindValue(':payments_userid', $old['userid'], PDO::PARAM_INT);
             $sth->bindValue(':userid', $old['userid'], PDO::PARAM_INT);
             $sth->execute();
             $user = $sth->fetch(PDO::FETCH_ASSOC);

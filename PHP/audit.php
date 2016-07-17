@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  *
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -42,71 +42,20 @@ $admin_rights = (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']);
 if ($sysadmin_rights || $admin_rights) {
 
 	$db = new PDOinstance();
-	$ctable = new Table();
+    $actionid = (!empty($_GET['actionid'])) ? $_GET['actionid'] : '';
+    $resourceid = (!empty($_GET['resourceid'])) ? $_GET['resourceid'] : '';
+    $operid = (!empty($_GET['operid'])) ? $_GET['operid'] : '';
+    $fromdate = (!empty($_GET['fromdate'])) ? $_GET['fromdate'] : date("Y-m-d", strtotime("-3 days")).' 00:00';
+    $todate = (!empty($_GET['todate'])) ? $_GET['todate'] : date('Y-m-d H:i');
 
-
-###################################################################################################
-	// Delet attempts from IP
-###################################################################################################
-
-	if (!empty($_POST['action']) && $_POST['action'] == 'delete' && !empty($_POST['auditid'])) {
-
-		$sql = 'DELETE FROM `auditlog` WHERE auditid = :auditid';
-		$db->dbh->beginTransaction();
-		$sth = $db->dbh->prepare($sql);
-		$sth->bindParam(':auditid', $value, PDO::PARAM_INT);
-
-		$auditid = $_POST['auditid'];
-
-		foreach ($auditid as $value) {
-
-			$sth->execute();
-		}
-
-		$db->dbh->commit();
-
-		unset($_POST);
-	}
-
-###################################################################################################
-	// Backup and delete
-###################################################################################################
-	if (isset($_POST['action']) && ($_POST['action'] == 'backup' || $_POST['action'] == 'backup_delete')) {
-
-		$alias = CWebOperator::$data['alias'];
-		$info = ($_POST['action'] == 'backup_delete') ? "_PHP-backup-DELETE_".$alias."_" : "_PHP_".$alias."_";
-
-# Please do not change the syntax.
-$command = "$SUDO $PYTHON <<END
-import sys
-sys.path.append('$IMSLU_SCRIPTS')
-import sqldump
-sqldump.mysqldump(tabe_name = 'auditlog', info = '$info')
-END";
-
-		$result = shell_exec($command);
-		$_SESSION['msg'] = (empty($result)) ? _s('Backup of table %s success.', 'auditlog').'<br>' : _s('Backup of table %s failed', 'auditlog').' - '.$result.'<br>';
-
-		if(($_POST['action'] == 'backup_delete') && empty($result)) {
-
-			$sql = 'DELETE FROM `auditlog`';
-			$sth = $db->dbh->exec($sql);
-
-			$_SESSION['msg'] .= _s('The contents of the table %s was deleted.', 'auditlog').'<br>';
-		}
-
-		unset($_POST);
-	}
-
-
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
 	$page['title'] = 'Audit';
-	$page['file'] = 'audit.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
+
+    ####### Display messages #######
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    $_SESSION['msg'] = null;
 
 	$action = array(
 		'' => '',
@@ -145,16 +94,16 @@ END";
 	}
 
 	$form =
-"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">
-      <table class=\"tableinfo\">
+"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <label style=\"margin: 1px 3px 1px;\">"._('action').combobox('input select', 'actionid', null, $action)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('resource').combobox('input select', 'resourceid', null, $resource)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('operator').combobox('input select', 'operid', null, $operator)."</label>
-              <label style=\"margin: 1px 3px 1px;\">"._('from date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"fromdate\" id=\"fromdate\" size=\"17\" value=\"".date("Y-m-d", strtotime("-3 days"))." 00:00\">
+              <label>"._('action').combobox('middle', 'actionid', $actionid, $action)."</label>
+              <label>"._('resource').combobox('middle', 'resourceid', $resourceid, $resource)."</label>
+              <label>"._('operator').combobox('middle', 'operid', $operid, $operator)."</label>
+              <label>"._('from date')."
+                <input id=\"fromdate\" style=\"width: 120px;\" type=\"text\" name=\"fromdate\" value=\"{$fromdate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -168,7 +117,7 @@ END";
                 </script>
               </label>
               <label>"._('to date')."
-                <input class=\"input\" style=\"padding: 1px 3px 1px 3px;\" type=\"text\" name=\"todate\" id=\"todate\" size=\"17\" value=\"".date('Y-m-d H:i')."\">
+                <input id=\"todate\" style=\"width: 120px;\" type=\"text\" name=\"todate\" value=\"{$todate}\">
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -181,8 +130,7 @@ END";
                 });
                 </script>
               </label>
-              <input type=\"hidden\" name=\"show\" value=\"true\">
-              <label class=\"generator\" style=\"margin: 1px 5px 1px;\" onclick=\"this.form.submit()\">"._('show')."</label>
+              <input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\">
             </th>
           </tr>
         </tbody>
@@ -191,31 +139,27 @@ END";
 
 	echo $form;
 
+	if(!empty($_GET['auditid'])) {
 
-#####################################################
-	// Display messages
-#####################################################
-	echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
-	$_SESSION['msg'] = null;
-
-
-	if(!empty($_POST['auditid'])) {
-
-		$id = $_POST['auditid'];
+        settype($_GET['auditid'], "integer");
+        if($_GET['auditid'] == 0) {
+            header("Location: audit.php");
+            exit;
+        }
 
 		$sql = "SELECT actionid, resourceid, oper_alias, date_time, ip, details, oldvalue, newvalue 
 				FROM auditlog
 				WHERE auditid = :auditid";
 		$sth = $db->dbh->prepare($sql);
-		$sth->bindValue(':auditid', $id, PDO::PARAM_INT);
+		$sth->bindValue(':auditid', $_GET['auditid'], PDO::PARAM_INT);
 		$sth->execute();
-		$audit_info = $sth->fetch(PDO::FETCH_ASSOC);
+		$audit = $sth->fetch(PDO::FETCH_ASSOC);
 
-		$audit_info['actionid'] = $action[$audit_info['actionid']];
-		$audit_info['resourceid'] = $resource[$audit_info['resourceid']];
+		$audit['actionid'] = $action[$audit['actionid']];
+		$audit['resourceid'] = $resource[$audit['resourceid']];
 
 		$form =
-"     <table class=\"tableinfo\">
+"     <table>
         <tbody id=\"user_info\">
           <tr class=\"header_top\">
             <th>
@@ -223,44 +167,44 @@ END";
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('action').": </b>{$audit_info['actionid']}</label>
+              <label><b>"._('action').": </b>{$audit['actionid']}</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('resource').": </b>{$audit_info['resourceid']}</label>
+              <label><b>"._('resource').": </b>{$audit['resourceid']}</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('operator').": </b>".chars($audit_info['oper_alias'])."</label>
+              <label><b>"._('operator').": </b>".chars($audit['oper_alias'])."</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('date').": </b>{$audit_info['date_time']}</label>
+              <label><b>"._('date').": </b>{$audit['date_time']}</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('IP address').": </b>{$audit_info['ip']}</label>
+              <label><b>"._('IP address').": </b>{$audit['ip']}</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
-              <label><b>"._('details').": </b>".chars($audit_info['details'])."</label>
+              <label><b>"._('details').": </b>".chars($audit['details'])."</label>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
               <label><b>"._('old value').":</b></label><br>
-              <textarea style=\"margin-top:10px; margin-left:10px; width: 97%; height: 130px;\" readonly>".chars($audit_info['oldvalue'])."</textarea>
+              <textarea class=\"large\" rows=\"3\" readonly>".chars($audit['oldvalue'])."</textarea>
             </td>
           </tr>
           <tr>
             <td class=\"dd\">
               <label><b>"._('new value').":</b></label><br>
-              <textarea style=\"margin-top:10px; margin-left:10px; width: 97%; height: 130px;\" readonly>".chars($audit_info['newvalue'])."</textarea>
+              <textarea class=\"large\" rows=\"3\" readonly>".chars($audit['newvalue'])."</textarea>
             </td>
           </tr>
         </tbody>
@@ -270,17 +214,8 @@ END";
 	}
 
 
-###################################################################################################
-	// Set CTable variables and create dynamic html table
-###################################################################################################	
-
-	if (isset($_POST['show'])) {
-		
-		$actionid = (!empty($_POST['actionid'])) ? $_POST['actionid'] : '';
-		$resourceid = (!empty($_POST['resourceid'])) ? $_POST['resourceid'] : '';
-		$operid = (!empty($_POST['operid'])) ? $_POST['operid'] : '';
-		$fromdate = (!empty($_POST['fromdate'])) ? $_POST['fromdate'] : date("Y-m-d", strtotime("-3 days")).' 00:00';
-		$todate = (!empty($_POST['todate'])) ? $_POST['todate'] : date('Y-m-d H:i');
+    ####### Set CTable variables #######
+	if (!empty($_GET['show'])) {
 
 		$_actionid = (!empty($actionid)) ? ' AND actionid = :actionid' : '';
 		$_resourceid = (!empty($resourceid)) ? ' AND resourceid = :resourceid' : '';
@@ -316,39 +251,19 @@ END";
 
 				$rows[$i]['actionid'] = $action[$rows[$i]['actionid']];
 				$rows[$i]['resourceid'] = $resource[$rows[$i]['resourceid']];
-				$rows[$i]['oldvalue'] = substr($rows[$i]['oldvalue'], 0, 11);
-				$rows[$i]['newvalue'] = substr($rows[$i]['newvalue'], 0, 11);
+                $rows[$i]['details'] = substr($rows[$i]['details'], 0, 25);
+				$rows[$i]['oldvalue'] = substr($rows[$i]['oldvalue'], 0, 25);
+				$rows[$i]['newvalue'] = substr($rows[$i]['newvalue'], 0, 25);
 			}
 		}
 
-		$ctable->form_name = 'audit';
-		$ctable->table_name = 'audit';
-		$ctable->colspan = 11;
-		$ctable->info_field1 = _('total').": ";
-		$ctable->info_field2 = _('Audit');
-
-		if ($sysadmin_rights) {
-			
-			$items1 = array(
-				'' => '',
-				'backup' => _('backup'),
-				'backup_delete' => _('backup and delete'),
-				'delete' => _('delete selected')
-				);
-		}
-		else {
-			$items1 = array(
-				'' => '',
-				'backup' => _('backup')
-				);
-		}
-		
-		$combobox_form_submit  = "<label class=\"info_right\">". _('action') .": \n".  combobox_onchange('input select', 'action', $items1, "confirm_delete('audit', this[this.selectedIndex].value)") ."</label> \n";
-
-		$ctable->info_field3 = $combobox_form_submit;
-		$ctable->checkbox = true;
-		$ctable->onclick_id = true;
-		$ctable->th_array = array(
+		$table = new Table();
+		$table->colspan = 11;
+		$table->info_field1 = _('total').": ";
+		$table->info_field2 = _('Audit');
+        $table->link_action = 'audit.php';
+		$table->link = true;
+		$table->th_array = array(
 			1 => _('id'),
 			2 => _('action'),
 			3 => _('resource'),
@@ -360,11 +275,10 @@ END";
 			9 => _('new value')
 			);
 
-		$ctable->td_array = $rows;
+		$table->td_array = $rows;
 
-		echo $ctable->ctable();
+		echo $table->ctable();
 	}
-
 
 	require_once dirname(__FILE__).'/include/page_footer.php';
 }

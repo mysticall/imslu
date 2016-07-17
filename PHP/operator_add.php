@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -52,12 +52,11 @@ if($admin_permissions || $sysadmin_permissions) {
 
     ####### PAGE HEADER #######
     $page['title'] = 'Edit operator';
-    $page['file'] = 'operator_edit.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
     ####### Display messages #######
-    echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
     // Security key for comparison
@@ -84,11 +83,12 @@ function validateForm() {
 //-->
 </script>
     <form action=\"operator_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th  colspan=\"2\">
               <label>"._('new operator')."</label>
+              <label class=\"info_right\"><a href=\"operators.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -96,7 +96,7 @@ function validateForm() {
               <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" onkeyup=\"value_exists('alias', 'operators', '', '"._('That alias is already being used.')."')\">
+              <input id=\"alias\" type=\"text\" name=\"alias\" onkeyup=\"value_exists('alias', 'operators', '', '"._('That alias is already being used.')."')\">
             </td>
           </tr>
           <tr>
@@ -104,7 +104,7 @@ function validateForm() {
               <label>"._('name')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\">
+              <input type=\"text\" name=\"name\">
             </td>
           </tr>
           <tr>
@@ -112,7 +112,7 @@ function validateForm() {
               <label>"._('password')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"password1\" name=\"password1\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
+              <input id=\"password1\" type=\"password\" name=\"password1\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
             </td>
           </tr>
           <tr>
@@ -120,7 +120,7 @@ function validateForm() {
               <label>"._('password (once again)')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"password2\" name=\"password2\" class=\"input\" type=\"password\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
+              <input id=\"password2\" type=\"password\" name=\"password2\" onkeyup=\"checkPass('"._('Passwords Match!')."', '"._('Passwords Do Not Match!')."');\">
               <span id=\"pass_msg\"></span>
             </td>
           </tr>
@@ -167,7 +167,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('theme')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'theme', null, $THEMES)."\n
+".combobox('', 'theme', null, $THEMES)."\n
             </td>
           </tr>
           <tr>
@@ -175,7 +175,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('url (after login)')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"url\" maxlength=\"255\">
+              <input type=\"text\" name=\"url\">
             </td>
           </tr>
           <tr>
@@ -183,7 +183,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
               <label>"._('group')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'type', null, $OPERATOR_GROUPS)."\n
+".combobox('', 'type', null, $OPERATOR_GROUPS)."\n
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -191,7 +191,7 @@ setlocale(LC_MONETARY, "{$_SESSION['data']['lang']}.UTF-8");
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\" onclick=\"formhash(this.form, this.form.password1, 'p1'); formhash(this.form, this.form.password2, 'p2');\">
             </td>
           </tr>
         </tbody>

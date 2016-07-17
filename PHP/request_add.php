@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -40,12 +40,11 @@ $db = new PDOinstance();
 
 ####### PAGE HEADER #######
 $page['title'] = 'Add request';
-$page['file'] = 'request_add.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 ####### Display messages #######
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 // Security key for comparison
@@ -79,8 +78,40 @@ else {
 }
 
 $form =
-"    <form name=\"new_request\" action=\"request_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"name\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('name'))."\");
+        document.getElementById(\"name\").focus();
+        return false;
+    }
+    if (document.getElementById(\"address\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('address'))."\");
+        document.getElementById(\"address\").focus();
+        return false;
+    }
+    if (document.getElementById(\"phone_number\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('phone'))."\");
+        document.getElementById(\"phone_number\").focus();
+        return false;
+    }
+    if (document.getElementById(\"notes\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('notes'))."\");
+        document.getElementById(\"notes\").focus();
+        return false;
+    }
+    return true;
+}
+//-->
+</script>
+    <form name=\"new_request\" action=\"request_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
@@ -94,7 +125,7 @@ $form =
               <label>"._('status')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'status', null, $status)."
+".combobox('', 'status', null, $status)."
             </td>
           </tr>
           <tr>
@@ -102,7 +133,7 @@ $form =
               <label>"._('assign')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"assign\" id=\"assign\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"assign\" id=\"assign\" value=\"0000-00-00 00:00:00\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -121,7 +152,7 @@ $form =
               <label>"._('end')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"end\" id=\"end\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"end\" id=\"end\" value=\"0000-00-00 00:00:00\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -140,7 +171,7 @@ $form =
               <label>"._('operator')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'operid', null, $operators)."
+".combobox('', 'operid', null, $operators)."
             </td>
           </tr>
           <tr>
@@ -148,7 +179,7 @@ $form =
               <label>"._('name')." </label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"name\" size=\"25\">
+              <input id=\"name\" type=\"text\" name=\"name\">
             </td>
           </tr>
           <tr>
@@ -156,7 +187,7 @@ $form =
               <label>"._('address')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"address\" size=\"25\">
+              <input id=\"address\" type=\"text\" name=\"address\">
             </td>
           </tr>
           <tr>
@@ -164,7 +195,7 @@ $form =
               <label>"._('phone')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"phone_number\" size=\"25\">
+              <input id=\"phone_number\" type=\"text\" name=\"phone_number\">
             </td>
           </tr>
           <tr>
@@ -172,7 +203,7 @@ $form =
               <label>"._('notes')."</label>
             </td>
 			<td class=\"dd\">
-              <textarea name=\"notes\" cols=\"45\" rows=\"2\"></textarea>
+              <textarea id=\"notes\" name=\"notes\" rows=\"2\"></textarea>
             </td>
           </tr>
         </tbody>
@@ -182,7 +213,7 @@ $form =
             </td>
             <td class=\"dd\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input  id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>

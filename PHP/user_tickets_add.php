@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -38,34 +38,24 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
-###################################################################################################
-    // PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'Add ticket';
-$page['file'] = 'user_tikets_add.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-
-#####################################################
-    // Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
-###################################################################################################
-    // Edit User
-###################################################################################################
-
-if (!empty($_GET['userid']) && !empty($_GET['new_ticket'])) {
+####### New #######
+if (!empty($_GET['userid']) && !empty($_GET['new'])) {
 
     # !!! Prevent problems !!!
     $userid = $_GET['userid'];
     settype($userid, "integer");
     if($userid == 0) {
-        
+
         header("Location: users.php");
         exit;
     }
@@ -73,25 +63,16 @@ if (!empty($_GET['userid']) && !empty($_GET['new_ticket'])) {
     // Security key for comparison
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-#####################################################
-    // Get user info
-#####################################################
-    $sql = 'SELECT `name`, `address`
-            FROM `users`
-            WHERE `userid` = :userid LIMIT 1';
+    ####### Get user info and tickets #######
+    $sql = 'SELECT name, address FROM users WHERE userid = :userid LIMIT 1';
     $sth = $db->dbh->prepare($sql);
     $sth->bindParam(':userid', $userid, PDO::PARAM_INT);
     $sth->execute();
     $rows = $sth->fetch(PDO::FETCH_ASSOC);
-    $user_info = "{$rows['name']}, {$rows['address']}";
+    $user_info = "{$rows['name']} {$rows['address']}";
 
-#####################################################
-    // Get avalible operators
-#####################################################   
-    $sql = 'SELECT `operid`, `name` 
-            FROM `operators`
-            WHERE `type` = ? OR type = ?';
-
+    ####### Get avalible operators ####### 
+    $sql = 'SELECT operid, name FROM operators WHERE type = ? OR type = ?';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(1, OPERATOR_TYPE_TECHNICIAN);
     $sth->bindValue(2, OPERATOR_TYPE_ADMIN);
@@ -110,17 +91,29 @@ if (!empty($_GET['userid']) && !empty($_GET['new_ticket'])) {
     }
 
 $form =
-"    <form name=\"new_request\" action=\"user_tickets_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
+"<script type=\"text/javascript\">
+<!--
+function validateForm() {
+
+    if (document.getElementById(\"notes\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('notes'))."\");
+        document.getElementById(\"notes\").focus();
+        return false;
+    }
+    return true;
+}
+//-->
+</script>
+    <form name=\"new_request\" action=\"user_tickets_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
+      <table>
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th colspan=\"2\">
               <label>". chars($user_info) ."</label>
               <label class=\"info_right\">
-                <a href=\"user_info.php?userid={$userid}\">["._('info')."]</a>
-                <a href=\"user_edit.php?userid={$userid}\">["._('edit')."]</a>
-                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
-                <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
+                <a href=\"user_tickets.php?userid={$userid}\">["._('back')."]</a>
+                <a href=\"user.php?userid={$userid}\">["._('user')."]</a>
               </label>
             </th>
           </tr>
@@ -129,7 +122,7 @@ $form =
               <label>"._('operator')."</label>
             </td>
             <td class=\"dd\">
-".combobox('input select', 'operid', null, $operators)."
+".combobox('', 'operid', null, $operators)."
             </td>
           </tr>
           <tr>
@@ -137,7 +130,7 @@ $form =
               <label>"._('assign')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"assign\" id=\"assign\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"assign\" id=\"assign\" value=\"0000-00-00 00:00:00\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -156,7 +149,7 @@ $form =
               <label>"._('end')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"end\" id=\"end\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"end\" id=\"end\" value=\"0000-00-00 00:00:00\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -175,7 +168,7 @@ $form =
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"55\" rows=\"3\"></textarea>
+              <textarea id=\"notes\" name=\"notes\" rows=\"2\"></textarea>
             </td>
           </tr>
         </tbody>
@@ -186,7 +179,7 @@ $form =
             <td class=\"dd\">
               <input type=\"hidden\" name=\"userid\" value=\"{$userid}\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tfoot>

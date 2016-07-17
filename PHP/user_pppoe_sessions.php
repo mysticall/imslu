@@ -43,10 +43,8 @@ $page['file'] = 'user_pppoe_sessions.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
@@ -64,26 +62,19 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
 
     $username = $_GET['username'];
 
-###################################################################################################
-    // Set CTable variable and create dynamic html table
-###################################################################################################
-
-    // Set CTable variable
+    ####### Set CTable variable #######
     $table = new Table();
     $table->form_name = 'pppoe_sessions';
-    $table->table_name = 'pppoe_sessions';
     $table->colspan = 8;
     $table->info_field1 = _('total').": ";
     $table->info_field2 = _('username').": ".chars($username);
     $table->info_field3 =
 "              <label class=\"info_right\">
                 <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
-                <a href=\"user_payments.php?userid={$userid}\">["._('payments')."]</a>
-                <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
               </label>\n";
 
     $table->th_array = array(
-        1 => _('nas IP address'),
+        1 => _('NAS'),
         2 => _('start time'),
         3 => _('stop time'),
         4 => _('session time'),

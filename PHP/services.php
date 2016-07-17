@@ -43,7 +43,6 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 	####### PAGE HEADER #######
 	$page['title'] = 'Services';
-	$page['file'] = 'services.php';
 
 	require_once dirname(__FILE__).'/include/page_header.php';
 
@@ -87,12 +86,12 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             $js = "";
             $form =
 "    <form name=\"new_service\" action=\"services_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"4\">
               <label>"._('service - price')."</label>
-              <label class=\"info_right\"><a href=\"services.php\">[ "._('back')." ]</a></label>
+              <label class=\"info_right\"><a href=\"services.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -102,13 +101,13 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
           <tr>
             <td class=\"dt right\">"._('name')." *</td>
             <td colspan=\"3\">
-              <input id=\"name\" class=\"input\" type=\"text\" name=\"name\" value=\"{$values[$first_key]['name']}\">
+              <input id=\"name\" type=\"text\" name=\"name\" value=\"{$values[$first_key]['name']}\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('price')."</td>
             <td colspan=\"3\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"price\" value=\"{$values[$first_key]['price']}\">
+              <input type=\"text\" name=\"price\" value=\"{$values[$first_key]['price']}\">
             </td>
           </tr>
           <tr>
@@ -127,20 +126,20 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 "          <tr>
             <td class=\"dt right\">"._('IN')." {$kind_traffic[$services['kind_trafficid']]} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"update[$i][in_min]\" value=\"{$services['in_min']}\">
+              <input class=\"middle\" type=\"text\" name=\"update[$i][in_min]\" value=\"{$services['in_min']}\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" size=\"7\" class=\"input\" type=\"text\" name=\"update[$i][in_max]\" value=\"{$services['in_max']}\">
+              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"update[$i][in_max]\" value=\"{$services['in_max']}\">
             </td>
             <td></td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('OUT')." {$kind_traffic[$services['kind_trafficid']]} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"update[$i][out_min]\" value=\"{$services['out_min']}\">
+              <input class=\"middle\" type=\"text\" name=\"update[$i][out_min]\" value=\"{$services['out_min']}\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" size=\"7\" class=\"input\" type=\"text\" name=\"update[$i][out_max]\" value=\"{$services['out_max']}\">
+              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"update[$i][out_max]\" value=\"{$services['out_max']}\">
               <input type=\"hidden\" name=\"update[$i][serviceid]\" value=\"{$services['serviceid']}\">
             </td>
             <td></td>
@@ -167,20 +166,20 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 "          <tr>
             <td class=\"dt right\">"._('IN')." {$services} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"insert[$i][in_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"insert[$i][in_min]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" size=\"7\" class=\"input\" type=\"text\" name=\"insert[$i][in_max]\">
+              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"insert[$i][in_max]\">
             </td>
             <td></td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('OUT')." {$services} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"insert[$i][out_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"insert[$i][out_min]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" size=\"7\" class=\"input\" type=\"text\" name=\"insert[$i][out_max]\">
+              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"insert[$i][out_max]\">
               <input type=\"hidden\" name=\"insert[$i][kind_trafficid]\" value=\"{$key}\">
               <input type=\"hidden\" name=\"insert[$i][name]\" value=\"{$values[$first_key]['name']}\">
               <input type=\"hidden\" name=\"insert[$i][price]\" value=\"{$values[$first_key]['price']}\">
@@ -212,7 +211,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
               <label style=\"color: red;\">"._('delete')."</label>
             </td>
             <td colspan=\"3\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del\">
             </td>
           </tr>
           <tr class=\"odd_row\">
@@ -221,8 +220,8 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             <td colspan=\"3\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"old\" value='".json_encode($values)."'>
-              <input type=\"submit\" name=\"edit\" id=\"save\" value=\""._('save')."\">
-              <input type=\"submit\" name=\"delete\" value=\""._('delete')."\">
+              <input  id=\"save\" class=\"button\" type=\"submit\" name=\"edit\"value=\""._('save')."\">
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
           </tr>
         </tbody>
@@ -253,13 +252,13 @@ function validateForm() {
 
 		$js = "";
 		$form =
-"    <form name=\"new_service\" action=\"services_apply.php\" onsubmit=\"return(validateForm());\" method=\"post\">
+"    <form name=\"new_service\" action=\"services_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"4\">
               <label>"._('service - price')."</label>
-              <label class=\"info_right\"><a href=\"services.php\">[ "._('back')." ]</a></label>
+              <label class=\"info_right\"><a href=\"services.php\">["._('back')."]</a></label>
             </th>
           </tr>
           <tr>
@@ -269,13 +268,13 @@ function validateForm() {
           <tr>
             <td class=\"dt right\">"._('name')." *</td>
             <td colspan=\"3\">
-              <input id=\"name\" class=\"input\" type=\"text\" name=\"name\">
+              <input id=\"name\" type=\"text\" name=\"name\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('price')."</td>
             <td colspan=\"3\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"price\">
+              <input type=\"text\" name=\"price\">
             </td>
           </tr>
           <tr>
@@ -291,20 +290,20 @@ function validateForm() {
 "          <tr>
             <td class=\"dt right\">"._('IN')." {$kind_traffic[$i]['name']} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"kind_traffic[$i][in_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"kind_traffic[$i][in_min]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" size=\"7\" class=\"input\" type=\"text\" name=\"kind_traffic[$i][in_max]\">
+              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"kind_traffic[$i][in_max]\">
             </td>
             <td></td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('OUT')." {$kind_traffic[$i]['name']} </td>
             <td class=\"dd2\">
-              <input size=\"7\" class=\"input\" type=\"text\" name=\"kind_traffic[$i][out_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"kind_traffic[$i][out_min]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" size=\"7\" class=\"input\" type=\"text\" name=\"kind_traffic[$i][out_max]\">
+              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"kind_traffic[$i][out_max]\">
               <input type=\"hidden\" name=\"kind_traffic[$i][kind_trafficid]\" value=\"{$kind_traffic[$i]['kind_trafficid']}\">
             </td>
             <td></td>
@@ -331,7 +330,7 @@ function validateForm() {
             </td>
             <td colspan=\"3\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"submit\" name=\"new\" id=\"save\" value=\""._('save')."\">
+              <input  id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
             </td>
           </tr>
         </tbody>
@@ -375,7 +374,7 @@ function validateForm() {
 "      <table class=\"tableinfo\">
           <tr class=\"header_top\">
             <th colspan=\"9\">
-              <label class=\"info_right\"><a href=\"services.php?new=1\">[ "._('new service')." ]</a></label>
+              <label class=\"info_right\"><a href=\"services.php?new=1\">["._('new service')."]</a></label>
             </th>
           </tr>
           <tr class=\"header_top\">
@@ -405,14 +404,17 @@ function validateForm() {
         unset($services);
 
         foreach($values as $value) {
-            $count_value = count($value);
+
             $i = 1;
+            $count_value = count($value);
+
             foreach($value as $services) {
+
                 $form .=
 "          <tr>
             <td>{$services['serviceid']}</td>\n";
 
-                $form .= ($i == 1) ? "            <td rowspan=\"{$count_value}\"><a href=\"services.php?edit={$services['name']}\">{$services['name']}</a></td>\n" : "";
+                $form .= ($i == 1) ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services['name']}\">{$services['name']}</a></td>\n" : "";
                 $form .=
 "           <td>{$kind_traffic[$services['kind_trafficid']]}</td>
             <td>{$services['in_min']}</td>
@@ -421,7 +423,7 @@ function validateForm() {
             <td>{$services['out_max']}</td>\n";
 
                 $form .= ($i == '1') ? "            <td rowspan=\"{$count_value}\">{$services['price']}</td>\n" : "";
-                $form .= ($i == '1') ? "            <td rowspan=\"{$count_value}\"><a href=\"services.php?edit={$services['name']}\">[ "._('edit')." ]</a></td>\n" : "";
+                $form .= ($i == '1') ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services['name']}\">["._('edit')."]</a></td>\n" : "";
                 $form .=
 "          </tr>\n";
                 $i++;

@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -39,15 +39,13 @@ require_once dirname(__FILE__).'/include/config.php';
 
 $db = new PDOinstance();
 
+####### PAGE HEADER #######
 $page['title'] = 'Tickets';
-$page['file'] = 'tickets.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
-#####################################################
-    // Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 $sql = 'SELECT tickets.ticketid, tickets.userid, tickets.status, tickets.add, tickets.assign, users.name, users.address, users.phone_number, tickets.notes
@@ -66,7 +64,7 @@ if ($rows) {
 
     $form =
 "    <form name=\"tikets\" action=\"user_tickets_edit.php\" method=\"post\">
-      <table class=\"tableinfo\">
+      <table>
         <thead id=\"thead\">
           <tr class=\"header_top\">
             <th colspan=\"8\">
@@ -93,36 +91,18 @@ if ($rows) {
 
         for ($i = 0; $i < count($rows); ++$i) {
 
-            if ($i % 2 == 0) {
-
-                $form .= 
-"          <tr class=\"even_row\">
-            <td class=\"left_select\" onclick=\"change_input('tikets', '{$rows[$i]['ticketid']}', 'ticketid', '{$rows[$i]['ticketid']}');\">{$rows[$i]['ticketid']}\n              <input id=\"{$rows[$i]['ticketid']}\" type=\"hidden\" name value></td>
+            $class = ($i % 2 == 0) ? "class=\"even_row\"" : "class=\"odd_row\"";
+            $form .= 
+"          <tr $class>
+            <td><a class=\"bold\" href=\"user_tickets_edit.php?ticketid={$rows[$i]['ticketid']}\">{$rows[$i]['ticketid']}</a></td>
             <td>{$rows[$i]['status']}</td>
             <td>{$rows[$i]['add']}</td>
             <td>{$rows[$i]['assign']}</td>
-            <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
+            <td><a class=\"bold\" href=\"user.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
             <td>".chars($rows[$i]['address'])."</td>
             <td>".chars($rows[$i]['phone_number'])."</td>
             <td>".chars($rows[$i]['notes'])."</td>
           </tr> \n";
-
-            }
-            else {
-
-                $form .= 
-"          <tr class=\"odd_row\">
-            <td class=\"left_select\" onclick=\"change_input('tikets', '{$rows[$i]['ticketid']}', 'ticketid', '{$rows[$i]['ticketid']}');\">{$rows[$i]['ticketid']}\n              <input id=\"{$rows[$i]['ticketid']}\" type=\"hidden\" name value></td>
-            <td>{$rows[$i]['status']}</td>
-            <td>{$rows[$i]['add']}</td>
-            <td>{$rows[$i]['assign']}</td>
-            <td><a href=\"user_info.php?userid={$rows[$i]['userid']}\">".chars($rows[$i]['name'])."</a></td>
-            <td>".chars($rows[$i]['address'])."</td>
-            <td>".chars($rows[$i]['phone_number'])."</td>
-            <td>".chars($rows[$i]['notes'])."</td>
-          </tr> \n";
-
-            }
         }
     }
 
