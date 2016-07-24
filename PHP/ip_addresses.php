@@ -203,7 +203,7 @@ function validateForm() {
             5 => _('mac'),
             6 => _('free mac'),
             7 => _('username'),
-            8 => _('pass'),
+            8 => _('password'),
             9 => _('pool'),
             10 => _('protocol'),
             11 => _('stopped')

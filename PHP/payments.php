@@ -349,6 +349,7 @@ if (!empty($_GET['show'])) {
 
 		for ($i = 0; $i < count($payments); ++$i) {
 
+            $name = (!empty($payments[$i]['name'])) ? chars($payments[$i]['name']) : $payments[$i]['userid'];
 			//$sum['operator2'] = (isset($sum['operator2']) && $payments[$i] == isset($sum['operator2']) ? $sum['operator2'] + $payments[$i]['sum'] : $sum['operator2'] = $payments[$i]['sum'];
 			$sum['total'] = $sum['total'] + $payments[$i]['sum'];
             $class = ($i % 2 == 0) ? "class=\"even_row" : "class=\"odd_row";
@@ -362,7 +363,7 @@ if (!empty($_GET['show'])) {
 				}
 
 				$form .= 
-"            <td><a href=\"user_payments.php?userid={$payments[$i]['userid']}&id={$payments[$i]['id']}\">".chars($payments[$i]['name'])."</a></td>
+"            <td><a href=\"user_payments.php?userid={$payments[$i]['userid']}&id={$payments[$i]['id']}\">{$name}</a></td>
             <td>{$payments[$i]['date_payment1']}   ".chars($payments[$i]['operator1'])."</td>
             <td>{$payments[$i]['date_payment2']}   ".chars($payments[$i]['operator2'])."</td>
             <td>{$payments[$i]['expires']}</td>

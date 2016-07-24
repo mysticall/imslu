@@ -31,10 +31,11 @@ IFACE_WARNING_PAGE=None
 
 
 ##### PPPoE server settings #####
-# /bin/false; echo $? #1
-# /bin/true; echo $?  #0
-# false OR true
-USE_PPPoE=true
+# /bin/false; echo $? # 1
+# /bin/true; echo $?  # 0
+# false=1
+# true=0
+USE_PPPoE=0
 
 PPPOE_SERVER=/usr/sbin/pppoe-server
 PPPOE_SERVER_NAME=imslu
@@ -60,10 +61,11 @@ NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24"
 
 
 ##### VLAN settings #####
-# /bin/false; echo $? #1
-# /bin/true; echo $?  #0
-# false OR true
-USE_VLANS=true
+# /bin/false; echo $? # 1
+# /bin/true; echo $?  # 0
+# false=1
+# true=0
+USE_VLANS=0
 
 # VLAN ID range
 VLAN_SEQ="10 11 $(seq 12 16) $(seq 17 20)"

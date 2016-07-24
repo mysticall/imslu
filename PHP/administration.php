@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -38,62 +38,47 @@ require_once dirname(__FILE__).'/include/config.php';
 
 if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-###################################################################################################
-    // PAGE HEADER
-###################################################################################################
-
+    ####### PAGE HEADER #######
     $page['title'] = 'Administration';
-    $page['file'] = 'administration.php';
 
     require_once dirname(__FILE__).'/include/page_header.php';
 
-
-#####################################################
-    // Display messages
-#####################################################
-    echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+    ####### Display messages #######
+    echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
     // Security key for comparison
-    $_SESSION['form_key_old'] = $_SESSION['form_key'];
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-    $cmd = "ps -e -o pid,args | grep secondary_rules.py | grep -v grep | awk '{print $1}'";
-    $result = shell_exec($cmd);
+    if ($USE_VLANS) {
 
-    if (empty($result)) {
+        $cmd = "ls /proc/net/vlan/";
+        $result = shell_exec($cmd);
+        if ($result) {
+
+            $str = str_replace("config", "", explode("\n", $result));
+            $vlan = array('' => '');
+            foreach ($str as $value) {
+
+                $vlan[$value] = $value;
+            }
 
         $form =
 "    <form action=\"administration_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <tbody id=\"tbody\">
+      <table>
+        <tbody>
           <tr class=\"header_top\">
-            <th  colspan=\"2\">
-              <label>"._('check for vlan, mac')."</label>&nbsp;
-              <input class=\"input\" type=\"submit\" name=\"start_vlan_mac_check\" value=\""._('start')."\">
+            <th>
+              "._('vlan')."
+".combobox('', 'vlan', null, $vlan)."
+              <input class=\"button\" type=\"submit\" name=\"clear\" value=\""._('clear')."\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
             </th>
           </tr>
         </tbody>
       </table>
     </form>\n";
-    }
-    else {
-
-        $form =
-"    <form action=\"administration_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <tbody id=\"tbody\">
-          <tr class=\"header_top\">
-            <th  colspan=\"2\">
-              <label class=\"red\">"._('Please wait, the system checking for vlan, mac')."</label>&nbsp;
-              <input type=\"submit\" name=\"stop_vlan_mac_check\" value=\""._('stop')."\">
-              <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-            </th>
-          </tr>
-        </tbody>
-      </table>
-    </form>\n";
+        }
     }
 
     if (!empty($_POST['log'])) {

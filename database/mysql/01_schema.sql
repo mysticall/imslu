@@ -145,7 +145,6 @@ CREATE TABLE `payments` (
   `id`            bigint       UNSIGNED NOT NULL AUTO_INCREMENT,
   `userid`        int(11)      NOT NULL,
   `name`          varchar(64)  NOT NULL DEFAULT '',
-  `username`      varchar(64)  NOT NULL DEFAULT '',
   `unpaid`        TINYINT(1)   NOT NULL DEFAULT '0',
   `limited`       TINYINT(1)   NOT NULL DEFAULT '0',
   `reported`      TINYINT(1)   NOT NULL DEFAULT '0',

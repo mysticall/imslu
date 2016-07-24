@@ -6,7 +6,7 @@
 # http://wiki.bash-hackers.org/commands/builtin/read
 
 . /etc/imslu/config.sh
-#. /etc/imslu/scripts/functions.sh
+now=$(date +%Y%m%d%H%M%S)
 
 # remove any existing qdiscs
 $TC qdisc del dev $IFACE_IMQ0 root 2> /dev/null
@@ -71,6 +71,22 @@ while read -r row; do
 done < <(echo $query | mysql $database -u $user -p${password} -s)
 # echo ${services[@]}
 # echo ${!services[@]}
+
+####### payments #######
+query="SELECT users.userid, users.free_access, TEMP.expires 
+       FROM users
+       LEFT JOIN (SELECT payments.userid, payments.expires FROM payments ORDER BY payments.expires DESC LIMIT 18446744073709551615) AS TEMP
+       ON users.userid=TEMP.userid GROUP BY users.userid"
+declare -A payments
+
+while read -r row; do
+    read -r userid tmp <<< "${row}"
+    payments[${userid}]="${row}"
+
+done < <(echo $query | mysql $database -u $user -p${password} -s)
+# echo ${payments[@]}
+# echo ${!payments[@]}
+
 
 ####### Users #######
 query="SELECT userid, service FROM users"
@@ -145,8 +161,8 @@ $TC filter add dev ${IFACE_IMQ1} protocol ip parent 1:0 prio 1 u32 ht $(printf '
     done
 done
 
-query="SELECT userid, ip, vlan, mac FROM ip WHERE userid != 0"
-while read -r userid ip vlan mac; do
+query="SELECT userid, ip FROM ip WHERE userid != 0"
+while read -r userid ip; do
     IFS=\. read -r a b c d <<< "${ip}"
 
     if [ $c -eq 0 ]; then
@@ -173,6 +189,44 @@ $TC filter add dev ${IFACE_IMQ1} parent 1: protocol ip prio 1 u32 ht $(printf '%
         ((i--))
         s=$((s-$STEP))
     done
+
+    # Allow internet access
+    read -r userid free_access expires expires2 <<< "${payments[${userid}]}"
+
+    if [[ ${free_access} == "y" || (${expires} != "NULL" && $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
+        $IPSET add allowed ${ip}
+    fi
 done < <(echo $query | mysql $database -u $user -p${password} -s)
 
 
+if [ $USE_VLANS -eq 0 ]; then
+
+    # Adding routing and static MAC for IP addresses who have vlan.
+    query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan NOT LIKE ''"
+    while read -r ip vlan free_mac mac; do
+
+        if [ -f /proc/net/vlan/${vlan} ]; then
+            IFS=\. read -r a b c d <<< "${ip}"
+#           ip route add 10.0.1.2 dev eth1.0010 src 10.0.1.1
+            ip route add ${ip} dev ${vlan} src ${a}.${b}.${c}.1
+
+            if [[ "${free_mac}" == "n" && -n "${mac}" ]]; then
+#               arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
+                arp -i ${vlan} -s ${ip} ${mac}
+            fi
+        fi
+    done < <(echo $query | mysql $database -u $user -p${password} -s)
+else
+
+    # Adding static MAC for IP addresses.
+    query="SELECT ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND mac NOT LIKE '' AND free_mac='n'"
+    while read -r ip mac free_mac; do
+
+        IFS=\. read -r a b c d <<< "${ip}"
+#       ip route add 10.0.1.2 dev eth1 src 10.0.1.1
+        ip route add ${ip} dev $IFACE_INTERNAL src ${a}.${b}.${c}.1
+
+#       arp -s 10.0.1.2 34:23:87:96:70:27
+        arp -s ${ip} ${mac}
+    done < <(echo $query | mysql $database -u $user -p${password} -s)
+fi

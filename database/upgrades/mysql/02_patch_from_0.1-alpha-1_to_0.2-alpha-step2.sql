@@ -8,5 +8,6 @@ DROP TABLE switches;
 ALTER TABLE users DROP trafficid;
 ALTER TABLE users DROP switchid;
 ALTER TABLE users DROP pppoe;
+ALTER TABLE payments DROP username;
 DROP TABLE radippool;
 DROP TABLE radreply;

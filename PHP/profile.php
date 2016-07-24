@@ -76,7 +76,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">\n";
 $form .= (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || OPERATOR_TYPE_ADMIN == $_SESSION['data']['type']) ?
-"              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" value=\"{$_SESSION['data']['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$_SESSION['data']['operid']}', '"._('That alias is already being used.')."')\">
+"              <input id=\"alias\" name=\"alias\" class=\"input\" type=\"text\" value=\"{$_SESSION['data']['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$_SESSION['data']['operid']}', '"._('That alias is already being used!')."')\">
               <label id=\"hint\"></label>\n" :
 "              <input type=\"text\" name=\"alias\" value=\"{$_SESSION['data']['alias']}\">\n";
 $form .= 

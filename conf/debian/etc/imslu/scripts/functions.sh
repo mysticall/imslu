@@ -24,7 +24,7 @@ ppoe_rem () {
 
 vconfig_add () {
 
-    if [[ $USE_VLANS -eq 0 ]]; then
+    if [ $USE_VLANS -eq 0 ]; then
 
         modprobe 8021q
         vconfig set_name_type DEV_PLUS_VID
@@ -68,7 +68,7 @@ vconfig_add () {
 
 vconfig_rem () {
 
-    if [[ $USE_VLANS -eq 0 ]]; then
+    if [ $USE_VLANS -eq 0 ]; then
 
         local padding="0000"
         local VLAN_ID

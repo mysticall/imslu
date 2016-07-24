@@ -96,6 +96,6 @@ echo 32768 > /sys/module/nf_conntrack/parameters/hashsize
 # check current tracked connections
 #cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 
-/etc/imslu/scripts/global_rules.sh
+/etc/imslu/scripts/start.sh
 /etc/imslu/scripts/arp-scan.sh&
 exit 0

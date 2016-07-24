@@ -243,20 +243,6 @@ mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
 
 apt-get install libapache2-mod-php5 php5-mysql
 
------------
-EDIT Debian Session garbage collection
------------
-#STOP cron
-
-nano /etc/cron.d/php5
-just comment #
-
-And start PHP default garbage collection 
-nano /etc/php5/apache2/php.ini
---------------------------------------------------------------------------------
-session.gc_probability = 1
---------------------------------------------------------------------------------
-
 Uncomment and set default timezone
 nano /etc/php5/apache2/php.ini
 -----------
@@ -308,14 +294,14 @@ apt-get install bind9
 nano /etc/bind/named.conf.options 
 Add after "listen-on-v6 { any; };"
 --------------------------------------------------------------------------------
-        listen-on { 127.0.0.1; 10.111.2.1; };
+    listen-on { 127.0.0.1; 10.0.1.1; 10.0.2.1; };
 
-        allow-transfer { none; };
-        allow-query { 127.0.0.1; 192.168.11.0/24; 10.111.1.0/24; 10.111.2.0/24; };
-        allow-recursion { 127.0.0.1; 192.168.11.0/24; 10.111.1.0/24; 10.111.2.0/24; };
+    allow-transfer { none; };
+    allow-query { 127.0.0.1; 10.0.1.0/24; 10.0.2.0/24; };
+    allow-recursion { 127.0.0.1; 10.0.1.0/24; 10.0.2.0/24; };
 
-        // Do not make public version of BIND
-        version none;
+    // Do not make public version of BIND
+    version none;
 --------------------------------------------------------------------------------
 
 Bind Chroot
@@ -445,10 +431,116 @@ nano /etc/rsyslog.d/ip_activity.conf
 /etc/init.d/rsyslog restart
 
 
-####### 3.1 config.py #######
+##### 3.1 Rebuild an official Debian kernel #####
+https://tracker.debian.org/pkg/linux
+
+apt-get update
+apt-get install build-essential fakeroot debhelper flex bison libncurses5 libncurses5-dev libssl-dev 
+apt-get build-dep linux
+:~# exit
+cd ~/src
+apt-get source linux
+
+### Apply IMQ patch ###
+https://github.com/imq/linuximq
+
+wget https://raw.githubusercontent.com/imq/linuximq/master/kernel/v4.x/linux-4.6-imq.diff
+cd linux-4.6.3
+patch -Np 1 < ../linux-4.6-imq.diff
+mv debian/config/kernelarch-x86/config debian/config/kernelarch-x86/config.orig
+cp ~/src/imslu/conf/kernel/config-generic-4.6 debian/config/kernelarch-x86/config
+OR
+cp /boot/config-`uname -r` debian/config/kernelarch-x86/config
+
+fakeroot make -f debian/rules debian/control
+sed -i -e 's|$(MAKE) |$(MAKE) -j4 |' debian/rules.gen
+fakeroot make -f debian/rules clean
+fakeroot make -f debian/rules setup 2>&1 | tee setup.log
+
+make -C debian/build/build_amd64_none_amd64 menuconfig
+-----------
+    General setup  --->
+    [ ] Auditing support
+
+    Security options  --->
+    [ ] NSA SELinux Support
+    [ ] AppArmor support
+
+[*] Networking support  --->
+      Networking options  --->
+        [ ] Security Marking
+        [*] Network packet filtering framework (Netfilter)  --->
+            Core Netfilter Configuration  --->
+              <M>   "IMQ" target support
+
+        <M> IP set support  --->
+
+              (256) Maximum number of IP sets (NEW)
+              <M>   bitmap:ip set support
+              <M>   bitmap:ip,mac set support
+              <M>   bitmap:port set support
+              <M>   hash:ip set support
+              <M>   hash:ip,mark set support
+              <M>   hash:ip,port,ip set support
+              <M>   hash:ip,port,net set support
+              <M>   hash:mac set support
+              <M>   hash:net,port,net set support
+              <M>   hash:net set support
+              <M>   hash:net,net set support
+              <M>   hash:net,port set support
+              <M>   hash:net,iface set support
+              <M>   list:set set support 
+
+    Device Drivers  --->
+      -*- Network device support  --->
+        {*} IMQ (intermediate queueing device) support 
+            IMQ behavior (PRE/POSTROUTING) (IMQ BB)  --->
+        (2) Number of IMQ devices
+
+        --- IMQ behavior (PRE/POSTROUTING) (IMQ BB)  --->
+            ( ) IMQ AA
+            ( ) IMQ AB
+            ( ) IMQ BA
+            (X) IMQ BB
+
+-----------
+
+fakeroot make -f debian/rules build-arch 2>&1 | tee build.log
+
+If error: "ABI has changed!  Refusing to continue."
+-----------
+mv debian/abi/4.6.0-1/amd64_none_amd64 debian/abi/4.6.0-1/amd64_none_amd64.orig
+cp debian/build/build_amd64_none_amd64/Module.symvers debian/abi/4.6.0-1/amd64_none_amd64
+fakeroot make -f debian/rules build-arch 2>&1 | tee build2.log
+-----------
+
+fakeroot make -f debian/rules binary-arch 2>&1 | tee binary.log
+cd ..
+apt-get purge linux-image-4.6.0-1
+dpkg -i linux-image-4.6.0-1-amd64_4.6.3-1_amd64.deb
+
+
+##### 3.2 Rebuild iptables #####
+
+apt-get build-dep iptables
+cd ~/src
+apt-get source iptables
+wget https://raw.githubusercontent.com/imq/linuximq/master/latest/imq-iptables-1.4.13.diff
+
+### Apply IMQ patch ###
+cd iptables-1.6.0
+patch -p 1 < ../imq-iptables-1.4.13.diff
+fakeroot make -f debian/rules clean
+fakeroot make -f debian/rules build 2>&1 | tee build.log
+fakeroot make -f debian/rules binary 2>&1 | tee binary.log
+cd ..
+dpkg -i libxtables11_1.6.0-2_amd64.deb iptables_1.6.0-2_amd64.deb
+
+
+####### 3.3 CONFIG #######
 
 Edit config files:
-- /etc/imslu/scripts/config.py
+- /etc/imslu/config.sh
 - /etc/imslu/config.php
 - /etc/imslu/database_config.php
 

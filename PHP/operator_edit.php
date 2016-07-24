@@ -104,7 +104,7 @@ function validateForm() {
               <label>"._('alias')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"alias\" type=\"text\" name=\"alias\" value=\"{$operator['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$operator['operid']}', '"._('That alias is already being used.')."')\">
+              <input id=\"alias\" type=\"text\" name=\"alias\" value=\"{$operator['alias']}\" onkeyup=\"value_exists('alias', 'operators', '{$operator['operid']}', '"._('That alias is already being used!')."')\">
             </td>
           </tr>
           <tr>

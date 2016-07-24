@@ -138,8 +138,7 @@ function pppoe_update($db, $pppoe_old, $pppoe_new) {
     $db->dbh->commit();
 
     $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$pppoe_old['ip']}/32' 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    shell_exec($cmd);
 }
 
 /**
@@ -163,8 +162,7 @@ function pppoe_remove($db, $ip, $username) {
     $sth->execute();
 
     $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$ip}/32' 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    shell_exec($cmd);
 }
 
 /**
@@ -190,7 +188,8 @@ function ip_add($db, $ip) {
         exit;
     }
 
-    $now = date('Y-m-d H:i:s');
+    $now = date ("YmdHis");
+    $expire = date("YmdHis", strtotime("{$user['expires']}"));
 
     ####### Get user info, ip adresses and payment #######
     $sql = 'SELECT users.*, payments.id as payment_id, payments.expires
@@ -225,22 +224,19 @@ function ip_add($db, $ip) {
     else {
 
         $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$ip['ip']}' '{$ip['vlan']}' '{$ip['mac']}' '{$ip['free_mac']}' 2>&1";
-        $result = shell_exec($cmd);
-        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+        shell_exec($cmd);
     }
 
     // Start internet access
-    if ($ip['stopped'] == 'n' && ($user['free_access'] == 'y' || $user['expires'] > $now || substr($user['created'],0,10) == substr($now,0,10))) {
+    if ($ip['stopped'] == 'n' && ($user['free_access'] == 'y' || $expire > $now || substr($user['created'],0,10) == date('Y-m-d'))) {
 
         $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip['ip']}' 2>&1";
-        $result = shell_exec($cmd);
-        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+        shell_exec($cmd);
     }
 
     // Add tc filter for IP
     $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_filter_add '{$ip['ip']}' '{$ip['userid']}' 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    shell_exec($cmd);
 }
 
 /**
@@ -274,18 +270,15 @@ function ip_remove($db, $ip) {
     else {
 
         $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$ip['ip']}' '{$ip['vlan']}' 2>&1";
-        $result = shell_exec($cmd);
-        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+        shell_exec($cmd);
     }
 
     // Stop internet access for IP
     $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip['ip']} 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    shell_exec($cmd);
 
     // Remove tc filter for IP
     $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_filter_delete {$ip['ip']} 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    shell_exec($cmd);
 }
 ?>

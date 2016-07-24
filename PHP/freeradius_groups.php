@@ -86,7 +86,7 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 	else {
 	
 		echo '<label class="middle_container tableinfo" style="font-size:18px; font-weight:bold; color: #ff0000;">'. 
-			_('Please, first add IP addresses for FreeRADIUS in the "IP addresses".') .'<label>';
+			_('Please, first add IP addresses.') .'<label>';
 
 		require_once dirname(__FILE__).'/include/page_footer.php';
 		exit;

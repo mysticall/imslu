@@ -12,8 +12,8 @@ ip_add () {
 #               arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
                 arp -i $2 -s $1 $3
             fi
-        else
-            echo -e "USE:\n. /etc/imslu/config.sh; /etc/imslu/scripts/functions-php.sh ip_add '10.0.1.2' 'eth1.0011' '34:23:87:96:70:27' 'n'"
+#        else
+#            echo -e "USE:\n/etc/imslu/scripts/functions-php.sh ip_add '10.0.1.2' 'eth1.0011' '34:23:87:96:70:27' 'n'"
         fi
     else
         if [ -n "$1" ]; then
@@ -46,13 +46,13 @@ ip_rem () {
 
 mac_add () {
 
-    if [[ $USE_VLANS -eq 0 ]]; then
+    if [ $USE_VLANS -eq 0 ]; then
         if [[ -f /proc/net/vlan/${2} && -n "$3" ]]; then
 
 #           arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
             arp -i $2 -s $1 $3
-        else
-            echo -e "USE:\n. /etc/imslu/config.sh; /etc/imslu/scripts/functions-php.sh mac_add '10.0.1.2' 'eth1.0011' '34:23:87:96:70:27' 'n'"
+#        else
+#            echo -e "USE:\n/etc/imslu/scripts/functions-php.sh mac_add '10.0.1.2' 'eth1.0011' '34:23:87:96:70:27' 'n'"
         fi
     else
         if [[ -n "$1" && -n "$3" && "$4" == "n" ]]; then

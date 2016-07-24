@@ -87,7 +87,8 @@ if (!empty($_POST['delete']) && !empty($_POST['del_user']) && $admin_permissions
 ####### Edit #######
 if (!empty($_POST['edit'])) {
 
-    $now = date('Y-m-d H:i:s');
+    $now = date ("YmdHis");
+    $expire = date("YmdHis", strtotime("{$_POST['expires']}"));
 
     # Here there are too many checks, because table "users" is indexed.
     # It is not advisable, to make unnecessary entries in this table.
@@ -157,7 +158,7 @@ if (!empty($_POST['edit'])) {
             }
         }
         // Stop internet access
-        if ($_POST['free_access'] == 'n' && !empty($ip[0]['ip']) && (empty($_POST['expires']) || $_POST['expires'] < $now)) {
+        if ($_POST['free_access'] == 'n' && !empty($ip[0]['ip']) && (empty($_POST['expires']) || $expire < $now)) {
 
             for ($i = 0; $i < count($ip); ++$i) {
                 
@@ -208,7 +209,7 @@ if (!empty($_POST['edit'])) {
         $sth->execute();
 
         // Start internet access
-        if (($_POST['free_access'] == 'y' || $_POST['expires'] > $now) && !empty($ip[0]['ip'])) {
+        if (($_POST['free_access'] == 'y' || $expire > $now) && !empty($ip[0]['ip'])) {
 
             for ($i = 0; $i < count($ip); ++$i) {
 
@@ -218,7 +219,7 @@ if (!empty($_POST['edit'])) {
             }
         }
         // Stop internet access
-        if ($_POST['free_access'] == 'n' && $_POST['expires'] < $now && !empty($ip[0]['ip'])) {
+        if ($_POST['free_access'] == 'n' && $expire < $now && !empty($ip[0]['ip'])) {
 
             for ($i = 0; $i < count($ip); ++$i) {
                     

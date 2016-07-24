@@ -92,19 +92,19 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
     $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
     if ($rows) {
-        
+
         $now = time();
         for ($i = 0; $i < count($rows); ++$i) {
-    
+
             if (!$rows[$i]['acctstoptime']) {
-            
-                $rows[$i]['acctstoptime'] = _('online');
+
+                $rows[$i]['acctstoptime'] = 'n/a';
                 $rows[$i]['acctsessiontime'] = time2str($now - strtotime($rows[$i]['acctstarttime']));
                 $rows[$i]['acctinputoctets'] = bytes2str($rows[$i]['acctinputoctets']);
                 $rows[$i]['acctoutputoctets'] = bytes2str($rows[$i]['acctoutputoctets']);
             }
             else {
-                
+
                 $rows[$i]['acctsessiontime'] = time2str($rows[$i]['acctsessiontime']);
                 $rows[$i]['acctinputoctets'] = bytes2str($rows[$i]['acctinputoctets']);
                 $rows[$i]['acctoutputoctets'] = bytes2str($rows[$i]['acctoutputoctets']);

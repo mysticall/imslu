@@ -43,92 +43,93 @@ $cashier_permissions = (OPERATOR_TYPE_CASHIER == $_SESSION['data']['type']);
 $technician_permissions = (OPERATOR_TYPE_TECHNICIAN == $_SESSION['data']['type']);
 $readonly = ($admin_permissions) ? '' : ' readonly';
 
-
-###################################################################################################
-	// PAGE HEADER
-###################################################################################################
-
+####### PAGE HEADER #######
 $page['title'] = 'User Payments';
-$page['file'] = 'user_payments.php';
 
 require_once dirname(__FILE__).'/include/page_header.php';
 
 
-#####################################################
-	// Display messages
-#####################################################
-echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
+####### Display messages #######
+echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
 
-###################################################################################################
-	// Edit User
-###################################################################################################
-
 if (!empty($_GET['userid'])) {
 
-	# !!! Prevent problems !!!
-	$userid = $_GET['userid'];
-	settype($userid, "integer");
-	if($userid == 0) {
-		
-		header("Location: users.php");
-		exit;
-	}
+    # !!! Prevent problems !!!
+    $userid = $_GET['userid'];
+    settype($userid, "integer");
+    if($userid == 0) {
+        
+        header("Location: users.php");
+        exit;
+    }
 
-#####################################################
-	// Get user info and payment
-#####################################################
+    ####### Services #######
+    $sql = 'SELECT name,price FROM services';
+    $sth = $db->dbh->prepare($sql);
+    $sth->execute();
+    $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-	$sql = 'SELECT users.*, traffic.price, radcheck.username
-			FROM users
-			LEFT JOIN traffic ON users.trafficid = traffic.trafficid
-			LEFT JOIN radcheck ON users.userid = radcheck.userid
-			WHERE users.userid = :userid LIMIT 1';
-	$sth = $db->dbh->prepare($sql);
-	$sth->bindValue(':userid', $userid, PDO::PARAM_INT);
-	$sth->execute();
-	$user_info = $sth->fetch(PDO::FETCH_ASSOC);
+    if ($rows) {
+        for ($i = 0; $i < count($rows); ++$i) {
 
+            $services[$rows[$i]['name']] = $rows[$i]['price'];
+        }
+    }
 
-	$sql = 'SELECT *
-			FROM payments
-			WHERE userid = :userid ORDER BY expires DESC';
-	$sth = $db->dbh->prepare($sql);
-	$sth->bindParam(':userid', $userid, PDO::PARAM_INT);
-	$sth->execute();
-	$payments_info = $sth->fetchAll(PDO::FETCH_ASSOC);
+    $sql = 'SELECT * FROM users WHERE userid = :userid LIMIT 1';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
+    $sth->execute();
+    $user = $sth->fetch(PDO::FETCH_ASSOC);
 
 
-	// Security key for comparison
-	$_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
+    $sql = 'SELECT * FROM payments WHERE userid = :userid ORDER BY expires DESC';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindParam(':userid', $userid, PDO::PARAM_INT);
+    $sth->execute();
+    $payments = $sth->fetchAll(PDO::FETCH_ASSOC);
 
+    $disabled = 0;
+    if ($payments) {
+        foreach ($payments as $value) {
+            if ($value['unpaid'] == 1 || $value['limited'] == 1) {
+                $disabled++;
+                break;
+            }
+        }
+    }
 
-###################################################################################################
-	// Edit payment
-###################################################################################################
+    // Security key for comparison
+    $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-	if (!empty($_GET['id']) && !empty($payments_info[0])) {
-		
-		for ($i = 0; $i < count($payments_info); ++$i) {
-			
-			if ($payments_info[$i]['id'] == $_GET['id']) {
-				
-				$payments_edit = $payments_info[$i];
-				$_SESSION['payment_info'] = $payments_info[$i];
-				break;
-			}
-		}
+    // Compare date of payment
+    $expire = (!empty($payments[0]['expires'])) ? strtotime("{$payments[0]['expires']}") : time();
 
-		if (isset($payments_edit)) {
+    ####### Edit #######
+    if (!empty($_GET['id']) && !empty($payments[0]) && $admin_permissions) {
 
-			$form =
+        for ($i = 0; $i < count($payments); ++$i) {
+            if ($payments[$i]['id'] == $_GET['id']) {
+
+                $payment = $payments[$i];
+                break;
+            }
+        }
+
+        if (isset($payment)) {
+
+            $form =
 "    <form action=\"user_payments_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <tbody id=\"tbody\">
+      <table>
+        <tbody>
           <tr class=\"header_top\">
             <th  colspan=\"2\">
-              <label>"._('payment').": ".$payments_edit['id']."</label>
+              <label>"._('payment').": ".$payment['id']."</label>
+              <label class=\"info_right\">
+                <a href=\"user_payments.php?userid={$userid}\">["._('back')."]</a>
+              </label>
             </th>
           </tr>
           <tr>
@@ -136,7 +137,7 @@ if (!empty($_GET['userid'])) {
               <label>"._('obligation')."</label>
             </td>
             <td class=\"dd\">
-              <label>{$payments_edit['date_payment1']}   ".chars($payments_edit['operator1'])."</label>
+              <label>{$payment['date_payment1']}   ".chars($payment['operator1'])."</label>
             </td>
           </tr>
           <tr>
@@ -144,7 +145,7 @@ if (!empty($_GET['userid'])) {
               <label>"._('payment')."</label>
             </td>
             <td class=\"dd\">
-              <label>{$payments_edit['date_payment2']}   ".chars($payments_edit['operator2'])."</label>
+              <label>{$payment['date_payment2']}   ".chars($payment['operator2'])."</label>
             </td>
           </tr>
           <tr>
@@ -152,9 +153,9 @@ if (!empty($_GET['userid'])) {
               <label>"._('expires')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"expires\" id=\"expires_edit\" size=\"17\" value=\"{$payments_edit['expires']}\" $readonly>\n";
+              <input id=\"expires_edit\" type=\"text\" name=\"expires\" value=\"{$payment['expires']}\" $readonly>\n";
 
-			$form .= ($admin_permissions) ? "
+            $form .= ($admin_permissions) ? "
                 <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -167,7 +168,7 @@ if (!empty($_GET['userid'])) {
                 });
                 </script>\n" : '';
 
-			$form .= "
+            $form .= "
             </td>
           </tr>
           <tr>
@@ -175,7 +176,7 @@ if (!empty($_GET['userid'])) {
               <label>"._('sum')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"text\" name=\"sum\" value=\"{$payments_edit['sum']}\" $readonly>
+              <input type=\"text\" name=\"sum\" value=\"{$payment['sum']}\" $readonly>
             </td>
           </tr>
           <tr>
@@ -183,7 +184,7 @@ if (!empty($_GET['userid'])) {
               <label>"._('notes')."</label>
             </td>
             <td class=\"dd\">
-              <textarea name=\"notes\" cols=\"55\" rows=\"3\">".chars($payments_edit['notes'])."</textarea>
+              <textarea name=\"notes\" rows=\"2\">".chars($payment['notes'])."</textarea>
             </td>
           </tr>
           <tr>
@@ -191,7 +192,7 @@ if (!empty($_GET['userid'])) {
               <label>"._s('%s days', $LIMITED_INTERNET_ACCESS)."</label>
             </td>
             <td class=\"dd\">
-              <label>{$payments_edit['limited']}</label>
+              <label>{$payment['limited']}</label>
             </td>
           </tr>
           <tr>
@@ -199,92 +200,96 @@ if (!empty($_GET['userid'])) {
               <label>"._('obligation')."</label>
             </td>
             <td class=\"dd\">
-              <label>{$payments_edit['unpaid']}</label>
+              <label>{$payment['unpaid']}</label>
             </td>
           </tr>\n";
 
-			$form .= ($admin_permissions) ? "
+            $form .= ($admin_permissions) ? "
           <tr>
             <td class=\"dt right\">
               <label><span class=\"red\">"._('delete')."</span></label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del\">
             </td>
           </tr>\n" : '';
 
-			$form .= "
+            $form .= "
           <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
             </td>
             <td class=\"dd\">
+              <input class=\"button\" type=\"submit\" name=\"save\" value=\""._('save')."\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"hidden\" name=\"id\" value=\"{$payments_edit['id']}\">
-              <input type=\"hidden\" name=\"userid\" value=\"{$user_info['userid']}\">
-              <input type=\"hidden\" name=\"name\" value=\"".chars($user_info['name'])."\">
-              <input type=\"submit\" name=\"save\" id=\"save\" value=\""._('save')."\">\n";
+              <input type=\"hidden\" name=\"expire\" value=\"{$expire}\">
+              <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'>
+              <input type=\"hidden\" name=\"old_p\" value='".json_encode($payment)."'>\n";
 
-			$form .= ($admin_permissions) ? "
-              <input type=\"submit\" name=\"delete\" id=\"delete\" value=\""._('delete')."\">\n" : '';
+            $form .= ($admin_permissions) ? "
+              <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">\n" : '';
 
-			$form .= "
+            $form .= "
             </td>
           </tr>
         </tbody>
       </table>
     </form>";
 
-		echo $form;
-		}
-	}
+        echo $form;
+        }
+    }
+    else {
+    ####### Show payments #######
+    if (!empty($payments[0]['expires']) && strtotime("{$payments[0]['expires']}") > time()) {
 
-###################################################################################################
-	// Show payments
-###################################################################################################
+        $time = strtotime(substr($payments[0]['expires'], 0, 10));
+        $expires = date("Y-m-d", strtotime("+1 month", $time))." 23:59";
+        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59";
+    }
+    else {
+        $expires = date("Y-m-d", strtotime("+1 month"))." 23:59";
+        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59";
+    }
 
-	if (isset($payments_info[0]['expires']) && $payments_info[0]['expires'] > date('Y-m-d H:i')) {
-		
-		$time = strtotime("{$payments_info[0]['expires']}");
-		$expires = date("Y-m-d", strtotime("+1 month", $time))." 23:59";
-		$limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59";
-	}
-	else {
-		$expires = date("Y-m-d", strtotime("+1 month"))." 23:59";
-		$limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59";
-	}
-
-	$username = $user_info['name'];
-	$sum = ($user_info['pay'] != 0.00 && $user_info['pay'] != $user_info['price']) ? $user_info['pay'] : $user_info['price'];
+    $sum = ($user['pay'] != 0.00 && $user['pay'] != $services[$user['service']]) ? $user['pay'] : $services[$user['service']];
 
 
-	$form =
-"    <form name=\"user_payments\" action=\"user_payments_apply.php\" method=\"post\">
-      <table class=\"tableinfo\">
-        <thead id=\"thead\">
+    $form =
+"    <form name=\"payment\" action=\"user_payments_apply.php\" method=\"post\">
+      <table>
+        <tbody>
           <tr class=\"header_top\">
-            <th colspan=\"8\">
-              <label style=\"float: left;\">". _('total').": ".count($payments_info) ."</label>
-              <label>". _s('payments of %s', chars($username)) ."</label>
-              <label class=\"info_right\">
-                <a href=\"user.php?userid={$userid}\">["._('back')."]</a>
-                <a href=\"user_tickets.php?userid={$userid}\">["._('tickets')."]</a>
-              </label>
+            <th>
+              <label class=\"info_right\"><a href=\"user.php?userid={$userid}\">["._('back')."]</a></label>
             </th>
           </tr> \n";
 
-	if ($user_info['free_access'] == 0) {
+    if ($disabled > 0) {
+        $form .=
+"          <tr class=\"header_top red\">
+            <th>
+              <label>"._('The user has obligation!')."</label>
+            </th>
+          </tr> \n";
+    }
+    elseif ($user['free_access'] == 'y') {
 
-		$form .=
+        $form .=
+"          <tr class=\"header_top red\">
+            <th>
+              <label>"._('User is exempt from payment!')."</label>
+            </th>
+          </tr> \n";
+    }
+    else {
+        $form .=
 "          <tr class=\"header_top\">
-            <th colspan=\"8\">
+            <th>
+              ". _('sum') ." <input id=\"sum\" class=\"middle\" type=\"text\" name=\"sum\" value=\"{$sum}\" {$readonly}>
+              ". _('expires')." <input id=\"expires\" style=\"width: 125px;\" type=\"text\" name=\"expires\" value=\"{$expires}\" {$readonly}> \n";
 
-              <label>". _('sum') ."</label>
-                <input class=\"input\" type=\"text\" name=\"sum\" id=\"sum\" size=\"5\" value=\"$sum\" $readonly>
-              <label class=\"link2\">". _('expires')."
-                <input class=\"input\" type=\"text\" name=\"expires\" id=\"expires\" size=\"17\" value=\"$expires\" $readonly> \n";
-
-		if ($admin_permissions) {
-			$form .=
+        if ($admin_permissions) {
+            $form .=
 "                <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
                 <script type=\"text/javascript\">
                 Calendar.setup({
@@ -296,150 +301,95 @@ if (!empty($_GET['userid'])) {
                   step           :    1
                 });
                 </script> \n";
-		}
+        }
 
-		// If user last payments "expires" < date - now, start internet access
-		$start_internet = (empty($payments_info[0]['expires']) || $payments_info[0]['expires'] < date('Y-m-d H:i:s')) ? "true" : "";
-		$form .=
-"              </label>
-              <label class=\"link2\">". _('notes') ."</label>
-                <input class=\"input\" type=\"text\" name=\"notes\" id=\"notes\" size=\"35\">
+        $form .=
+"              ". _('notes') ." <input id=\"notes\" type=\"text\" name=\"notes\">
+                <input class=\"button\" type=\"submit\" name=\"limited_access\" value=\""._s('%s days', $LIMITED_INTERNET_ACCESS)."\">
+                <input class=\"button\" type=\"submit\" name=\"obligation\" value=\""._('obligation')."\">
+                <input class=\"button\" type=\"submit\" name=\"payment\" value=\""._('payment')."\">
                 <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-                <input type=\"hidden\" name=\"start_internet\" value=\"$start_internet\">
-                <input type=\"hidden\" name=\"userid\" value=\"{$user_info['userid']}\">
-                <input type=\"hidden\" name=\"name\" value=\"".chars($user_info['name'])."\">
-                <input type=\"hidden\" name=\"username\" value=\"".chars($user_info['username'])."\">
-                <input type=\"hidden\" name=\"limited\" id=\"limited\" value=\"$limited_access\">
-                <input type=\"hidden\" name=\"limited_access\" id=\"limited_access\" value=\"\">
-              <label class=\"generator link2\" onclick=\"document.getElementById('limited_access').value = 'true'; this.form.submit();\">["._s('%s days', $LIMITED_INTERNET_ACCESS)."]</label>
-                <input type=\"hidden\" name=\"obligation\" id=\"obligation\" value=\"\">
-              <label class=\"generator link2\" onclick=\"document.getElementById('obligation').value = 'true'; this.form.submit();\">["._('obligation')."]</label>
-                <input type=\"hidden\" name=\"payment\" id=\"payment\" value=\"\">
-              <label class=\"generator link2\" onclick=\"document.getElementById('payment').value = 'true'; this.form.submit();\">["._('payment')."]</label>
+                <input type=\"hidden\" name=\"limited\" value=\"{$limited_access}\">
+                <input type=\"hidden\" name=\"expire\" value=\"{$expire}\">
+                <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'>
             </th>
           </tr> \n";
-	}
-	else {
+    }
 
-		$form .=
-"          <tr class=\"header_top red\">
+    $form .=
+"        </tbody>
+      </table>
+    </form>
+    <form name=\"user_payments\" action=\"user_payments_apply.php\" method=\"post\">
+      <table>
+        <header>
+          <tr class=\"header_top\">
             <th colspan=\"8\">
-              <label>"._('User is exempt from payments!')."</label>
+              <label style=\"float: left;\">". _('total').": ".count($payments) ."</label>
+              <label>". _s('Payments of %s', chars($user['name'])) ."</label>
             </th>
-          </tr> \n";
-	}
-
-	$form .=
-"          <tr class=\"header\">
+          </tr>
+          <tr class=\"header\">
             <th>"._('id')."</th>
             <th>"._('obligation')."</th>
             <th>"._('payment')."</th>
             <th>"._('expires')."</th>
             <th>"._('sum')."</th>
             <th>"._('notes')."</th>
-            <th style=\"table-layout: auto; width: 69px;\">"._s('%s days', $LIMITED_INTERNET_ACCESS)."</th>
-            <th style=\"table-layout: auto; width: 69px;\">"._('obligation')."</th>
+            <th>"._s('%s days', $LIMITED_INTERNET_ACCESS)."</th>
+            <th>"._('obligation')."</th>
           </tr>
         </thead>
         <tbody>\n";
 
-	if (isset($payments_info[0])) {
+    if (!empty($payments[0])) {
 
-		$total_sum = null;
+        $total_sum = null;
 
-		for ($i = 0; $i < count($payments_info); ++$i) {
+        for ($i = 0; $i < count($payments); ++$i) {
 
-			$total_sum = $total_sum + $payments_info[$i]['sum'];
-			$red = ($payments_info[$i]['unpaid'] == 1 || $payments_info[$i]['limited'] == 1) ? "red" : "";
+            $total_sum = $total_sum + $payments[$i]['sum'];
+            $class = ($i % 2 == 0) ? "class=\"even_row" : "class=\"odd_row";
+            $red = ($payments[$i]['unpaid'] == 1 || $payments[$i]['limited'] == 1) ? "red" : "";
+            $id = ($admin_permissions) ? "<a href=\"user_payments.php?userid={$user['userid']}&id={$payments[$i]['id']}\">{$payments[$i]['id']}</a>" : "{$payments[$i]['id']}";
 
-			if ($i % 2 == 0) {
+            $form .=
+"          <tr {$class} {$red}\">
+            <td>{$id}</td>
+            <td>{$payments[$i]['date_payment1']} ".chars($payments[$i]['operator1'])."</td>
+            <td>{$payments[$i]['date_payment2']} ".chars($payments[$i]['operator2'])."</td>
+            <td>{$payments[$i]['expires']}</td>
+            <td>{$payments[$i]['sum']}</td>
+            <td>".chars($payments[$i]['notes'])."</td>\n";
 
-				$form .= 
-"          <tr class=\"even_row $red\">
-            <td class=\"left_select\" onclick=\"location.href='user_payments.php?userid={$user_info['userid']}&id={$payments_info[$i]['id']}';\">{$payments_info[$i]['id']}</td>
-            <td>{$payments_info[$i]['date_payment1']}   ".chars($payments_info[$i]['operator1'])."</td>
-            <td>{$payments_info[$i]['date_payment2']}   ".chars($payments_info[$i]['operator2'])."</td>
-            <td>{$payments_info[$i]['expires']}</td>
-            <td>{$payments_info[$i]['sum']}</td>
-            <td>".chars($payments_info[$i]['notes'])."</td>\n";
-
-				if($payments_info[$i]['limited'] == 1) {
-					$form .= 
-"            <td class=\"left_select\" onclick=\"change_input('user_payments', '{$payments_info[$i]['id']}', 'pay_limited', '{$payments_info[$i]['id']}');\">["._('payment')."]
-              <input id=\"{$payments_info[$i]['id']}\" type=\"hidden\" name value>
-              <input type=\"hidden\" name=\"expires_{$payments_info[$i]['id']}\" value=\"{$payments_info[$i]['expires']}\"></td> \n";
-				}
-				else {
-					$form .=
+            $form .= ($payments[$i]['limited'] == 1) ?
+"            <td><a href=\"user_payments_apply.php?pay_limited=1&userid={$user['userid']}&id={$payments[$i]['id']}&expire={$expire}\">["._('payment')."]</a></td> \n" :
 "            <td></td> \n";
-				}
 
-				if($payments_info[$i]['unpaid'] == 1) {
-					$form .= 
-"            <td class=\"left_select\" onclick=\"change_input('user_payments', '{$payments_info[$i]['id']}', 'pay_unpaid', '{$payments_info[$i]['id']}');\">["._('payment')."]
-              <input id=\"{$payments_info[$i]['id']}\" type=\"hidden\" name value></td> \n";
-				}
-				else {
-					$form .=
+            $form .= ($payments[$i]['unpaid'] == 1) ?
+"            <td><a href=\"user_payments_apply.php?pay_unpaid=1&userid={$user['userid']}&id={$payments[$i]['id']}&expire={$expire}\">["._('payment')."]</a></td> \n" :
 "            <td></td> \n";
-				}
 
-				$form .=
+                $form .=
 "          </tr> \n";
+        }
 
-			}
-			else {
-
-				$form .= 
-"          <tr class=\"odd_row $red\">
-            <td class=\"left_select\" onclick=\"location.href='user_payments.php?userid={$user_info['userid']}&id={$payments_info[$i]['id']}';\">{$payments_info[$i]['id']}</td>
-            <td>{$payments_info[$i]['date_payment1']}   ".chars($payments_info[$i]['operator1'])."</td>
-            <td>{$payments_info[$i]['date_payment2']}   ".chars($payments_info[$i]['operator2'])."</td>
-            <td>{$payments_info[$i]['expires']}</td>
-            <td>{$payments_info[$i]['sum']}</td>
-            <td>".chars($payments_info[$i]['notes'])."</td>\n";
-
-				if($payments_info[$i]['limited'] == 1) {
-					$form .= 
-"            <td class=\"left_select\" onclick=\"change_input('user_payments', '{$payments_info[$i]['id']}', 'pay_limited', '{$payments_info[$i]['id']}');\">["._('payment')."]
-              <input id=\"{$payments_info[$i]['id']}\" type=\"hidden\" name value>
-              <input type=\"hidden\" name=\"expires_{$payments_info[$i]['id']}\" value=\"{$payments_info[$i]['expires']}\"></td> \n";
-				}
-				else {
-					$form .=
-"            <td></td> \n";
-				}
-
-				if($payments_info[$i]['unpaid'] == 1) {
-					$form .= 
-"            <td class=\"left_select\" onclick=\"change_input('user_payments', '{$payments_info[$i]['id']}', 'pay_unpaid', '{$payments_info[$i]['id']}');\">["._('payment')."]
-              <input id=\"{$payments_info[$i]['id']}\" type=\"hidden\" name value></td> \n";
-				}
-				else {
-					$form .=
-"            <td></td> \n";
-				}
-
-				$form .=
-"          </tr> \n";
-
-			}
-		}
-
-		$form .=
+        $form .=
 "          <tr class=\"header\" style=\"text-align: right;\">
             <th colspan=\"8\">
               <label>"._('total sum').": ".$total_sum."</label>
             </th>
           </tr> \n";
-	}
+    }
 
-	$form .=          
-"        </tbody>
+    $form .=          
+"          <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
+        </tbody>
       </table>
     </form> \n";
 
 echo $form;
+    }
 }
 
 require_once dirname(__FILE__).'/include/page_footer.php';

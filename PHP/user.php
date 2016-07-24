@@ -92,7 +92,7 @@ if (!empty($_GET['userid'])) {
             FROM users
             LEFT JOIN payments
             ON users.userid = payments.userid
-            WHERE users.userid = :userid ORDER BY payments.id DESC, payments.expires DESC LIMIT 1';
+            WHERE users.userid = :userid ORDER BY payments.expires DESC LIMIT 1';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
     $sth->execute();
@@ -160,8 +160,8 @@ if (!empty($_GET['userid'])) {
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
     // Compare date of payment
-    $now = date ("Y-m-d H:i:s");
-    $expired = ($now > $user['expires']) ? "style=\"background-color: #FFA9A9;\"" : "";
+    $expire = strtotime("{$user['expires']}");
+    $expired = ($user['free_access'] == 'n' && time() > $expire) ? "style=\"background-color: #FFA9A9;\"" : "";
 
     $form =
 "<script type=\"text/javascript\">
@@ -351,7 +351,6 @@ function validateForm() {
             <td class=\"dt right\">"._('IP address')."</td>
             <td class=\"bold\">"._('vlan')."</td>
             <td class=\"bold\">"._('mac')."</td>
-            <td class=\"bold\">"._('free mac')."</td>
             <td class=\"bold\">"._('username')."</td>
             <td class=\"bold\">"._('password')."</td>
             <td class=\"bold\">"._('pool')."</td>
@@ -379,10 +378,6 @@ function validateForm() {
             </td>
             <td>".chars($ip[$i]['vlan'])."</td>
             <td>".chars($ip[$i]['mac'])."</td>
-            <td>";
-            $form .= ($ip[$i]['free_mac'] == 'y') ? _('Yes') : _('No');
-            $form .=
-"            </td>
             <td>".chars($ip[$i]['username'])."</td>
             <td>".chars($ip[$i]['pass'])."</td>
             <td>{$ip[$i]['pool']}</td>

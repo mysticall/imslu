@@ -137,7 +137,7 @@ function validateForm() {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._('the location')."</label>
+              <label>"._('location')."</label>
             </td>
             <td class=\"dd\">
 ".combobox('', 'locationid', null, $location)."

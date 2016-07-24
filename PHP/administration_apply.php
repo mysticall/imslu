@@ -1,8 +1,8 @@
 <?php
 /*
- * IMSLU version 0.1-alpha
+ * IMSLU version 0.2-alpha
  *
- * Copyright © 2013 IMSLU Developers
+ * Copyright © 2016 IMSLU Developers
  * 
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -43,21 +43,15 @@ require_once dirname(__FILE__).'/include/config.php';
 
 if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_ADMIN == $_SESSION['data']['type'])) {
 
-    if (!empty($_POST['start_vlan_mac_check'])) {
-      
-        $cmd = "$SUDO $PYTHON $IMSLU_SCRIPTS/secondary_rules.py  > /dev/null 2>&1 &";
-        $result = shell_exec($cmd);
+    $db = new PDOinstance();
+    if (!empty($_POST['clear']) && !empty($_POST['vlan'])) {
 
-        $_SESSION['msg'] = _('Started searching for vlan, mac.');
-        header("Location: administration.php");
-    }
+        $sql = "UPDATE ip SET vlan='' WHERE vlan = :vlan";
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':vlan', $_POST['vlan']);
+        $sth->execute();
 
-    if (!empty($_POST['stop_vlan_mac_check'])) {
-
-        $cmd = "ps -e -o pid,args | grep secondary_rules.py | grep -v grep | awk '{print $1}' | xargs $SUDO $KILL -9";
-        $result = shell_exec($cmd);
-
-        $_SESSION['msg'] = _('The process has stopped.')." $result";
+        $_SESSION['msg'] = _('Changes are applied successfully.')."<br>";
         header("Location: administration.php");
     }
 }

@@ -118,9 +118,8 @@ if ($rows) {
 }
 
 ### payments ###
-$sql = 'SELECT userid, unpaid, limited, expires FROM payments WHERE expires > :expires GROUP BY userid';
+$sql = 'SELECT * FROM (SELECT userid, unpaid, limited, expires FROM payments ORDER BY expires DESC LIMIT 18446744073709551615) AS TEMP GROUP BY TEMP.userid';
 $sth = $db->dbh->prepare($sql);
-$sth->bindValue(':expires', $now, PDO::PARAM_INT);
 $sth->execute();
 $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
@@ -158,11 +157,11 @@ if (!empty($users)) {
             $count_not_excluding++;
         }
 
-        if (!empty($payments_[$users[$i]['userid']]) && $payments_[$users[$i]['userid']]['unpaid'] == 0) {
+        if (!empty($payments_[$users[$i]['userid']]) && $payments_[$users[$i]['userid']]['unpaid'] == 0 && $payments_[$users[$i]['userid']]['limited'] == 0) {
             $sql_paid .= " userid={$users[$i]['userid']} OR";
             $count_paid++;
         }
-        elseif (!empty($payments_[$users[$i]['userid']]) && $payments_[$users[$i]['userid']]['unpaid'] == 1) {
+        elseif (!empty($payments_[$users[$i]['userid']]) && ($payments_[$users[$i]['userid']]['unpaid'] == 1 || $payments_[$users[$i]['userid']]['limited'] == 1)) {
             $sql_obligation .= " userid={$users[$i]['userid']} OR";
             $count_obligation++;
         }
@@ -454,7 +453,7 @@ if (!empty($_GET['show'])) {
             $form .= 
 "          <tr {$class}>
             <td rowspan=\"{$count_ip}\">{$users[$i]['userid']}</td>
-            <td rowspan=\"{$count_ip}\"><a  class=\"bold\" href=\"user.php?userid={$users[$i]['userid']}\">".chars($users[$i]['name'])."</a></td>
+            <td rowspan=\"{$count_ip}\"><a class=\"bold\" href=\"user.php?userid={$users[$i]['userid']}\">".chars($users[$i]['name'])."</a></td>
             <td rowspan=\"{$count_ip}\">{$user_location}</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['address'])."</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['phone_number'])."</td>

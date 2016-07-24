@@ -1,10 +1,10 @@
 # Get info for active IP addresses from file /var/log/ip_activity.log.
-*/5 * * * * root awk '!a[$11]++ { print substr($11,5) }' /var/log/ip_activity.log > /tmp/ip_activity && cat /dev/null > /var/log/ip_activity.log
+#*/5 * * * * root awk '!a[$11]++ { print substr($11,5) }' /var/log/ip_activity.log > /tmp/ip_activity && echo '' > /var/log/ip_activity.log
 
 # Get info for active IP addresses from file /proc/net/ip_conntrack.
-#*/5 * * * * root awk '{ if ($1 == "tcp" && $4 == "ESTABLISHED" && !a[$5]++) print substr($5,5); else if ($1 == "udp" && !a[$4]++) print substr($4,5); else if ($1 == "icmp" && !a[$4]++) print substr($4,5); }' /proc/net/ip_conntrack > /tmp/ip_activity
+*/3 * * * * root awk '{ if ($1 == "tcp" && $4 == "ESTABLISHED" && !a[$5]++) print substr($5,5); else if ($1 == "udp" && !a[$4]++) print substr($4,5); else if ($1 == "icmp" && !a[$4]++) print substr($4,5); }' /proc/net/ip_conntrack > /tmp/ip_activity
 
 # Get info for active IP addresses from file /proc/net/ip_conntrack. This script will find only IP addresses from network 10.111.2
-#*/5 * * * * awk '{ if ($1 == "tcp" && $4 == "ESTABLISHED" && substr($5,5,8) == "10.111.2" && !a[$5]++) print substr($5,5); else if ($1 == "udp" && substr($4,5,8) == "10.111.2" && !a[$4]++) print substr($4,5); else if ($1 == "icmp" && substr($4,5,8) == "10.111.2" && !a[$4]++) print substr($4,5); }' /proc/net/ip_conntrack > /tmp/ip_activity
+#*/3 * * * * awk '{ if ($1 == "tcp" && $4 == "ESTABLISHED" && substr($5,5,8) == "10.111.2" && !a[$5]++) print substr($5,5); else if ($1 == "udp" && substr($4,5,8) == "10.111.2" && !a[$4]++) print substr($4,5); else if ($1 == "icmp" && substr($4,5,8) == "10.111.2" && !a[$4]++) print substr($4,5); }' /proc/net/ip_conntrack > /tmp/ip_activity
 
-1 0 * * * root /etc/imslu/scripts/cron.py >> /tmp/imslu_cron 2>&1
+1 0 * * * root /etc/imslu/scripts/payments.sh

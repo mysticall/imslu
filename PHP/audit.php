@@ -63,7 +63,9 @@ if ($sysadmin_rights || $admin_rights) {
 		AUDIT_ACTION_LOGOUT => _('logout'),
 		AUDIT_ACTION_ADD => _('add'),
 		AUDIT_ACTION_UPDATE => _('update'),
-		AUDIT_ACTION_DELETE => _('delete')
+		AUDIT_ACTION_DELETE => _('delete'),
+		AUDIT_ACTION_ENABLE => _('enable'),
+		AUDIT_ACTION_DISABLE => _('disable')
 		);
 
 	$resource = array('' => '',

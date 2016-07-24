@@ -354,7 +354,7 @@ if (!empty($_POST['edit'])) {
                     FROM users
                     LEFT JOIN payments
                     ON users.userid = payments.userid
-                    WHERE users.userid = :userid ORDER BY payments.id DESC, payments.expires DESC LIMIT 1';
+                    WHERE users.userid = :userid ORDER BY payments.expires DESC LIMIT 1';
             $sth = $db->dbh->prepare($sql);
             $sth->bindValue(':userid', $old['userid'], PDO::PARAM_INT);
             $sth->execute();
