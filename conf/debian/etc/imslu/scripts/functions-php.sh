@@ -212,7 +212,7 @@ tc_filter_delete () {
 case "$1" in
 pppd_kill)
     ip=$2
-    IFACE=$(ip address show | ip address show | grep "${ip}/32" | grep -o "ppp\w*")
+    IFACE=$(ip route show | grep "${ip}" | grep -o "ppp\w*")
     if [ -f /var/run/${IFACE}.pid ]; then
         PID=$(cat /var/run/${IFACE}.pid)
         kill -9 $PID

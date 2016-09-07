@@ -19,19 +19,7 @@ vconfig_add
 $IPSET create -exist allowed hash:ip
 $IPSET create -exist lan hash:net --hashsize 64
 $IPSET create -exist peers hash:net
-$IPSET flush peers
-
-# wget -O /tmp/peers http://ipacct.com/f/peers
-wget -O /tmp/peers "http://ip.ludost.net/cgi/process?country=1&country_list=bg&format_template=prefix&format_name=&format_target=&format_default="
-
-if [[ -f /tmp/peers && -s /tmp/peers ]]; then
-    sed -i '/#/d' /tmp/peers
-
-    for subnet in $(cat /tmp/peers); do
-        $IPSET add peers ${subnet}
-    done
-    rm /tmp/peers
-fi
+/etc/imslu/scripts/peer.sh
 
 ####### iptables #######
 $IPTABLES -F
@@ -98,4 +86,14 @@ echo 32768 > /sys/module/nf_conntrack/parameters/hashsize
 
 /etc/imslu/scripts/start.sh
 /etc/imslu/scripts/arp-scan.sh&
+
+if [ ! -d ${RRD_DIR} ]; then
+    mkdir -p ${RRD_DIR}
+    chmod 755 ${RRD_DIR}
+fi
+
+if [ ! -d ${RRD_IMG} ]; then
+    mkdir -p ${RRD_IMG}
+    chmod 777 ${RRD_IMG}
+fi
 exit 0

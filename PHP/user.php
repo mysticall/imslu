@@ -408,7 +408,7 @@ function validateForm() {
             </td>
           </tr>
     </form>
-        <tbody
+        </tbody>
        </table>";
 
     echo $form;

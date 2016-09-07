@@ -210,6 +210,10 @@ if (!empty($_POST['edit'])) {
             $pppoe_old['mac'] = $old['mac'];
             $pppoe_new['mac'] = $_POST['mac'];
         }
+        if ($old['free_mac'] != $_POST['free_mac']) {
+
+            $update['free_mac'] = $_POST['free_mac'];
+        }
         if ($old['groupname'] != $_POST['groupname']) {
 
             $pppoe_old['groupname'] = $old['groupname'];

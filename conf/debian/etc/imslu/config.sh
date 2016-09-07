@@ -96,3 +96,14 @@ MYSQLDUMP=/usr/bin/mysqldump
 
 # gzip location
 GZIP=/bin/gzip
+
+
+##### BGP peer - national traffic #####
+#PEER="http://ipacct.com/f/peers"
+PEER="http://ip.ludost.net/cgi/process?country=1&country_list=bg&format_template=prefix&format_name=&format_target=&format_default="
+
+
+##### rrdtool #####
+RRDTOOL=/usr/bin/rrdtool
+RRD_DIR=/var/lib/rrd
+RRD_IMG=/tmp/rrd
