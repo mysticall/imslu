@@ -49,25 +49,32 @@ $top_menu = array (
     ),
     4 => array (
         'name'  => _('logout'),
-        'class' => 'logout',
+        'class' => 'tright',
         'link'  => 'logout.php',
         'img'   => 'log-out.png',
         'check_permissions' => TRUE,
     ),
     5 => array (
         'name'  => _('profile'),
-        'class' => 'profile',
+        'class' => 'tright',
         'link'  => 'profile.php',
         'img'   => 'avatar-default.png',
         'check_permissions'=>   TRUE,
     ),
     6 => array (
         'name'  => _('search'),
-        'class' => 'search',
+        'class' => 'tright',
         'link'  => 'search.php',
         'img'   => 'search.png',
         'check_permissions'=>   TRUE,
     ),
+    7 => array (
+        'name'  => _('graphics'),
+        'class' => 'tright',
+        'link'  => 'system_graphics.php',
+        'img'   => 'graphics.png',
+        'check_permissions'=>   TRUE,
+    )
 );
 
 

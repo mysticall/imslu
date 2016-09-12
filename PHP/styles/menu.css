@@ -23,9 +23,7 @@
     .top_menu ul { padding: 0px; margin: 0px; list-style-type: none; }
 
         .top_menu ul li { position: relative; float:left; padding: 0px 15px; }
-        .top_menu ul li.logout { float: right; }
-        .top_menu ul li.profile { float: right; }
-        .top_menu ul li.search { float: right; }
+        .top_menu ul li.tright { float: right; }
         .top_menu ul li a { display: block; text-decoration: none; color: #2F2F2F; margin: 5px auto; }
 
 /* RIGHT MENU */

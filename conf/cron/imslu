@@ -1,4 +1,5 @@
 # Get info for active IP addresses
 */3 * * * * root /etc/imslu/scripts/ip_activity.sh
+*/5 * * * * root /etc/imslu/scripts/system-graphics.sh update
 0 */12 * * * root /etc/imslu/scripts/peer.sh
 1 0 * * * root /etc/imslu/scripts/payments.sh

@@ -169,6 +169,7 @@ ln -s $(pwd -P) ~/src
 
 mkdir /usr/share/imslu
 cp -r ~/src/imslu/PHP/* /usr/share/imslu
+ln -s /tmp/rrd /usr/share/imslu/rrd
 
 mkdir /etc/imslu
 cp -r ~/src/imslu/conf/debian/imslu/* /etc/imslu/
@@ -534,7 +535,13 @@ cd ..
 dpkg -i libxtables11_1.6.0-2_amd64.deb iptables_1.6.0-2_amd64.deb
 
 
-####### 3.3 CONFIG #######
+####### 3.3 GRAPHICS #######
+
+apt-get install rrdtool
+
+
+
+####### 3.4 CONFIG #######
 
 Edit config files:
 - /etc/imslu/config.sh
