@@ -368,7 +368,7 @@ function validateForm() {
               <label style=\"color: red;\">"._('delete IP')."</label>
             </td>
             <td class=\"dd\">
-              <input class=\"input\" type=\"checkbox\" name=\"del_ip\" style=\"width: 0px\">
+              <input class=\"checkbox\" type=\"checkbox\" name=\"del_ip\">
             </td>
           </tr>
           <tr class=\"odd_row\">

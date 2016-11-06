@@ -78,13 +78,13 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     for ($i = 0; $i < count($kind_traffic); ++$i) {
 
         $form .=
-"          <tr>
+"          <tr class=\"odd_row\">
             <td class=\"dt right\">
               <label>"._('id')."</label>
             </td>
             <td class=\"dd\">
-              <input type=\"hidden\" name=\"kind_traffic[$i][kind_trafficid]\" value=\"{$kind_traffic[$i]['kind_trafficid']}\">
-              <label style=\"font-weight: bold;\"> {$kind_traffic[$i]['kind_trafficid']} </label>
+              <input type=\"hidden\" name=\"kind_traffic[$i][id]\" value=\"{$kind_traffic[$i]['id']}\">
+              <label style=\"font-weight: bold;\"> {$kind_traffic[$i]['id']} </label>
             </td>
           </tr>
           <tr>
@@ -102,16 +102,20 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             <td class=\"dd\">
               <textarea name=\"kind_traffic[$i][notes]\" cols=\"55\" rows=\"2\">".chars($kind_traffic[$i]['notes'])."</textarea>
             </td>
-          </tr>
-          <tr class=\"odd_row\">
-            <td class=\"dt right\" style=\"border-right-color:transparent;\">
+          </tr>\n";
+
+    // The first type of traffic can not be deleted.
+    if ($i != 0) {
+      $form .=
+"          <tr>
+            <td class=\"dt right\">
               <label style=\"color: red;\">"._('delete')."</label>
             </td>
             <td class=\"dd\">
               <input class=\"checkbox\" type=\"checkbox\" name=\"kind_traffic[$i][del]\">
             </td>
           </tr>\n";
-
+    }
         $js .=
 "    if (document.getElementById(\"{$i}_name\").value == \"\") {
 

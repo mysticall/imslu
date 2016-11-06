@@ -17,20 +17,29 @@ check_status_vlan () {
 
 scan_ip_mac_vlan () {
 
-    local padding="0000"
-    local VLAN_ID
-    local IFACE
-    local SUBNET=${NETWORKS[@]/$FR_NETWORKS}
-    local NET
+  local padding="0000"
+  local VLAN_ID
+  local IFACE
+  local SUBNET=${NETWORKS[@]/$FR_NETWORKS}
+  local NET
 
-    for NET in ${SUBNET}; do
+  for NET in ${SUBNET}; do
 
-        for VLAN_ID in ${VLAN_SEQ}; do
+    i=0
+    for VLAN_ID in ${VLAN_SEQ}; do
 
-            IFACE=${IFACE_INTERNAL}.${padding:${#VLAN_ID}}${VLAN_ID}
-            $ARP_SCAN -I ${IFACE} ${NET} -q | grep ${NET:0:-5} >/tmp/arp-scan/${IFACE}-${NET:0:-3}&
-        done
+      IFACE=${IFACE_INTERNAL}.${padding:${#VLAN_ID}}${VLAN_ID}
+
+      #reducing the load
+      if [ $((i%2)) -eq 0 ]; then
+        $ARP_SCAN -I ${IFACE} ${NET} -q | grep ${NET:0:-5} >/tmp/arp-scan/${IFACE}-${NET:0:-3}
+      else
+        $ARP_SCAN -I ${IFACE} ${NET} -q | grep ${NET:0:-5} >/tmp/arp-scan/${IFACE}-${NET:0:-3}&
+      fi
+
+      ((i++))
     done
+  done
 }
 
 find_ip_mac_vlan () {

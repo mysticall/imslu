@@ -55,14 +55,14 @@ if (!empty($_GET)) {
 
     if (!empty($_GET['pay_limited'])) {
 
-        $expire = $_GET['expire'];
+        $active_until = $_GET['active_until'];
         $pay = 1;
 
-        if ($expire > time()) {
-            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days", $expire))." 23:59";
+        if ($active_until > time()) {
+            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days", $active_until))." 23:59:00";
         }
         else {
-            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days"))." 23:59";
+            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days"))." 23:59:00";
         }
 
         $sql = 'UPDATE payments SET limited = :limited, operator2 = :operator2, date_payment2 = :date_payment2, expires = :expires 
@@ -76,8 +76,7 @@ if (!empty($_GET)) {
         $sth->bindValue(':userid', $userid);
         $sth->execute();
     }
-
-    if (!empty($_GET['pay_unpaid'])) {
+    elseif (!empty($_GET['pay_unpaid'])) {
 
         $sql = 'UPDATE payments SET unpaid = :unpaid, operator2 = :operator2, date_payment2 = :date_payment2 
                 WHERE id = :id AND userid = :userid';
@@ -101,14 +100,13 @@ if (!empty($_POST)) {
 
     $old = json_decode($_POST['old'], true);
     $userid = $old['userid'];
-    $expire = $_POST['expire'];
+    // last payment "expires" value
+    $active_until = $_POST['active_until'];
+    // current "expires" value
+    $expires = !empty($_POST['limited_access']) ? $_POST['limited'] : $_POST['expires'];
 
     ####### Delete #######
     if (!empty($_POST['delete']) && !empty($_POST['del']) && $admin_permissions) {
-
-        if ($expire == strtotime("{$_POST['expires']}")) {
-            $pay = 0;
-        }
 
         $old_p = json_decode($_POST['old_p'], true);
         $sql = 'DELETE FROM `payments` WHERE id = :id AND userid = :userid';
@@ -119,13 +117,18 @@ if (!empty($_POST)) {
 
         // Add audit
         add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_PAYMENTS, "Payment is deleted ID: {$old_p['id']}, Userid: {$old['userid']}, User: {$old['name']}.", "Payment info\n {$_POST['old_p']}");
+
+        // The last payment has been deleted?
+        if ($active_until == strtotime($old_p['expires'])) {
+            $pay = 0;
+            $_SESSION['msg'] .= _('Change user expiration date manually.')."<br>";
+        }
     }
 
     ####### Update #######
     if (!empty($_POST['save']) && $admin_permissions) {
 
         $old_p = json_decode($_POST['old_p'], true);
-
         $sql = 'UPDATE payments SET expires = :expires, sum = :sum, notes = :notes
                 WHERE id = :id AND userid = :userid';
         $sth = $db->dbh->prepare($sql);
@@ -138,24 +141,23 @@ if (!empty($_POST)) {
 
         if ($expires != $old_p['expires'] || $sum != $old_p['sum']) {
 
-            $expire_old = strtotime("{$old_p['expires']}");
-            $expire_new = strtotime("{$_POST['expires']}");
+            $expire_old = strtotime($old_p['expires']);
+            $expire_new = strtotime($_POST['expires']);
 
-            if ($expire == $expire_old && ($expire > $expire_new && $expire_new < time())) {
+            // The last payment has been changed?
+            if ($active_until == $expire_old && ($active_until > $expire_new && $expire_new < time())) {
                 $pay = 0;
             }
-            elseif ($expire == $expire_old && ($expire_new > $expire && $expire_new > time())) {
+            elseif ($active_until == $expire_old && ($expire_new > $active_until && $expire_new > time())) {
                 $pay = 1;
             }
 
             // Add audit
-            add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Pay is changed - ID: {$old_p['id']}, Userid: {$userid}, User: {$_POST['name']}.", "Expires - {$old_p['expires']} \nSum - {$old_p['sum']}", "Expires - {$_POST['expires']} \nSum - {$_POST['sum']}");        
+            add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Pay is changed - ID: {$old_p['id']}, Userid: {$userid}, User: {$old['name']}.", "Expires - {$old_p['expires']} \nSum - {$old_p['sum']}", "Expires - {$_POST['expires']} \nSum - {$_POST['sum']}");        
         }
     }
-
-
     ####### New #######
-    if (!empty($_POST['payment'])) {
+    elseif (!empty($_POST['payment'])) {
 
         $pay = 1;
         $sql = 'INSERT INTO payments (userid, name, operator2, date_payment2, expires, sum, notes) 
@@ -170,8 +172,7 @@ if (!empty($_POST)) {
         $sth->bindValue(':notes', $_POST['notes']);
         $sth->execute();
     }
-
-    if (!empty($_POST['obligation'])) {
+    elseif (!empty($_POST['obligation'])) {
 
         $pay = 1;
         $sql = 'INSERT INTO payments (userid, name, unpaid, operator1, date_payment1, expires, sum, notes) 
@@ -187,8 +188,7 @@ if (!empty($_POST)) {
         $sth->bindValue(':notes', $_POST['notes']);
         $sth->execute();
     }
-
-    if (!empty($_POST['limited_access'])) {
+    elseif (!empty($_POST['limited_access'])) {
 
         $pay = 1;
         $sql = 'INSERT INTO payments (userid, name, limited, operator1, date_payment1, expires, sum, notes) 
@@ -206,7 +206,17 @@ if (!empty($_POST)) {
     }
 }
 
-if (isset($expire) && isset($userid)) {
+if (isset($active_until) && isset($userid)) {
+
+    $expires = empty($_POST['delete']) ? $expires : '0000-00-00 23:59:00';
+
+    $sql = 'UPDATE users SET expires = :expires WHERE userid = :userid';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':expires', $expires);
+    $sth->bindValue(':userid', $userid);
+    $sth->execute();
+
+    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
     // Select user IP Addresses
     $sql = 'SELECT ip FROM ip WHERE userid = :userid';
@@ -218,11 +228,12 @@ if (isset($expire) && isset($userid)) {
     // Start internet access
     if (!empty($ip)) {
 
-        if ($expire < time() && $pay == 1) {
+        // last payment is expired and new payment is great from now
+        if ($pay == 1 && $active_until < time() && strtotime($expires) > time()) {
             for ($i = 0; $i < count($ip); ++$i) {
 
                 $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$ip[$i]['ip']} 2>&1";
-                $r = shell_exec($cmd); echo $r;
+                shell_exec($cmd);
             }
         }
         elseif ($pay == 0) {

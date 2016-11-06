@@ -63,10 +63,10 @@ CREATE TABLE `auditlog` (
 -- Table structure for table 'kind_traffic'
 --
 CREATE TABLE kind_traffic (
-  `kind_trafficid` int(11)     UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` int(11)     UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`           varchar(64) NOT NULL,
   `notes`          text        NOT NULL DEFAULT '',
-  PRIMARY KEY (kind_trafficid)
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'int','International traffic');
 
@@ -74,17 +74,32 @@ INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'
 -- Table structure for table 'Services'
 --
 CREATE TABLE `services` (
-  `serviceid`      int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
-  `kind_trafficid` int(11)      UNSIGNED NOT NULL,
-  `name`           varchar(64)  NOT NULL,
-  `price`          double(10,2) NOT NULL DEFAULT '0.00',
-  `in_min`         varchar(32)  NOT NULL DEFAULT '32kbit',
-  `in_max`         varchar(32)  NOT NULL,
-  `out_min`        varchar(32)  NOT NULL DEFAULT '32kbit',
-  `out_max`        varchar(32)  NOT NULL,
+  `serviceid` int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name`      varchar(64)  NOT NULL,
+  `price`     double(10,2) NOT NULL DEFAULT '0.00',
+  `in_min0`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max0`   varchar(32)  NULL,
+  `out_min0`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max0`  varchar(32)  NULL,
+  `in_min1`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max1`   varchar(32)  NULL,
+  `out_min1`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max1`  varchar(32)  NULL,
+  `in_min2`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max2`   varchar(32)  NULL,
+  `out_min2`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max2`  varchar(32)  NULL,
+  `in_min3`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max3`   varchar(32)  NULL,
+  `out_min3`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max3`  varchar(32)  NULL,
+  `in_min4`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max4`   varchar(32)  NULL,
+  `out_min4`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max4`  varchar(32)  NULL,
   PRIMARY KEY (serviceid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO `services` (`serviceid`, `kind_trafficid`, `name`, `price`, `in_max`, `out_max`) VALUES (1, 1, 'LOW', 15, '30mbit', '15mbit'), (2, 2, 'LOW', 15, '15mbit', '10mbit'), (3, 1, 'HIGH', 20, '50mbit', '35mbit'), (4, 2, 'HIGH', 20, '25mbit', '20mbit');
+INSERT INTO `services` (`serviceid`, `name`, `price`, `in_max0`, `out_max0`, `in_max1`, `out_max1`) VALUES (1, 'LOW', 15, '30mbit', '15mbit', '15mbit', '10mbit'), (2, 'HIGH', 20, '50mbit', '35mbit', '25mbit', '20mbit');
 
 --
 -- Table structure for table 'ip'
@@ -127,16 +142,17 @@ CREATE TABLE `users` (
   `phone_number`  varchar(32)   NOT NULL DEFAULT '',
   `notes`         text          NOT NULL DEFAULT '',
   `created`       datetime      NOT NULL,
-  `service`       varchar(64)   NOT NULL,
+  `serviceid`     int(11)       NOT NULL DEFAULT '0',
   `pay`           double(10,2)  NOT NULL DEFAULT '0.00',
   `free_access`   enum('n','y') NOT NULL DEFAULT 'n',
   `not_excluding` enum('n','y') NOT NULL DEFAULT 'n',
+  `expires`       datetime     NOT NULL,
   PRIMARY KEY (userid),
   INDEX (name(32)),
   INDEX (address(32)),
   INDEX (phone_number(15))
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
-INSERT INTO `users` (`userid`,`name`, `service`) VALUES ('10','test', `LOW`);
+INSERT INTO `users` (`userid`,`name`, `service`) VALUES ('10','test', 'LOW');
 
 --
 -- Table structure for table 'payments'

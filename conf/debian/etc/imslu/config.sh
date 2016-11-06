@@ -19,16 +19,6 @@ TC=/sbin/tc
 IPSET=/sbin/ipset
 ARP_SCAN=/usr/bin/arp-scan
 
-# Do you want, to show warning page for expired users
-# False = "ip route replace blackhole default table EXPIRED"
-# True = "ip route replace default via IP_WARNING_PAGE dev IFACE_WARNING_PAGE table EXPIRED"
-# Boolean: False or True
-SHOW_WARNING_PAGE=False
-# IP address for expired users who will use as default GW
-IP_WARNING_PAGE=None
-# Of which interface is IP address
-IFACE_WARNING_PAGE=None
-
 
 ##### PPPoE server settings #####
 # /bin/false; echo $? # 1
@@ -45,8 +35,6 @@ PPPOE_DEFAULT_IP="10.0.2.1"
 
 
 ##### FreeRadius settings #####
-# Freeradius init.d scrip location
-FR_SCRIPT=/etc/init.d/freeradius
 
 # FreeRadius networks
 FR_NETWORKS="10.0.2.0/24"
@@ -54,6 +42,7 @@ FR_NETWORKS="10.0.2.0/24"
 
 ##### Subnetwork settings #####
 # !!! Add all subnetworks that are used. !!!
+# tc filter rules work only with /16 subnets
 declare -A NETWORKS
 NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24"
 #NETWORKS['172.16.0.0/12']="172.16.1.0/24 172.16.2.0/24"

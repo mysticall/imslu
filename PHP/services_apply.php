@@ -47,70 +47,46 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
 
 	$db = new PDOinstance();
 
-    ####### Delete ####### 
+    ####### Delete #######
     if(!empty($_POST['del']) && !empty($_POST['delete'])) {
 
-        $name = strip_tags($_POST['name']);
+        $old = json_decode($_POST['old'], true);
 
-        $sql = 'DELETE FROM `services` WHERE name = :name';
+        $sql = 'DELETE FROM `services` WHERE serviceid = :serviceid';
         $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':name', $name, PDO::PARAM_STR);
+        $sth->bindValue(':serviceid', $old['serviceid'], PDO::PARAM_STR);
         $sth->execute();
 
         // Add audit
-        add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_SYSTEM, "Service {$name} is deleted.", $_POST['old']);
+        add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_SYSTEM, "Service {$_POST['name']} is deleted.", $_POST['old']);
 
 
         $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
         unset($_POST);
-        header("Location: kind_traffic.php");
+        header("Location: services.php");
         exit;
     }
 
     ####### Edit #######
     if (!empty($_POST['edit'])) {
 
-        $name = strip_tags($_POST['name']);
+        $old = json_decode($_POST['old'], true);
 
-        $db->dbh->beginTransaction();
-        $sql = 'UPDATE `services` SET name = :name, price = :price, in_min = :in_min, in_max = :in_max, out_min = :out_min, out_max = :out_max
-                WHERE serviceid = :serviceid';
+        $i = 1;
+        foreach($_POST['update'] as $key => $value) {
+            $keys[$i] = $key;
+               $values[$i] = $value;
 
-        foreach ($_POST['update'] as $value) {
-
-            $sth = $db->dbh->prepare($sql);
-            $sth->bindValue(':name', $name, PDO::PARAM_STR);
-            $sth->bindValue(':price', $_POST['price'], PDO::PARAM_INT);
-            $sth->bindValue(':in_min', $value['in_min'], PDO::PARAM_STR);
-            $sth->bindValue(':in_max', $value['in_max'], PDO::PARAM_STR);
-            $sth->bindValue(':out_min', $value['out_min'], PDO::PARAM_STR);
-            $sth->bindValue(':out_max', $value['out_max'], PDO::PARAM_STR);
-            $sth->bindValue(':serviceid', $value['serviceid'], PDO::PARAM_INT);
-            $sth->execute();
+        $i++;
         }
-        unset($value);
 
-        $sql = 'INSERT INTO `services` (`kind_trafficid`, `name`, `price`, `in_min`, `in_max`, `out_min`, `out_max`) 
-                VALUES (:kind_trafficid, :name, :price, :in_min, :in_max, :out_min, :out_max)';
+        $sql = 'UPDATE services SET '.implode(' = ?, ', $keys).' = ? WHERE serviceid = ?';
 
-        if (!empty($_POST['insert'])) {
-            foreach ($_POST['insert'] as $value) {
-
-                $sth = $db->dbh->prepare($sql);
-                $sth->bindValue(':kind_trafficid', $value['kind_trafficid'], PDO::PARAM_INT);
-                $sth->bindValue(':name', $name, PDO::PARAM_STR);
-                $sth->bindValue(':price', $_POST['price'], PDO::PARAM_INT);
-                $sth->bindValue(':in_min', $value['in_min'], PDO::PARAM_STR);
-                $sth->bindValue(':in_max', $value['in_max'], PDO::PARAM_STR);
-                $sth->bindValue(':out_min', $value['out_min'], PDO::PARAM_STR);
-                $sth->bindValue(':out_max', $value['out_max'], PDO::PARAM_STR);
-                $sth->execute();
-            }
-        }
-        $db->dbh->commit();
+        array_push($values, $old['serviceid']);
+        $db->prepare_array($sql, $values);
 
         // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_SYSTEM, "Service {$name} is changed.", $_POST['old'], json_encode($_POST['update']));
+        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_SYSTEM, "Service {$_POST['old']['name']} is changed.", $_POST['old'], json_encode($_POST['update']));
 
         $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
         unset($_POST);
@@ -121,25 +97,17 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     ####### New ####### 
     if (!empty($_POST['new'])) {
 
-        $sql = 'INSERT INTO `services` (`kind_trafficid`, `name`, `price`, `in_min`, `in_max`, `out_min`, `out_max`) 
-                VALUES (:kind_trafficid, :name, :price, :in_min, :in_max, :out_min, :out_max)';
-        $db->dbh->beginTransaction();
+        $i = 1;
+        foreach($_POST['insert'] as $key => $value) {
+            $keys[$i] = $key;
+               $values[$i] = $value;
 
-        for ($i = 0; $i < count($_POST['kind_traffic']); ++$i) {
-
-            $name = strip_tags($_POST['name']);
-
-            $sth = $db->dbh->prepare($sql);
-            $sth->bindValue(':kind_trafficid', $_POST['kind_traffic'][$i]['kind_trafficid'], PDO::PARAM_INT);
-            $sth->bindValue(':name', $name, PDO::PARAM_STR);
-            $sth->bindValue(':price', $_POST['price'], PDO::PARAM_INT);
-            $sth->bindValue(':in_min', $_POST['kind_traffic'][$i]['in_min'], PDO::PARAM_STR);
-            $sth->bindValue(':in_max', $_POST['kind_traffic'][$i]['in_max'], PDO::PARAM_STR);
-            $sth->bindValue(':out_min', $_POST['kind_traffic'][$i]['out_min'], PDO::PARAM_STR);
-            $sth->bindValue(':out_max', $_POST['kind_traffic'][$i]['out_max'], PDO::PARAM_STR);
-            $sth->execute();
+        $i++;
         }
-        $db->dbh->commit();
+
+        $sql = 'INSERT INTO services ('.implode(', ', $keys).') VALUES (:'.implode(', :', $keys).')';
+
+        $db->prepare_array($sql, $values);
 
         $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
         unset($_POST);

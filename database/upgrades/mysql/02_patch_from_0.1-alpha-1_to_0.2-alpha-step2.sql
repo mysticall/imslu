@@ -5,7 +5,6 @@ UPDATE operators SET passwd=MD5('admin') WHERE alias='admin';
 DROP TABLE traffic;
 DROP TABLE static_ippool;
 DROP TABLE switches;
-ALTER TABLE users DROP trafficid;
 ALTER TABLE users DROP switchid;
 ALTER TABLE users DROP pppoe;
 ALTER TABLE payments DROP username;

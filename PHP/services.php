@@ -54,37 +54,22 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     // Security key for comparison
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-    $sql = 'SELECT kind_trafficid, name FROM kind_traffic';
+    $sql = 'SELECT name FROM kind_traffic';
     $sth = $db->dbh->prepare($sql);
     $sth->execute();
     $kind_traffic = $sth->fetchAll(PDO::FETCH_ASSOC);
 
     ####### Edit #######
-    if(!empty($kind_traffic) && !empty($_GET['edit'])) {
+  if(!empty($_GET['edit'])) {
 
-        $sql = 'SELECT * FROM services WHERE name = :name';
-        $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':name', $_GET['edit'], PDO::PARAM_STR);
-        $sth->execute();
-        $services = $sth->fetchAll(PDO::FETCH_ASSOC);
+    $sql = 'SELECT * FROM services WHERE serviceid = :serviceid';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':serviceid', $_GET['edit'], PDO::PARAM_STR);
+    $sth->execute();
+    $services = $sth->fetch(PDO::FETCH_ASSOC);
 
-        if(!empty($services[0])) {
-
-            foreach($kind_traffic as $value) {
-
-                $values[$value['kind_trafficid']] = $value['name'];
-            }
-            $kind_traffic = $values;
-
-            foreach($services as $value) {
-
-                $values[$value['kind_trafficid']] = $value;
-            }
-            unset($services);
-            $first_key = key($values);
-
-            $js = "";
-            $form =
+    $js = "";
+    $form =
 "    <form name=\"new_service\" action=\"services_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table>
         <tbody id=\"thead\">
@@ -96,116 +81,77 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
           </tr>
           <tr>
             <td class=\"dt right\">"._('id')."</td>
-            <td colspan=\"3\">{$values[$first_key]['serviceid']}</td>
+            <td colspan=\"3\">{$services['serviceid']}</td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('name')." *</td>
             <td colspan=\"3\">
-              <input id=\"name\" type=\"text\" name=\"name\" value=\"{$values[$first_key]['name']}\">
+              <input id=\"name\" type=\"text\" name=\"update[name]\" value=\"{$services['name']}\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('price')."</td>
             <td colspan=\"3\">
-              <input type=\"text\" name=\"price\" value=\"{$values[$first_key]['price']}\">
+              <input type=\"text\" name=\"update[price]\" value=\"{$services['price']}\">
             </td>
           </tr>
-          <tr>
+          <tr class=\"bold\">
             <td></td>
-            <td class=\"bold\">"._('min')." </td>
-            <td class=\"bold\">"._('max')." *</td>
+            <td>"._('min')." </td>
+            <td>"._('max')." *</td>
             <td></td>
           </tr>\n";
 
-            $i = 0;
-            foreach ($values as $key => $services) {
+    $int = 0;
+    foreach ($kind_traffic as $value) {
 
-                if(!empty($services['serviceid'])) {
-
-                    $form .=
+      $in_min = "in_min{$int}";
+      $in_max = "in_max{$int}";
+      $in_max2 = ($services[$in_max] != 'NULL') ? $services[$in_max] : '';
+      $out_min = "out_min{$int}";
+      $out_max = "out_max{$int}";
+      $out_max2 = ($services[$out_max] != 'NULL') ? $services[$out_max] : '';
+      $form .=
 "          <tr>
-            <td class=\"dt right\">"._('IN')." {$kind_traffic[$services['kind_trafficid']]} </td>
+            <td class=\"dt right\">"._('IN')." {$value['name']} </td>
             <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"update[$i][in_min]\" value=\"{$services['in_min']}\">
+              <input class=\"middle\" type=\"text\" name=\"update[{$in_min}]\" value=\"{$services[$in_min]}\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"update[$i][in_max]\" value=\"{$services['in_max']}\">
+              <input id=\"$in_max\" class=\"middle\" type=\"text\" name=\"update[{$in_max}]\" value=\"{$in_max2}\">
             </td>
             <td></td>
           </tr>
           <tr>
-            <td class=\"dt right\">"._('OUT')." {$kind_traffic[$services['kind_trafficid']]} </td>
+            <td class=\"dt right\">"._('OUT')." {$value['name']} </td>
             <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"update[$i][out_min]\" value=\"{$services['out_min']}\">
+              <input class=\"middle\" type=\"text\" name=\"update[{$out_min}]\" value=\"{$services[$out_min]}\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"update[$i][out_max]\" value=\"{$services['out_max']}\">
-              <input type=\"hidden\" name=\"update[$i][serviceid]\" value=\"{$services['serviceid']}\">
+              <input id=\"$out_max\" class=\"middle\" type=\"text\" name=\"update[{$out_max}]\" value=\"{$out_max2}\">
             </td>
             <td></td>
           </tr>
           <tr>\n";
 
-                $js .=
-"    if (document.getElementById(\"{$i}_in_max\").value == \"\") {
+      $js .=
+"    if (document.getElementById(\"{$in_max}\").value == \"\") {
 
-        add_new_msg(\""._s('Please fill the required field: %s', _('IN')." {$kind_traffic[$services['kind_trafficid']]}")."\");
-        document.getElementById(\"{$i}_in_max\").focus();
+        add_new_msg(\""._s('Please fill the required field: %s', _('IN')." {$value['name']}")."\");
+        document.getElementById(\"{$in_max}\").focus();
         return false;
     }
-    if (document.getElementById(\"{$i}_out_max\").value == \"\") {
+    if (document.getElementById(\"{$out_max}\").value == \"\") {
 
-        add_new_msg(\""._s('Please fill the required field: %s', _('OUT')." {$kind_traffic[$services['kind_trafficid']]}")."\");
-        document.getElementById(\"{$i}_out_max\").focus();
+        add_new_msg(\""._s('Please fill the required field: %s', _('OUT')." {$value['name']}")."\");
+        document.getElementById(\"{$out_max}\").focus();
         return false;
     }\n";
-                }
-                else {
 
-                    $form .=
-"          <tr>
-            <td class=\"dt right\">"._('IN')." {$services} </td>
-            <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"insert[$i][in_min]\" value=\"32kbit\">
-            </td>
-            <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"insert[$i][in_max]\">
-            </td>
-            <td></td>
-          </tr>
-          <tr>
-            <td class=\"dt right\">"._('OUT')." {$services} </td>
-            <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"insert[$i][out_min]\" value=\"32kbit\">
-            </td>
-            <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"insert[$i][out_max]\">
-              <input type=\"hidden\" name=\"insert[$i][kind_trafficid]\" value=\"{$key}\">
-              <input type=\"hidden\" name=\"insert[$i][name]\" value=\"{$values[$first_key]['name']}\">
-              <input type=\"hidden\" name=\"insert[$i][price]\" value=\"{$values[$first_key]['price']}\">
-            </td>
-            <td></td>
-          </tr>
-          <tr>\n";
-
-                $js .=
-"    if (document.getElementById(\"{$i}_in_max\").value == \"\") {
-
-        add_new_msg(\""._s('Please fill the required field: %s', _('IN')." {$services}")."\");
-        document.getElementById(\"{$i}_in_max\").focus();
-        return false;
+      $int++;
     }
-    if (document.getElementById(\"{$i}_out_max\").value == \"\") {
 
-        add_new_msg(\""._s('Please fill the required field: %s', _('OUT')." {$services}")."\");
-        document.getElementById(\"{$i}_out_max\").focus();
-        return false;
-    }\n";
-                }
-            $i++;
-        }
-
-        $form .=
+    $form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
               <label style=\"color: red;\">"._('delete')."</label>
@@ -219,7 +165,7 @@ if(OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
             </td>
             <td colspan=\"3\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"hidden\" name=\"old\" value='".json_encode($values)."'>
+              <input type=\"hidden\" name=\"old\" value='".json_encode($services)."'>
               <input  id=\"save\" class=\"button\" type=\"submit\" name=\"edit\"value=\""._('save')."\">
               <input class=\"button\" type=\"submit\" name=\"delete\" value=\""._('delete')."\">
             </td>
@@ -243,15 +189,14 @@ function validateForm() {
 //-->
 </script>\n";
 
-        echo $form;
-        }
-    }
+    echo $form;
+  }
 
-    ####### New #######
-	if(!empty($kind_traffic) && !empty($_GET['new'])) {
+  ####### New #######
+  else if(!empty($_GET['new'])) {
 
-		$js = "";
-		$form =
+    $js = "";
+    $form =
 "    <form name=\"new_service\" action=\"services_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
       <table class=\"tableinfo\">
         <tbody id=\"thead\">
@@ -268,13 +213,13 @@ function validateForm() {
           <tr>
             <td class=\"dt right\">"._('name')." *</td>
             <td colspan=\"3\">
-              <input id=\"name\" type=\"text\" name=\"name\">
+              <input id=\"name\" type=\"text\" name=\"insert[name]\">
             </td>
           </tr>
           <tr>
             <td class=\"dt right\">"._('price')."</td>
             <td colspan=\"3\">
-              <input type=\"text\" name=\"price\">
+              <input type=\"text\" name=\"insert[price]\">
             </td>
           </tr>
           <tr>
@@ -284,47 +229,53 @@ function validateForm() {
             <td></td>
           </tr>\n";
 
-    for ($i = 0; $i < count($kind_traffic); ++$i) {
+    $int = 0;
+    foreach ($kind_traffic as $value) {
 
-        $form .=
+      $in_min = "in_min{$int}";
+      $in_max = "in_max{$int}";
+      $out_min = "out_min{$int}";
+      $out_max = "out_max{$int}";
+      $form .=
 "          <tr>
-            <td class=\"dt right\">"._('IN')." {$kind_traffic[$i]['name']} </td>
+            <td class=\"dt right\">"._('IN')." {$value['name']} </td>
             <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"kind_traffic[$i][in_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"insert[{$in_min}]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_in_max\" class=\"middle\" type=\"text\" name=\"kind_traffic[$i][in_max]\">
+              <input id=\"$in_max\" class=\"middle\" type=\"text\" name=\"insert[{$in_max}]\">
             </td>
             <td></td>
           </tr>
           <tr>
-            <td class=\"dt right\">"._('OUT')." {$kind_traffic[$i]['name']} </td>
+            <td class=\"dt right\">"._('OUT')." {$value['name']} </td>
             <td class=\"dd2\">
-              <input class=\"middle\" type=\"text\" name=\"kind_traffic[$i][out_min]\" value=\"32kbit\">
+              <input class=\"middle\" type=\"text\" name=\"insert[{$out_min}]\" value=\"32kbit\">
             </td>
             <td class=\"dd2\">
-              <input id=\"{$i}_out_max\" class=\"middle\" type=\"text\" name=\"kind_traffic[$i][out_max]\">
-              <input type=\"hidden\" name=\"kind_traffic[$i][kind_trafficid]\" value=\"{$kind_traffic[$i]['kind_trafficid']}\">
+              <input id=\"$out_max\" class=\"middle\" type=\"text\" name=\"insert[{$out_max}]\">
             </td>
             <td></td>
           </tr>
           <tr>\n";
 
-        $js .=
-"    if (document.getElementById(\"{$i}_in_max\").value == \"\") {
+      $js .=
+"    if (document.getElementById(\"{$in_max}\").value == \"\") {
 
-        add_new_msg(\""._s('Please fill the required field: %s', _('IN')." {$kind_traffic[$i]['name']}")."\");
-        document.getElementById(\"{$i}_in_max\").focus();
+        add_new_msg(\""._s('Please fill the required field: %s', _('IN')." {$value['name']}")."\");
+        document.getElementById(\"{$in_max}\").focus();
         return false;
     }
-    if (document.getElementById(\"{$i}_out_max\").value == \"\") {
+    if (document.getElementById(\"{$out_max}\").value == \"\") {
 
-        add_new_msg(\""._s('Please fill the required field: %s', _('OUT')." {$kind_traffic[$i]['name']}")."\");
-        document.getElementById(\"{$i}_out_max\").focus();
+        add_new_msg(\""._s('Please fill the required field: %s', _('OUT')." {$value['name']}")."\");
+        document.getElementById(\"{$out_max}\").focus();
         return false;
     }\n";
+
+      $int++;
     }
-        $form .=
+    $form .=
 "          <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
             </td>
@@ -352,25 +303,18 @@ function validateForm() {
 //-->
 </script>\n";
 
-        echo $form;
-    }
+    echo $form;
+  }
 
-    ####### List #######
-    if(!empty($kind_traffic) && empty($_GET['edit']) && empty($_GET['new']) ) {
+  ####### List #######
+  else {
 
-        $sql = 'SELECT * FROM services';
-        $sth = $db->dbh->prepare($sql);
-        $sth->execute();
-        $services = $sth->fetchAll(PDO::FETCH_ASSOC);
+    $sql = 'SELECT * FROM services';
+    $sth = $db->dbh->prepare($sql);
+    $sth->execute();
+    $services = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach($kind_traffic as $value) {
-
-            $values[$value['kind_trafficid']] = $value['name'];
-        }
-        $kind_traffic = $values;
-        unset($values);
-
-        $form =
+    $form =
 "      <table class=\"tableinfo\">
           <tr class=\"header_top\">
             <th colspan=\"9\">
@@ -397,44 +341,39 @@ function validateForm() {
             <th>"._('price')."</th>
           </tr>\n";
 
-        foreach($services as $value) {
+    $count_value = count($kind_traffic);
+    for ($i=0; $i < count($services); ++$i) {
 
-            $values[$value['name']][$value['kind_trafficid']] = $value;
-        }
-        unset($services);
+      $int=0;
+      foreach($kind_traffic as $value) {
 
-        foreach($values as $value) {
-
-            $i = 1;
-            $count_value = count($value);
-
-            foreach($value as $services) {
-
-                $form .=
-"          <tr>
-            <td>{$services['serviceid']}</td>\n";
-
-                $form .= ($i == 1) ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services['name']}\">{$services['name']}</a></td>\n" : "";
-                $form .=
-"           <td>{$kind_traffic[$services['kind_trafficid']]}</td>
-            <td>{$services['in_min']}</td>
-            <td>{$services['in_max']}</td>
-            <td>{$services['out_min']}</td>
-            <td>{$services['out_max']}</td>\n";
-
-                $form .= ($i == '1') ? "            <td rowspan=\"{$count_value}\">{$services['price']}</td>\n" : "";
-                $form .= ($i == '1') ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services['name']}\">["._('edit')."]</a></td>\n" : "";
-                $form .=
-"          </tr>\n";
-                $i++;
-            }
-        }
-
+        $in_min = "in_min{$int}";
+        $in_max = "in_max{$int}";
+        $out_min = "out_min{$int}";
+        $out_max = "out_max{$int}";
+        $form .= "          <tr>\n";
+        $form .= ($int == 0) ? "            <td rowspan=\"{$count_value}\">{$services[$i]['serviceid']}</td>\n" : "";
+        $form .= ($int == 0) ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services[$i]['serviceid']}\">{$services[$i]['name']}</a></td>\n" : "";
         $form .=
+"           <td>{$value['name']}</td>
+            <td>{$services[$i][$in_min]}</td>
+            <td>{$services[$i][$in_max]}</td>
+            <td>{$services[$i][$out_min]}</td>
+            <td>{$services[$i][$out_max]}</td>\n";
+
+        $form .= ($int == 0) ? "            <td rowspan=\"{$count_value}\">{$services[$i]['price']}</td>\n" : "";
+        $form .= ($int == 0) ? "            <td rowspan=\"{$count_value}\"><a class=\"bold\" href=\"services.php?edit={$services[$i]['serviceid']}\">["._('edit')."]</a></td>\n" : "";
+        $form .=
+"          </tr>\n";
+        $int++;
+      }
+    }
+
+    $form .=
 "      </table>\n";
 
-        echo $form;
-    }
+    echo $form;
+  }
 
     require_once dirname(__FILE__).'/include/page_footer.php';
 }

@@ -66,7 +66,7 @@ if (!empty($_GET['userid'])) {
     }
 
     ####### Services #######
-    $sql = 'SELECT name,price FROM services';
+    $sql = 'SELECT serviceid, name, price FROM services';
     $sth = $db->dbh->prepare($sql);
     $sth->execute();
     $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -74,7 +74,7 @@ if (!empty($_GET['userid'])) {
     if ($rows) {
         for ($i = 0; $i < count($rows); ++$i) {
 
-            $services[$rows[$i]['name']] = $rows[$i]['price'];
+            $services[$rows[$i]['serviceid']] = $rows[$i]['price'];
         }
     }
 
@@ -104,8 +104,8 @@ if (!empty($_GET['userid'])) {
     // Security key for comparison
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
-    // Compare date of payment
-    $expire = (!empty($payments[0]['expires'])) ? strtotime("{$payments[0]['expires']}") : time();
+    // Last payment "expires" value
+    $active_until = (!empty($payments[0]['expires'])) ? strtotime($payments[0]['expires']) : '';
 
     ####### Edit #######
     if (!empty($_GET['id']) && !empty($payments[0]) && $admin_permissions) {
@@ -221,7 +221,7 @@ if (!empty($_GET['userid'])) {
             <td class=\"dd\">
               <input class=\"button\" type=\"submit\" name=\"save\" value=\""._('save')."\">
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-              <input type=\"hidden\" name=\"expire\" value=\"{$expire}\">
+              <input type=\"hidden\" name=\"active_until\" value=\"{$active_until}\">
               <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'>
               <input type=\"hidden\" name=\"old_p\" value='".json_encode($payment)."'>\n";
 
@@ -240,18 +240,18 @@ if (!empty($_GET['userid'])) {
     }
     else {
     ####### Show payments #######
-    if (!empty($payments[0]['expires']) && strtotime("{$payments[0]['expires']}") > time()) {
+    if (!empty($payments[0]['expires']) && strtotime($payments[0]['expires']) > time()) {
 
         $time = strtotime(substr($payments[0]['expires'], 0, 10));
-        $expires = date("Y-m-d", strtotime("+1 month", $time))." 23:59";
-        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59";
+        $expires = date("Y-m-d", strtotime("+1 month", $time))." 23:59:00";
+        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59:00";
     }
     else {
-        $expires = date("Y-m-d", strtotime("+1 month"))." 23:59";
-        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59";
+        $expires = date("Y-m-d", strtotime("+1 month"))." 23:59:00";
+        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59:00";
     }
 
-    $sum = ($user['pay'] != 0.00 && $user['pay'] != $services[$user['service']]) ? $user['pay'] : $services[$user['service']];
+    $sum = ($user['pay'] != 0.00 && $user['pay'] != $services[$user['serviceid']]) ? $user['pay'] : $services[$user['serviceid']];
 
 
     $form =
@@ -264,7 +264,7 @@ if (!empty($_GET['userid'])) {
             </th>
           </tr> \n";
 
-    if ($disabled > 0) {
+    if ($disabled > 0 && !$admin_permissions) {
         $form .=
 "          <tr class=\"header_top red\">
             <th>
@@ -286,7 +286,7 @@ if (!empty($_GET['userid'])) {
 "          <tr class=\"header_top\">
             <th>
               ". _('sum') ." <input id=\"sum\" class=\"middle\" type=\"text\" name=\"sum\" value=\"{$sum}\" {$readonly}>
-              ". _('expires')." <input id=\"expires\" style=\"width: 125px;\" type=\"text\" name=\"expires\" value=\"{$expires}\" {$readonly}> \n";
+              ". _('expires')." <input id=\"expires\" type=\"text\" name=\"expires\" value=\"{$expires}\" {$readonly}> \n";
 
         if ($admin_permissions) {
             $form .=
@@ -310,7 +310,7 @@ if (!empty($_GET['userid'])) {
                 <input class=\"button\" type=\"submit\" name=\"payment\" value=\""._('payment')."\">
                 <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
                 <input type=\"hidden\" name=\"limited\" value=\"{$limited_access}\">
-                <input type=\"hidden\" name=\"expire\" value=\"{$expire}\">
+                <input type=\"hidden\" name=\"active_until\" value=\"{$active_until}\">
                 <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'>
             </th>
           </tr> \n";
@@ -363,11 +363,11 @@ if (!empty($_GET['userid'])) {
             <td>".chars($payments[$i]['notes'])."</td>\n";
 
             $form .= ($payments[$i]['limited'] == 1) ?
-"            <td><a href=\"user_payments_apply.php?pay_limited=1&userid={$user['userid']}&id={$payments[$i]['id']}&expire={$expire}\">["._('payment')."]</a></td> \n" :
+"            <td><a href=\"user_payments_apply.php?pay_limited=1&userid={$user['userid']}&id={$payments[$i]['id']}&active_until={$active_until}\">["._('payment')."]</a></td> \n" :
 "            <td></td> \n";
 
             $form .= ($payments[$i]['unpaid'] == 1) ?
-"            <td><a href=\"user_payments_apply.php?pay_unpaid=1&userid={$user['userid']}&id={$payments[$i]['id']}&expire={$expire}\">["._('payment')."]</a></td> \n" :
+"            <td><a href=\"user_payments_apply.php?pay_unpaid=1&userid={$user['userid']}&id={$payments[$i]['id']}&active_until={$active_until}\">["._('payment')."]</a></td> \n" :
 "            <td></td> \n";
 
                 $form .=

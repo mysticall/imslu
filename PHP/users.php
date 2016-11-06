@@ -39,7 +39,7 @@ require_once dirname(__FILE__).'/include/config.php';
 $db = new PDOinstance();
 $now = date('Y-m-d H:i:s');
 $locationid = (!empty($_GET['locationid']) && $_GET['locationid'] != 'all') ? $_GET['locationid'] : '';
-$service = (!empty($_GET['service']) && $_GET['service'] != 'all') ? $_GET['service'] : '';
+$serviceid = (!empty($_GET['serviceid']) && $_GET['serviceid'] != 'all') ? $_GET['serviceid'] : '';
 $status = (!empty($_GET['payment']) && $_GET['payment'] != 'all') ? $_GET['payment'] : '';
 $more = (!empty($_GET['more']) && $_GET['more'] != 'all') ? $_GET['more'] : '';
 $activ = (!empty($_GET['activity']) && $_GET['activity'] != 'all') ? $_GET['activity'] : '';
@@ -104,7 +104,7 @@ if ($rows) {
 }
 
 ### services ###
-$sql = 'SELECT name FROM services GROUP BY name';
+$sql = 'SELECT serviceid, name FROM services GROUP BY name';
 $sth = $db->dbh->prepare($sql);
 $sth->execute();
 $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -112,8 +112,8 @@ $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 if ($rows) {
     for ($i = 0; $i < count($rows); ++$i) {
 
-        $services_[$rows[$i]['name']] = $rows[$i]['name'];
-        $count_services[$rows[$i]['name']] = 0;
+        $services_[$rows[$i]['serviceid']] = $rows[$i]['name'];
+        $count_services[$rows[$i]['serviceid']] = 0;
     }
 }
 
@@ -148,7 +148,7 @@ if (!empty($users)) {
             $count_no_location++;
         }
 
-        $count_services[$users[$i]['service']]++;
+        $count_services[$users[$i]['serviceid']]++;
 
         if ($users[$i]['free_access'] == 'y') {
             $count_free_access++;
@@ -183,7 +183,6 @@ $services = array('all' => _('all')." ({$count_users})");
 foreach ($services_ as $key => $value) {
     $services[$key] = "{$value} ({$count_services[$key]})";
 }
-unset($services_);
 
 ### payments ###
 $payments = array(
@@ -299,7 +298,7 @@ $form =
             <th>"._('location')."</th>
             <th>".combobox('', 'locationid', $locationid, $location)."</th>
             <th>"._('services')."</th>
-            <th>".combobox('', 'service', $service, $services)."</th>
+            <th>".combobox('', 'serviceid', $serviceid, $services)."</th>
             <th>"._('status')."</th>
             <th>".combobox('', 'payment', $status, $payments)."</th>
             <th></th>
@@ -356,7 +355,7 @@ if (!empty($_GET['show'])) {
     $_sql = (!empty($_sql)) ? "WHERE (".substr($_sql, 0, -3).") " : "WHERE userid != 0 ";
 
     $_sql .= ($locationid) ? 'AND locationid = :locationid ' : '';
-    $_sql .= ($service) ? 'AND service = :service ' : '';
+    $_sql .= ($serviceid) ? 'AND serviceid = :serviceid ' : '';
     $_sql .= ($more) ? "AND {$more} = :more " : '';
 
     ####### Get user info and payment #######
@@ -371,8 +370,8 @@ if (!empty($_GET['show'])) {
             $sth->bindValue(':locationid', $locationid, PDO::PARAM_INT);
         }
     }
-    if ($service) {
-        $sth->bindValue(':service', $service, PDO::PARAM_STR);
+    if ($serviceid) {
+        $sth->bindValue(':serviceid', $serviceid, PDO::PARAM_STR);
     }
     if ($more) {
         $sth->bindValue(':more', 'y', PDO::PARAM_STR);
@@ -457,7 +456,7 @@ if (!empty($_GET['show'])) {
             <td rowspan=\"{$count_ip}\">{$user_location}</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['address'])."</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['phone_number'])."</td>
-            <td rowspan=\"{$count_ip}\">{$users[$i]['service']}</td>
+            <td rowspan=\"{$count_ip}\">{$services_[$users[$i]['serviceid']]}</td>
             <td rowspan=\"{$count_ip}\">{$pay}</td>
 {$ip_address}
           </tr> \n";

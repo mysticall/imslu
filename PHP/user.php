@@ -67,7 +67,7 @@ if (!empty($_GET['userid'])) {
     }
 
     ####### Services #######
-    $sql = 'SELECT name,price FROM services';
+    $sql = 'SELECT serviceid, name, price FROM services';
     $sth = $db->dbh->prepare($sql);
     $sth->execute();
     $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -75,7 +75,7 @@ if (!empty($_GET['userid'])) {
     if ($rows) {
         for ($i = 0; $i < count($rows); ++$i) {
 
-            $services[$rows[$i]['name']] = $rows[$i]['name'] .' - '. $rows[$i]['price'];
+            $services[$rows[$i]['serviceid']] = $rows[$i]['name'] .' - '. $rows[$i]['price'];
         }
     }
     else {
@@ -88,11 +88,7 @@ if (!empty($_GET['userid'])) {
     }
 
     ####### Get user info and payment #######
-    $sql = 'SELECT users.*, payments.id, payments.expires
-            FROM users
-            LEFT JOIN payments
-            ON users.userid = payments.userid
-            WHERE users.userid = :userid ORDER BY payments.expires DESC LIMIT 1';
+    $sql = 'SELECT * FROM users WHERE userid = :userid';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
     $sth->execute();
@@ -235,7 +231,7 @@ function validateForm() {
             </td>
             <td class=\"dd\">\n";
 
-    $form .= ($admin_permissions || $cashier_permissions) ? combobox('', 'service', $user['service'], $services)."\n" : "<label style=\"font-weight: bold;\">".chars($services[$user['service']])."</label>\n";
+    $form .= ($admin_permissions || $cashier_permissions) ? combobox('', 'serviceid', $user['serviceid'], $services)."\n" : "<label style=\"font-weight: bold;\">".chars($services[$user['serviceid']])."</label>\n";
     $form .= 
 "            </td>
           </tr>

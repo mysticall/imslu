@@ -67,47 +67,55 @@ $sth->execute();
 $traffic = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 $db->dbh->beginTransaction();
-$sql = "INSERT INTO `services` (`serviceid`, `kind_trafficid`, `name`, `price`, `in_max`, `out_max`) VALUES (:serviceid, :kind_trafficid, :name, :price, :in_max, :out_max)";
+$sql = "INSERT INTO services (serviceid, name, price, in_max0, out_max0) VALUES (:serviceid, :name, :price, :in_max0, :out_max0)";
 
 for ($i = 0; $i < count($traffic); ++$i) {
 
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':serviceid', $traffic[$i]['trafficid']);
-    $sth->bindValue(':kind_trafficid', 1);
     $sth->bindValue(':name', $traffic[$i]['name']);
     $sth->bindValue(':price', $traffic[$i]['price']);
-    $sth->bindValue(':in_max', round($traffic[$i]['local_in']/1024)."mbit");
-    $sth->bindValue(':out_max', round($traffic[$i]['local_out']/1024)."mbit");
+    $sth->bindValue(':in_max0', round($traffic[$i]['local_in']/1024)."mbit");
+    $sth->bindValue(':out_max0', round($traffic[$i]['local_out']/1024)."mbit");
     $sth->execute();
 }
 $db->dbh->commit();
 
-foreach ($traffic as $value) {
+$sql = 'SELECT userid, expires FROM payments';
+$sth = $db->dbh->prepare($sql);
+$sth->execute();
+$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-    $services[$value['trafficid']] = $value['name'];
+$payments = array();
+foreach ($rows as $value) {
+
+    $payments[$value['userid']] = $value['expires'];
 }
 
-$sql = "SELECT userid, trafficid, free_access, not_excluding FROM users";
+$sql = "SELECT userid, free_access, not_excluding FROM users";
 $sth = $db->dbh->prepare($sql);
 $sth->execute();
 $users = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 $db->dbh->beginTransaction();
+$sth = $db->dbh->exec("ALTER TABLE users CHANGE COLUMN trafficid serviceid int(11) NOT NULL DEFAULT '0'");
 $sth = $db->dbh->exec("ALTER TABLE users MODIFY free_access enum('n','y') NOT NULL DEFAULT 'n'");
 $sth = $db->dbh->exec("ALTER TABLE users MODIFY not_excluding enum('n','y') NOT NULL DEFAULT 'n'");
+$sth = $db->dbh->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS expires datetime NOT NULL AFTER not_excluding");
 $db->dbh->commit();
 
 $db->dbh->beginTransaction();
-$sql = "UPDATE users SET service = :service, free_access = :free_access, not_excluding = :not_excluding WHERE userid = :userid";
+$sql = "UPDATE users SET free_access = :free_access, not_excluding = :not_excluding, expires = :expires WHERE userid = :userid";
 
 for ($i = 0; $i < count($users); ++$i) {
 
+    $exp = !empty($payments[$users[$i]['userid']]) ? $payments[$users[$i]['userid']] : '0000-00-00 23:59:00';
     $free_access = ($users[$i]['free_access'] == 0) ? 'n' : 'y';
     $not_excluding = ($users[$i]['not_excluding'] == 0) ? 'n' : 'y';
     $sth = $db->dbh->prepare($sql);
-    $sth->bindValue(':service', $services[$users[$i]['trafficid']]);
     $sth->bindValue(':free_access', $free_access);
     $sth->bindValue(':not_excluding', $not_excluding);
+    $sth->bindValue(':expires', $exp);
     $sth->bindValue(':userid', $users[$i]['userid']);
     $sth->execute();
 }

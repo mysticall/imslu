@@ -50,8 +50,8 @@ if (!empty($_POST['new'])) {
 
     $name = strip_tags($_POST['name']);
 
-    $sql = 'INSERT INTO users (name, locationid, address, phone_number, notes, created, service, pay, free_access, not_excluding)
-            VALUES (:name, :locationid, :address, :phone_number, :notes, :created, :service, :pay, :free_access, :not_excluding)';
+    $sql = 'INSERT INTO users (name, locationid, address, phone_number, notes, created, serviceid, pay, free_access, not_excluding)
+            VALUES (:name, :locationid, :address, :phone_number, :notes, :created, :serviceid, :pay, :free_access, :not_excluding)';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':name', $name, PDO::PARAM_STR);
     $sth->bindValue(':locationid', $_POST['locationid'], PDO::PARAM_INT);
@@ -59,7 +59,7 @@ if (!empty($_POST['new'])) {
     $sth->bindValue(':phone_number', strip_tags($_POST['phone_number']), PDO::PARAM_INT);
     $sth->bindValue(':notes', $_POST['notes'], PDO::PARAM_STR);
     $sth->bindValue(':created', date('Y-m-d H:i:s'));
-    $sth->bindValue(':service', $_POST['service'], PDO::PARAM_INT);
+    $sth->bindValue(':serviceid', $_POST['serviceid'], PDO::PARAM_INT);
 
     if ($admin_permissions) {
         $sth->bindValue(':pay', $_POST['pay'], PDO::PARAM_INT);
@@ -81,7 +81,7 @@ if (!empty($_POST['new'])) {
     $user = $sth->fetch(PDO::FETCH_ASSOC);
 
     // Add tc class for user
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_add {$user['userid']} {$_POST['service']} 2>&1";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_add {$user['userid']} {$_POST['serviceid']} 2>&1";
     $result = shell_exec($cmd);
 
     header("Location: user.php?userid={$user['userid']}");

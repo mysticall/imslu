@@ -50,25 +50,27 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
     ####### Delete ####### 
     if(!empty($_POST['delete'])) {
 
-        for ($i = 0; $i < count($_POST['kind_traffic']); ++$i) {
+        for ($i = 1; $i < count($_POST['kind_traffic']); ++$i) {
 
             if(!empty($_POST['kind_traffic'][$i]['del'])) {
 
-                $sql = 'DELETE FROM `kind_traffic` WHERE kind_trafficid = :kind_trafficid';
+                $sql = 'DELETE FROM `kind_traffic` WHERE id = :id';
                 $sth = $db->dbh->prepare($sql);
-                $sth->bindValue(':kind_trafficid', $_POST['kind_traffic'][$i]['kind_trafficid'], PDO::PARAM_INT);
+                $sth->bindValue(':id', $_POST['kind_traffic'][$i]['id'], PDO::PARAM_INT);
                 $sth->execute();
 
-                $sql = 'DELETE FROM `services` WHERE kind_trafficid = :kind_trafficid';
+                $sql = "UPDATE `services` SET in_min{$i} = :in_min{$i}, in_max{$i} = :in_max{$i}, out_min{$i} = :out_min{$i}, out_max{$i} = :out_max{$i}";
                 $sth = $db->dbh->prepare($sql);
-                $sth->bindValue(':kind_trafficid', $_POST['kind_traffic'][$i]['kind_trafficid'], PDO::PARAM_INT);
+                $sth->bindValue("in_min{$i}", '32kbit');
+                $sth->bindValue("in_max{$i}", 'NULL');
+                $sth->bindValue("out_min{$i}", '32kbit');
+                $sth->bindValue("out_max{$i}", 'NULL');
                 $sth->execute();
 
                 // Add audit
-                add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_SYSTEM, "{$_POST['kind_traffic'][$i]['name']} traffic is deleted.", "id - {$_POST['kind_traffic'][$i]['kind_trafficid']}; name - {$_POST['kind_traffic'][$i]['name']}");
+                add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_SYSTEM, "{$_POST['kind_traffic'][$i]['name']} traffic is deleted.", "id - {$_POST['kind_traffic'][$i]['id']}; name - {$_POST['kind_traffic'][$i]['name']}");
             }
         }
-
 
         $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
         unset($_POST);
@@ -88,11 +90,11 @@ if (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) {
                 $name = strip_tags($_POST['kind_traffic'][$i]['name']);
                 $notes = strip_tags($_POST['kind_traffic'][$i]['notes']);
 
-                $sql = 'UPDATE `kind_traffic` SET name = :name, notes = :notes WHERE kind_trafficid = :kind_trafficid';
+                $sql = 'UPDATE `kind_traffic` SET name = :name, notes = :notes WHERE id = :id';
                 $sth = $db->dbh->prepare($sql);
                 $sth->bindValue(':name', $name, PDO::PARAM_STR);
                 $sth->bindValue(':notes', $notes, PDO::PARAM_STR);
-                $sth->bindValue(':kind_trafficid', $_POST['kind_traffic'][$i]['kind_trafficid'], PDO::PARAM_INT);
+                $sth->bindValue(':id', $_POST['kind_traffic'][$i]['id'], PDO::PARAM_INT);
                 $sth->execute();
 
                 // Add audit

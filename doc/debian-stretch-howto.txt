@@ -206,6 +206,7 @@ mysql $database -u $user -p${password} < database/upgrades/mysql/01_patch-0.1-al
 STEP 1:
 mysql $database -u $user -p${password} < database/upgrades/mysql/02_patch_from_0.1-alpha-1_to_0.2-alpha-step1.sql
 php5 database/upgrades/mysql/from_0.1-alpha-1_to_0.2-alpha.php
+php5 database/upgrades/mysql/fix_serviceid_0.2-alpha.php
 
 STEP 2:
 rm /etc/rsyslog.d/ip_status.conf

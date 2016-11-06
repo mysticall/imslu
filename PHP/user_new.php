@@ -57,7 +57,7 @@ $_SESSION['msg'] = null;
 $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
 ####### Services #######
-$sql = 'SELECT name,price FROM services';
+$sql = 'SELECT serviceid, name, price FROM services';
 $sth = $db->dbh->prepare($sql);
 $sth->execute();
 $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -65,7 +65,7 @@ $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 if ($rows) {
     for ($i = 0; $i < count($rows); ++$i) {
 
-        $services[$rows[$i]['name']] = $rows[$i]['name'] .' - '. $rows[$i]['price'];
+        $services[$rows[$i]['serviceid']] = $rows[$i]['name'] .' - '. $rows[$i]['price'];
     }
 }
 else {
@@ -172,7 +172,7 @@ function validateForm() {
               <label>"._('service')."</label>
             </td>
             <td class=\"dd\">
-".combobox('', 'service', null, $services)."
+".combobox('', 'serviceid', null, $services)."
             </td>
           </tr>
           <tr>

@@ -2,10 +2,10 @@
 -- Table structure for table 'kind_traffic'
 --
 CREATE TABLE kind_traffic (
-  `kind_trafficid` int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`           varchar(64)  NOT NULL,
   `notes`          text         NOT NULL DEFAULT '',
-  PRIMARY KEY (kind_trafficid)
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'int','International traffic');
 
@@ -13,14 +13,29 @@ INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'
 -- Table structure for table 'Services'
 --
 CREATE TABLE `services` (
-  `serviceid`      int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
-  `kind_trafficid` int(11)      UNSIGNED NOT NULL,
-  `name`           varchar(64)  NOT NULL,
-  `price`          double(10,2) NOT NULL DEFAULT '0.00',
-  `in_min`         varchar(32)  NOT NULL DEFAULT '32kbit',
-  `in_max`         varchar(32)  NOT NULL,
-  `out_min`        varchar(32)  NOT NULL DEFAULT '32kbit',
-  `out_max`        varchar(32)  NOT NULL,
+  `serviceid` int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name`      varchar(64)  NOT NULL,
+  `price`     double(10,2) NOT NULL DEFAULT '0.00',
+  `in_min0`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max0`   varchar(32)  NULL,
+  `out_min0`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max0`  varchar(32)  NULL,
+  `in_min1`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max1`   varchar(32)  NULL,
+  `out_min1`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max1`  varchar(32)  NULL,
+  `in_min2`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max2`   varchar(32)  NULL,
+  `out_min2`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max2`  varchar(32)  NULL,
+  `in_min3`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max3`   varchar(32)  NULL,
+  `out_min3`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max3`  varchar(32)  NULL,
+  `in_min4`   varchar(32)  NOT NULL DEFAULT '32kbit',
+  `in_max4`   varchar(32)  NULL,
+  `out_min4`  varchar(32)  NOT NULL DEFAULT '32kbit',
+  `out_max4`  varchar(32)  NULL,
   PRIMARY KEY (serviceid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -52,7 +67,6 @@ ALTER TABLE users DROP INDEX users_1;
 CREATE INDEX name ON users (name(32));
 CREATE INDEX address ON users (address(32));
 CREATE INDEX phone_number ON users (phone_number(15));
-ALTER TABLE users ADD service varchar(64) NOT NULL AFTER created;
 
 --
 -- payments

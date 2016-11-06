@@ -118,16 +118,16 @@ if (!empty($_POST['edit'])) {
         
         $update['notes'] = $_POST['notes'];
     }
-    if (($old['service'] != $_POST['service']) && ($admin_permissions || $cashier_permissions)) {
+    if (($old['serviceid'] != $_POST['serviceid']) && ($admin_permissions || $cashier_permissions)) {
 
-        $update['service'] = $_POST['service'];
+        $update['serviceid'] = $_POST['serviceid'];
         // Replace tc class for user
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_replace {$old['userid']} {$_POST['service']} 2>&1";
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_replace {$old['userid']} {$_POST['serviceid']} 2>&1";
         $result = shell_exec($cmd);
         $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
 
         // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "The tariff plan is changed - ID: $userid, User: {$_POST['name']}.", "Service - {$old['service']}", "Service - {$_POST['service']}");
+        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "The tariff plan is changed - ID: $userid, User: {$_POST['name']}.", "Service - {$old['serviceid']}", "Service - {$_POST['serviceid']}");
     }
     
     $_POST['pay'] = !empty($_POST['pay']) ? $_POST['pay'] : '0.00';
@@ -177,36 +177,13 @@ if (!empty($_POST['edit'])) {
         $update['not_excluding'] = $_POST['not_excluding'];
     }
 
-    if (!empty($update)) {
-
-        $i = 1;
-        foreach($update as $key => $value) {
-            $keys[$i] = $key;
-               $values[$i] = $value;
-
-        $i++;
-        }
-
-        $sql = 'UPDATE users SET '.implode(' = ?, ', $keys).' = ? WHERE userid = ?';
-
-        array_push($values, $userid);
-        $db->prepare_array($sql, $values);
-    }
-
     # Check for changes on payments and update
     if (!empty($_POST['expires']) && ($old['expires'] != $_POST['expires']) && $admin_permissions) {
 
         // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Active until is changed - ID: $userid, User: {$_POST['name']}.", "{$old['expires']}", "{$_POST['expires']}");
+        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Active until is changed - ID: $userid, User: {$_POST['name']}.", "{$old['expires']}", "{$_POST['expires']}");
 
-        $expires = $_POST['expires'];
-
-        $sql = 'UPDATE payments SET expires = :expires WHERE userid = :userid AND id = :id';
-        $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':expires', $expires, PDO::PARAM_INT);
-        $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
-        $sth->bindValue(':id', $old['id'], PDO::PARAM_INT);
-        $sth->execute();
+        $update['expires'] = $_POST['expires'];
 
         // Start internet access
         if (($_POST['free_access'] == 'y' || $expire > $now) && !empty($ip[0]['ip'])) {
@@ -228,6 +205,22 @@ if (!empty($_POST['edit'])) {
                 $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is stopped.', "{$ip[$i]['ip']}").'<br>' : _s('Stopping internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
             }
         }
+    }
+
+    if (!empty($update)) {
+
+        $i = 1;
+        foreach($update as $key => $value) {
+            $keys[$i] = $key;
+               $values[$i] = $value;
+
+        $i++;
+        }
+
+        $sql = 'UPDATE users SET '.implode(' = ?, ', $keys).' = ? WHERE userid = ?';
+
+        array_push($values, $userid);
+        $db->prepare_array($sql, $values);
     }
 
     header("Location: user.php?userid={$old['userid']}");

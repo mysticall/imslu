@@ -87,6 +87,16 @@ echo $form;
 ####### Show Users #######
 if (!empty($_GET['show']) && $search) {
 
+  ### services ###
+  $sql = 'SELECT serviceid, name FROM services GROUP BY name';
+  $sth = $db->dbh->prepare($sql);
+  $sth->execute();
+  $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+  foreach ($rows as $value) {
+    $services[$value['serviceid']] = $value['name'];
+  }
+
     ### activity ###
     $cmd = "cat /tmp/ip_activity";
     $result = shell_exec($cmd);
@@ -350,7 +360,7 @@ switch($more) {
             <td rowspan=\"{$count_ip}\">$user_location</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['address'])."</td>
             <td rowspan=\"{$count_ip}\">".chars($users[$i]['phone_number'])."</td>
-            <td rowspan=\"{$count_ip}\">{$users[$i]['service']}</td>
+            <td rowspan=\"{$count_ip}\">{$services[$users[$i]['serviceid']]}</td>
             <td rowspan=\"{$count_ip}\">{$pay}</td>
 {$ip_address}
           </tr> \n";
