@@ -402,7 +402,7 @@ chmod 755 /var/log/freeradius
 
 Install system tools:
 
-apt-get install sudo vlan arp-scan arping ethtool
+apt-get install sudo vlan arp-scan arping ethtool 
 
 
 PHP use sudo to start scripts, that need root access
@@ -428,6 +428,13 @@ nano /etc/rsyslog.d/ip_activity.conf
 & ~
 --------------------------------------------------------------------------------
 /etc/init.d/rsyslog restart
+
+### ULOGD ###
+
+apt-get install ulogd2
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/ulogd.conf /etc
+/etc/init.d/ulogd2 restart
 
 
 ##### 3.1 Rebuild an official Debian kernel #####

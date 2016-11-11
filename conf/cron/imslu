@@ -3,3 +3,4 @@
 */5 * * * * root /etc/imslu/scripts/system-graphics.sh update
 0 */12 * * * root /etc/imslu/scripts/peer.sh
 1 0 * * * root /etc/imslu/scripts/payments.sh
+1 0 * * * root /etc/imslu/scripts/traffic_data.sh

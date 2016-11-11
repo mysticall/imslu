@@ -39,6 +39,8 @@ $IPTABLES -Z -t raw
 
 # Set default policy for chain FORWARD to DROP
 $IPTABLES -P FORWARD DROP
+# traffic data
+$IPTABLES -I FORWARD 1 -m state --state NEW -j NFLOG --nflog-group 2 --nflog-prefix [NEW]
 # Incoming packets - download
 $IPTABLES -t filter -A FORWARD -i ${IFACE_EXTERNAL}+ -m state --state ESTABLISHED,RELATED -j ACCEPT
 # Outgoing packets - upload
