@@ -1,19 +1,12 @@
 require-pap
-refuse-chap
-refuse-mschap
-refuse-mschap-v2
-refuse-eap
-
-plugin radius.so
-plugin radattr.so
-
+lcp-echo-interval 10
+lcp-echo-failure 3
 noaccomp
 nobsdcomp
-nodefaultroute
 nodeflate
-noendpoint
-noktune
+novj
 novjccomp
 receive-all
-
 logfile /var/log/pppoe-server.log
+plugin radius.so
+plugin radattr.so
