@@ -108,7 +108,6 @@ done
 
 
 ### Add tc u32 hashing filter rules ###
-$IPSET flush lan
 
 # root filters
 $TC filter add dev ${IFACE_IMQ0} parent 1:0 prio 1 protocol ip u32
@@ -129,8 +128,6 @@ $TC filter add dev ${IFACE_IMQ1} protocol ip parent 1:0 prio 1 u32 ht 800:: matc
         IFS=\. read -r a2 b2 c2 d2 <<< "$row2"
 #        echo $a2 $b2 $c2 $d2
 
-        $IPSET add lan ${row2}
-
         if [ $c2 -eq 0 ]; then
             hash_table=$((${a2}-1))
         else
@@ -146,7 +143,7 @@ $TC filter add dev ${IFACE_IMQ1} protocol ip parent 1:0 prio 1 u32 ht $(printf '
 done
 
 i=0
-query="SELECT userid, ip FROM ip WHERE userid != 0"
+query="SELECT userid, ip, stopped FROM ip WHERE userid != 0"
 while read -r row; do
   ipaddresses[${i}]=${row}
   ((i++))
@@ -160,7 +157,7 @@ if [ -f /tmp/allowed ]; then
 fi
 
 for row in "${ipaddresses[@]}"; do
-  read -r userid ip <<< "${row}"
+  read -r userid ip stopped <<< "${row}"
   IFS=\. read -r a b c d <<< "${ip}"
   read -r free_access expires expires2 <<< "${payments[${userid}]}"
 
@@ -192,7 +189,7 @@ $TC filter add dev ${IFACE_IMQ1} parent 1: protocol ip prio 1 u32 ht $(printf '%
 
 
   # Allow internet access
-  if [[ ${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now} ]]; then
+  if [[ ${stopped} == "n" && (${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
     echo "add allowed ${ip}" >> /tmp/allowed
   fi
 done
