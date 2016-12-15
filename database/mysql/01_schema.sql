@@ -152,7 +152,7 @@ CREATE TABLE `users` (
   INDEX (address(32)),
   INDEX (phone_number(15))
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
-INSERT INTO `users` (`userid`,`name`, `service`) VALUES ('10','test', 'LOW');
+INSERT INTO `users` (`userid`,`name`, `serviceid`) VALUES ('10','test', '1');
 
 --
 -- Table structure for table 'payments'
