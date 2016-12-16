@@ -65,7 +65,7 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
     ####### Set CTable variable #######
     $table = new Table();
     $table->form_name = 'pppoe_sessions';
-    $table->colspan = 8;
+    $table->colspan = 9;
     $table->info_field1 = _('total').": ";
     $table->info_field2 = _('username').": ".chars($username);
     $table->info_field3 =
@@ -81,10 +81,11 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
         5 => _('upload'),
         6 => _('download'),
         7 => _('mac'),
-        8 => _('IP address')
+        8 => _('terminate cause'),
+        9 => _('IP address')
         );
 
-    $sql = 'SELECT nasipaddress, acctstarttime, acctstoptime, acctsessiontime, acctinputoctets, acctoutputoctets, callingstationid, framedipaddress
+    $sql = 'SELECT nasipaddress, acctstarttime, acctstoptime, acctsessiontime, acctinputoctets, acctoutputoctets, callingstationid, acctterminatecause, framedipaddress
             FROM radacct WHERE username = :username ORDER BY acctstarttime DESC';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':username', $username, PDO::PARAM_STR);
@@ -96,19 +97,9 @@ if (!empty($_GET['userid']) && !empty($_GET['username'])) {
         $now = time();
         for ($i = 0; $i < count($rows); ++$i) {
 
-            if (!$rows[$i]['acctstoptime']) {
-
-                $rows[$i]['acctstoptime'] = 'n/a';
-                $rows[$i]['acctsessiontime'] = time2str($now - strtotime($rows[$i]['acctstarttime']));
-                $rows[$i]['acctinputoctets'] = bytes2str($rows[$i]['acctinputoctets']);
-                $rows[$i]['acctoutputoctets'] = bytes2str($rows[$i]['acctoutputoctets']);
-            }
-            else {
-
-                $rows[$i]['acctsessiontime'] = time2str($rows[$i]['acctsessiontime']);
-                $rows[$i]['acctinputoctets'] = bytes2str($rows[$i]['acctinputoctets']);
-                $rows[$i]['acctoutputoctets'] = bytes2str($rows[$i]['acctoutputoctets']);
-            }
+            $rows[$i]['acctsessiontime'] = time2str($rows[$i]['acctsessiontime']);
+            $rows[$i]['acctinputoctets'] = bytes2str($rows[$i]['acctinputoctets']);
+            $rows[$i]['acctoutputoctets'] = bytes2str($rows[$i]['acctoutputoctets']);
         }
     }
 

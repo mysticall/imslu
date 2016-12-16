@@ -2,10 +2,10 @@
 
 # WAN Interface
 IFACE_EXTERNAL=eth0
+IFACE_IMQ0=imq0
+
 # LAN Interface
 IFACE_INTERNAL=eth1
-# IMQ Interface
-IFACE_IMQ0=imq0
 IFACE_IMQ1=imq1
 
 STEP=4000
@@ -37,14 +37,14 @@ PPPOE_DEFAULT_IP="10.0.2.1"
 ##### FreeRadius settings #####
 
 # FreeRadius networks
-FR_NETWORKS="10.0.2.0/24"
+FR_NETWORKS="10.0.2.0/24 10.0.7.0/24"
 
 
 ##### Subnetwork settings #####
 # !!! Add all subnetworks that are used. !!!
 # tc filter rules work only with /16 subnets
 declare -A NETWORKS
-NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24"
+NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24 10.0.7.0/24"
 #NETWORKS['172.16.0.0/12']="172.16.1.0/24 172.16.2.0/24"
 #NETWORKS['192.168.0.0/16']="192.168.3.0/24 192.168.4.0/24 192.168.5.0/24"
 
@@ -57,7 +57,7 @@ NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24"
 USE_VLANS=0
 
 # VLAN ID range
-VLAN_SEQ="10 11 $(seq 12 16) $(seq 17 20)"
+VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
 
 
 ##### MYSQL Settings #####

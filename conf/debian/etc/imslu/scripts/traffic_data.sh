@@ -6,5 +6,5 @@ LOG_FILE=traffic_data.log
 NEW_LOG_FILE=${now}_${LOG_FILE}
 
 cd ${LOG_DIR}
-cat ${LOG_FILE} > ${NEW_LOG_FILE}; cat /dev/null > ${LOG_FILE}
+mv ${LOG_FILE} ${NEW_LOG_FILE}; /etc/init.d/ulogd2 restart
 gzip -9 ${NEW_LOG_FILE}

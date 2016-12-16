@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Start PPPoE server
-ppoe_add () {
+pppoe_add () {
 
     ${PPPOE_SERVER} -I $1 -C ${PPPOE_SERVER_NAME} -S ${PPPOE_SERVER_NAME} -L ${PPPOE_DEFAULT_IP} -N 1000 -k -r
 }
 
 # Stop PPPoE sessions and PPPoE servers
-ppoe_rem () {
+pppoe_rem () {
 
     local PID
 
@@ -36,7 +36,7 @@ vconfig_add () {
         local DEFAULT_IP
 
         for row in "${!NETWORKS[@]}"; do
-            for row2 in ${NETWORKS[${row}]}; do
+            for row2 in ${NETWORKS[${row}]/$FR_NETWORKS}; do
                 IFS=\. read -r a b c d <<< "$row2"
 #               echo $a $b $c $d
 
@@ -58,7 +58,7 @@ vconfig_add () {
             # Start PPPoE servers
             if [[ $USE_PPPoE -eq 0 ]]; then
 
-                ppoe_add ${IFACE}
+                pppoe_add ${IFACE}
             fi
         done
     else
@@ -77,7 +77,7 @@ vconfig_rem () {
         # Stop PPPoE sessions and PPPoE servers
         if [[ $USE_PPPoE -eq 0 ]]; then
 
-            ppoe_rem
+            pppoe_rem
         fi
 
         for VLAN_ID in ${VLAN_SEQ}; do
