@@ -39,8 +39,8 @@ authenticate {
     }
     elsif (&control:Calling-Station-Id == "") {
 
-      %{sql: UPDATE radcheck SET value='%{Calling-Station-Id}' WHERE username='%{User-Name}' AND attribute='Calling-Station-Id'}
-      %{sql: UPDATE ip SET mac='%{Calling-Station-Id}' WHERE username='%{User-Name}'}
+      %{sql:UPDATE radcheck SET value='%{Calling-Station-Id}' WHERE username='%{User-Name}' AND attribute='Calling-Station-Id'}
+      %{sql:UPDATE ip SET mac='%{Calling-Station-Id}' WHERE username='%{User-Name}'}
       ok
     }
     elsif (&request:Calling-Station-Id == &control:Calling-Station-Id) {
