@@ -1,6 +1,7 @@
 ./administration_apply.php
 ./administration.php
 ./audit.php
+./expired/index.php
 ./freeradius_groups_apply.php
 ./freeradius_groups.php
 ./freeradius_logs.php
@@ -51,6 +52,7 @@
 ./search.php
 ./services_apply.php
 ./services.php
+./system_graphics.php
 ./tickets.php
 ./user_apply.php
 ./user_location_apply.php

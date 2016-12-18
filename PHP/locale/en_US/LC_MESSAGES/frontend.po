@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IMSLU 0.1-alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-24 15:20+0300\n"
+"POT-Creation-Date: 2016-12-18 12:02+0200\n"
 "PO-Revision-Date: 2013-11-16 22:33+0200\n"
 "Last-Translator: Fahri Hasan <fahri_hasan@hotmail.com>\n"
 "Language-Team: IMSLU Developers\n"
@@ -19,11 +19,19 @@ msgstr ""
 "X-Generator: Poedit 1.5.4\n"
 "X-Poedit-Basepath: ../../\n"
 
-#: payments.php:63 user_payments.php:192 user_payments.php:308
-#: user_payments.php:339
+#: expired/index.php:234 payments.php:63 user_payments.php:192
+#: user_payments.php:308 user_payments.php:339
 #, php-format
 msgid "%s days"
 msgstr "%s days"
+
+#: expired/index.php:233
+msgid "Activate tolerance for"
+msgstr ""
+
+#: expired/index.php:215
+msgid "Active until"
+msgstr ""
 
 #: freeradius_groups.php:154 freeradius_groups.php:180
 #: freeradius_groups.php:294 freeradius_groups.php:368
@@ -34,13 +42,21 @@ msgstr "Add attribute"
 msgid "Add new IP address or IP address range"
 msgstr "Add new IP address or IP address range"
 
-#: include/menu.php:118
+#: expired/index.php:214 expired/index.php:221
+msgid "Address"
+msgstr ""
+
+#: include/menu.php:125
 msgid "Administration"
 msgstr ""
 
 #: audit.php:265
 msgid "Audit"
 msgstr "Audit"
+
+#: system_graphics.php:61
+msgid "Bits per second"
+msgstr ""
 
 #: include/config.php:17
 msgid "Bulgarian (bg_BG)"
@@ -54,23 +70,39 @@ msgstr "Cashiers"
 msgid "Change pool name for IP address or IP address range"
 msgstr ""
 
+#: user_payments_apply.php:124
+msgid "Change user expiration date manually."
+msgstr ""
+
 #: administration_apply.php:54 freeradius_groups_apply.php:307
 #: freeradius_nas_apply.php:63 freeradius_nas_apply.php:134
 #: ip_addresses_apply.php:70 ip_addresses_apply.php:100 ip_edit_apply.php:61
-#: ip_edit_apply.php:389 kind_traffic_apply.php:73 kind_traffic_apply.php:104
-#: kind_traffic_apply.php:120 operator_apply.php:62 operator_apply.php:116
+#: ip_edit_apply.php:393 kind_traffic_apply.php:75 kind_traffic_apply.php:106
+#: kind_traffic_apply.php:122 operator_apply.php:62 operator_apply.php:116
 #: operator_apply.php:123 payments_apply.php:71 request_apply.php:138
-#: services_apply.php:64 services_apply.php:115 services_apply.php:144
+#: services_apply.php:64 services_apply.php:91 services_apply.php:112
 #: user_apply.php:67 user_location_apply.php:59 user_location_apply.php:79
-#: user_tickets_apply.php:108
+#: user_payments_apply.php:219 user_tickets_apply.php:108
 msgid "Changes are applied successfully."
 msgstr "Changes are applied successfully."
+
+#: expired/index.php:220
+msgid "Contact us"
+msgstr ""
+
+#: system_graphics.php:64 system_graphics.php:88 system_graphics.php:103
+msgid "Daily Graph (5 minute averages)"
+msgstr ""
+
+#: expired/index.php:201
+msgid "Description"
+msgstr ""
 
 #: freeradius_groups.php:402
 msgid "Empty attributes will be deleted!"
 msgstr "Empty attributes will be deleted!"
 
-#: user_apply.php:157 user_apply.php:218
+#: user_apply.php:157 user_apply.php:195
 #, php-format
 msgid "Enabling internet access for IP address %s is failed"
 msgstr "Enabling internet access for IP address %s is failed"
@@ -91,7 +123,7 @@ msgstr ""
 msgid "For more information about attributes"
 msgstr "For more information about attributes"
 
-#: include/menu.php:97
+#: include/menu.php:104
 msgid "FreeRadius"
 msgstr ""
 
@@ -107,19 +139,19 @@ msgstr ""
 msgid "FreeRadius groups"
 msgstr ""
 
-#: include/menu.php:149
+#: include/menu.php:156
 msgid "FreeRadius logs"
 msgstr ""
 
-#: services.php:127 services.php:152 services.php:167 services.php:194
-#: services.php:291 services.php:316 services.php:389
+#: services.php:116 services.php:140 services.php:241 services.php:265
+#: services.php:333
 msgid "IN"
 msgstr ""
 
 #: audit.php:75 audit.php:192 audit.php:274 ip_addresses.php:201
 #: ip_edit.php:230 ip_edit.php:255 ip_new.php:129 ip_new.php:154
-#: login_attempts.php:163 search.php:297 user.php:351
-#: user_pppoe_sessions.php:84 users.php:404
+#: login_attempts.php:163 search.php:307 user.php:347
+#: user_pppoe_sessions.php:85 users.php:403
 msgid "IP address"
 msgstr "IP address"
 
@@ -138,16 +170,16 @@ msgstr ""
 msgid "IP address range %s - %s is added successfully."
 msgstr "IP address range %s - %s is added successfully."
 
-#: include/menu.php:76 ip_addresses.php:184 ip_edit.php:141
+#: include/menu.php:83 ip_addresses.php:184 ip_edit.php:141
 msgid "IP addresses"
 msgstr "IP addresses"
 
-#: user_apply.php:157 user_apply.php:218
+#: user_apply.php:157 user_apply.php:195
 #, php-format
 msgid "Internet access for IP address %s is enabled."
 msgstr "Internet access for IP address %s is enabled."
 
-#: user_apply.php:167 user_apply.php:228
+#: user_apply.php:167 user_apply.php:205
 #, php-format
 msgid "Internet access for IP address %s is stopped."
 msgstr "Internet access for IP address %s is stopped."
@@ -157,7 +189,7 @@ msgid "Invalid IP Address!"
 msgstr ""
 
 #: include/network.php:186 ip_edit_apply.php:127 ip_edit_apply.php:204
-#: ip_edit_apply.php:272
+#: ip_edit_apply.php:276
 msgid "Invalid MAC Address!"
 msgstr ""
 
@@ -173,7 +205,11 @@ msgstr ""
 msgid "Login attempts"
 msgstr "Login attempts"
 
-#: freeradius_nas.php:223 include/menu.php:104 user_pppoe_sessions.php:77
+#: system_graphics.php:70 system_graphics.php:94
+msgid "Monthly Graph (2 hour averages)"
+msgstr ""
+
+#: freeradius_nas.php:223 include/menu.php:111 user_pppoe_sessions.php:77
 msgid "NAS"
 msgstr "NAS"
 
@@ -211,6 +247,10 @@ msgstr "NAS short name"
 msgid "NAS type"
 msgstr "NAS type"
 
+#: expired/index.php:213
+msgid "Name"
+msgstr ""
+
 #: operator_add.php:48
 msgid "Network technicians"
 msgstr "Network technicians"
@@ -219,20 +259,24 @@ msgstr "Network technicians"
 msgid "New NAS"
 msgstr "New NAS"
 
-#: ip_edit.php:288 ip_edit.php:350 ip_new.php:186 ip_new.php:248 search.php:310
-#: search.php:311 user_new.php:192 user_new.php:201 user.php:262 user.php:275
-#: user.php:386 users.php:417 users.php:418
+#: ip_edit.php:288 ip_edit.php:350 ip_new.php:186 ip_new.php:248
+#: search.php:320 search.php:321 user_new.php:192 user_new.php:201
+#: user.php:258 user.php:271 user.php:382 users.php:416 users.php:417
 msgid "No"
 msgstr ""
 
-#: services.php:137 services.php:158 services.php:177 services.php:200
-#: services.php:301 services.php:322 services.php:390
+#: services.php:126 services.php:146 services.php:251 services.php:271
+#: services.php:334
 msgid "OUT"
 msgstr ""
 
 #: audit.php:76
 msgid "PPPoE"
 msgstr "PPPoE"
+
+#: system_graphics.php:85
+msgid "Packets per second"
+msgstr ""
 
 #: operator_add.php:115 operator_add.php:123 operator_edit.php:123
 #: operator_edit.php:131 profile.php:98 profile.php:106
@@ -244,13 +288,17 @@ msgstr ""
 msgid "Passwords Match!"
 msgstr ""
 
-#: include/menu.php:172
+#: include/menu.php:179
 msgid "Payments"
 msgstr ""
 
 #: user_payments.php:329
 #, php-format
 msgid "Payments of %s"
+msgstr ""
+
+#: expired/index.php:222
+msgid "Phone number"
 msgstr ""
 
 #: ip_edit.php:128 ip_new.php:84
@@ -268,14 +316,14 @@ msgstr ""
 #: freeradius_groups.php:120 freeradius_nas.php:83 freeradius_nas.php:89
 #: freeradius_nas.php:205 freeradius_nas.php:211 ip_addresses_apply.php:205
 #: ip_addresses.php:114 ip_addresses.php:120 ip_edit.php:230 ip_edit.php:236
-#: ip_new.php:129 ip_new.php:135 kind_traffic.php:118 kind_traffic.php:204
+#: ip_new.php:129 ip_new.php:135 kind_traffic.php:122 kind_traffic.php:208
 #: operator_add.php:72 operator_add.php:78 operator_edit.php:86 profile.php:58
-#: request_add.php:87 request_add.php:93 request_add.php:99 request_add.php:105
-#: request_edit.php:108 request_edit.php:114 request_edit.php:120
-#: request_edit.php:126 services.php:152 services.php:158 services.php:194
-#: services.php:200 services.php:236 services.php:316 services.php:322
-#: services.php:345 user_location.php:61 user_location.php:121 user_new.php:114
-#: user.php:173 user_tickets_add.php:100
+#: request_add.php:87 request_add.php:93 request_add.php:99
+#: request_add.php:105 request_edit.php:108 request_edit.php:114
+#: request_edit.php:120 request_edit.php:126 services.php:140 services.php:146
+#: services.php:182 services.php:265 services.php:271 services.php:296
+#: user_location.php:61 user_location.php:121 user_new.php:114 user.php:169
+#: user_tickets_add.php:100
 #, php-format
 msgid "Please fill the required field: %s"
 msgstr ""
@@ -292,7 +340,11 @@ msgstr "Some of locales for the languages are not installed on the web server."
 msgid "Start IP address must be less!"
 msgstr ""
 
-#: user_apply.php:167 user_apply.php:228
+#: expired/index.php:200
+msgid "Status"
+msgstr ""
+
+#: user_apply.php:167 user_apply.php:205
 #, php-format
 msgid "Stopping internet access for IP address %s is failed"
 msgstr "Stopping internet access for IP address %s is failed"
@@ -347,7 +399,7 @@ msgstr ""
 msgid "User is exempt from payment!"
 msgstr ""
 
-#: include/menu.php:157
+#: include/menu.php:164
 msgid "Users"
 msgstr ""
 
@@ -355,26 +407,35 @@ msgstr ""
 msgid "WARNING: All selected IP addresses will be deleted!"
 msgstr ""
 
-#: ip_edit.php:285 ip_edit.php:347 ip_new.php:183 ip_new.php:245 search.php:310
-#: search.php:311 user_new.php:191 user_new.php:200 user.php:259 user.php:272
-#: user.php:386 users.php:417 users.php:418
+#: system_graphics.php:67 system_graphics.php:91
+msgid "Weekly Graph (30 minute averages)"
+msgstr ""
+
+#: system_graphics.php:73 system_graphics.php:97
+msgid "Yearly Graph (12 hour averages)"
+msgstr ""
+
+#: ip_edit.php:285 ip_edit.php:347 ip_new.php:183 ip_new.php:245
+#: search.php:320 search.php:321 user_new.php:191 user_new.php:200
+#: user.php:255 user.php:268 user.php:382 users.php:416 users.php:417
 msgid "Yes"
 msgstr ""
 
 #: audit.php:104 audit.php:172 audit.php:270 ip_addresses.php:194
-#: login_attempts.php:157 payments.php:308 services.php:385 user.php:359
+#: login_attempts.php:157 payments.php:308 services.php:329 user.php:355
 msgid "action"
 msgstr "action"
 
-#: users.php:283
+#: expired/index.php:136 expired/index.php:140 expired/index.php:144
+#: users.php:282
 msgid "active"
 msgstr ""
 
-#: user.php:280
+#: user.php:276
 msgid "active until"
 msgstr ""
 
-#: users.php:310
+#: users.php:309
 msgid "activity"
 msgstr ""
 
@@ -383,8 +444,8 @@ msgid "add"
 msgstr "add"
 
 #: request_add.php:93 request_add.php:187 request_edit.php:114
-#: request_edit.php:233 requests.php:120 search.php:57 search.php:293
-#: tickets.php:83 user_new.php:148 user.php:210 users.php:400
+#: request_edit.php:233 requests.php:120 search.php:57 search.php:303
+#: tickets.php:83 user_new.php:148 user.php:206 users.php:399
 msgid "address"
 msgstr "address"
 
@@ -398,8 +459,8 @@ msgstr ""
 msgid "alias"
 msgstr "alias"
 
-#: users.php:176 users.php:182 users.php:190 users.php:199 users.php:281
-#: users.php:288
+#: users.php:176 users.php:182 users.php:189 users.php:198 users.php:280
+#: users.php:287
 msgid "all"
 msgstr ""
 
@@ -412,15 +473,15 @@ msgstr ""
 msgid "attempts"
 msgstr "attempts"
 
-#: include/menu.php:137
+#: include/menu.php:144
 msgid "audit"
 msgstr ""
 
 #: freeradius_groups.php:133 freeradius_groups.php:281 freeradius_nas.php:102
 #: freeradius_nas.php:224 ip_edit.php:87 ip_edit.php:122 ip_edit.php:142
-#: ip_edit.php:249 ip_new.php:78 ip_new.php:148 kind_traffic.php:161
+#: ip_edit.php:249 ip_new.php:78 ip_new.php:148 kind_traffic.php:165
 #: operator_add.php:91 operator_edit.php:99 request_add.php:119
-#: request_edit.php:140 services.php:94 services.php:261 user_location.php:74
+#: request_edit.php:140 services.php:79 services.php:206 user_location.php:74
 #: user_location.php:134 user_payments.php:131 user_payments.php:263
 #: user_pppoe_sessions.php:73 user_tickets_add.php:115
 #: user_tickets_edit.php:115 user_tickets.php:92 user_tickets.php:118
@@ -431,7 +492,7 @@ msgstr ""
 msgid "cashiers"
 msgstr ""
 
-#: ip_edit.php:259 user.php:390
+#: ip_edit.php:259 user.php:386
 msgid "change"
 msgstr ""
 
@@ -473,7 +534,7 @@ msgctxt "day short"
 msgid "d"
 msgstr "d"
 
-#: services.php:384
+#: services.php:328
 msgid "data"
 msgstr ""
 
@@ -488,10 +549,10 @@ msgstr ""
 
 #: audit.php:66 freeradius_groups.php:394 freeradius_groups.php:410
 #: freeradius_nas.php:293 freeradius_nas.php:306 ip_edit.php:379
-#: kind_traffic.php:108 kind_traffic.php:132 operator_edit.php:214
-#: operator_edit.php:227 services.php:211 services.php:224
+#: kind_traffic.php:112 kind_traffic.php:136 operator_edit.php:214
+#: operator_edit.php:227 services.php:157 services.php:170
 #: user_location.php:146 user_location.php:159 user_payments.php:210
-#: user_payments.php:229 user.php:327
+#: user_payments.php:229 user.php:323
 msgid "delete"
 msgstr "delete"
 
@@ -503,7 +564,7 @@ msgstr ""
 msgid "delete selected"
 msgstr "delete selected"
 
-#: user.php:316
+#: user.php:312
 msgid "delete user"
 msgstr "delete user"
 
@@ -523,7 +584,7 @@ msgstr "down"
 msgid "download"
 msgstr "download"
 
-#: services.php:426
+#: services.php:365
 msgid "edit"
 msgstr ""
 
@@ -548,7 +609,7 @@ msgstr ""
 msgid "end IP address"
 msgstr ""
 
-#: users.php:192
+#: users.php:191
 msgid "expired"
 msgstr ""
 
@@ -557,11 +618,11 @@ msgstr ""
 msgid "expires"
 msgstr "expires"
 
-#: users.php:200
+#: expired/index.php:137 users.php:199
 msgid "free access"
 msgstr "free access"
 
-#: user_new.php:188 user.php:254
+#: user_new.php:188 user.php:250
 msgid "free internet access"
 msgstr "free internet access"
 
@@ -577,12 +638,16 @@ msgstr "from date"
 msgid "generate"
 msgstr ""
 
+#: include/menu.php:72
+msgid "graphics"
+msgstr ""
+
 #: freeradius_groups.php:280 operator_add.php:183 operator_edit.php:206
 #: operators.php:76
 msgid "group"
 msgstr "group"
 
-#: include/menu.php:110
+#: include/menu.php:117
 msgid "groups"
 msgstr ""
 
@@ -591,20 +656,20 @@ msgctxt "hour short"
 msgid "h"
 msgstr "h"
 
-#: audit.php:269 freeradius_nas.php:327 ip_addresses.php:78 ip_addresses.php:79
-#: ip_addresses.php:199 kind_traffic.php:83 kind_traffic.php:166
-#: operators.php:76 requests.php:115 search.php:55 search.php:61 search.php:290
-#: services.php:98 services.php:265 services.php:381 tickets.php:78
-#: user_location.php:180 user_payments.php:333 users.php:397
-#: user_tickets.php:99
+#: audit.php:269 freeradius_nas.php:327 ip_addresses.php:78
+#: ip_addresses.php:79 ip_addresses.php:199 kind_traffic.php:83
+#: kind_traffic.php:170 operators.php:76 requests.php:115 search.php:55
+#: search.php:61 search.php:300 services.php:83 services.php:210
+#: services.php:325 tickets.php:78 user_location.php:180 user_payments.php:333
+#: users.php:396 user_tickets.php:99
 msgid "id"
 msgstr ""
 
-#: users.php:284
+#: users.php:283
 msgid "inactive"
 msgstr ""
 
-#: user.php:303
+#: user.php:299
 msgid "included in"
 msgstr ""
 
@@ -612,11 +677,11 @@ msgstr ""
 msgid "ip"
 msgstr ""
 
-#: services.php:388
+#: services.php:332
 msgid "kind"
 msgstr ""
 
-#: include/menu.php:83 kind_traffic.php:73 kind_traffic.php:160
+#: include/menu.php:90 kind_traffic.php:73 kind_traffic.php:164
 msgid "kinds of traffic"
 msgstr ""
 
@@ -624,9 +689,13 @@ msgstr ""
 msgid "language"
 msgstr "language"
 
-#: include/menu.php:131 search.php:292 user_location.php:175
-#: user_location.php:181 user_new.php:140 user.php:202 users.php:299
-#: users.php:399
+#: expired/index.php:132 expired/index.php:148
+msgid "limited"
+msgstr ""
+
+#: include/menu.php:138 search.php:302 user_location.php:175
+#: user_location.php:181 user_new.php:140 user.php:198 users.php:298
+#: users.php:398
 msgid "location"
 msgstr ""
 
@@ -634,7 +703,7 @@ msgstr ""
 msgid "login"
 msgstr "login"
 
-#: include/menu.php:143
+#: include/menu.php:150
 msgid "login attempts"
 msgstr ""
 
@@ -647,15 +716,19 @@ msgid "logs"
 msgstr "logs"
 
 #: ip_addresses.php:203 ip_edit.php:272 ip_new.php:170 search.php:63
-#: search.php:299 user.php:353 user_pppoe_sessions.php:83 users.php:406
+#: search.php:309 user.php:349 user_pppoe_sessions.php:83 users.php:405
 msgid "mac"
 msgstr ""
 
-#: services.php:116 services.php:283 services.php:394 services.php:396
+#: expired/index.php:133
+msgid "manually stopped"
+msgstr ""
+
+#: services.php:101 services.php:228 services.php:338 services.php:340
 msgid "max"
 msgstr ""
 
-#: services.php:115 services.php:282 services.php:393 services.php:395
+#: services.php:100 services.php:227 services.php:337 services.php:339
 msgid "min"
 msgstr ""
 
@@ -664,20 +737,20 @@ msgctxt "minute short"
 msgid "min"
 msgstr "min"
 
-#: users.php:308
+#: users.php:307
 msgid "more"
 msgstr "more"
 
 #: freeradius_groups.php:120 freeradius_groups.php:138
 #: freeradius_groups.php:454 index.php:86 kind_traffic.php:92
-#: kind_traffic.php:118 kind_traffic.php:173 kind_traffic.php:204
-#: operator_add.php:104 operator_edit.php:112 operators.php:76 payments.php:332
-#: profile.php:87 request_add.php:87 request_add.php:179 request_edit.php:108
-#: request_edit.php:225 search.php:56 search.php:291 services.php:102
-#: services.php:236 services.php:269 services.php:345 services.php:382
-#: tickets.php:82 user_location.php:61 user_location.php:79
+#: kind_traffic.php:122 kind_traffic.php:177 kind_traffic.php:208
+#: operator_add.php:104 operator_edit.php:112 operators.php:76
+#: payments.php:332 profile.php:87 request_add.php:87 request_add.php:179
+#: request_edit.php:108 request_edit.php:225 search.php:56 search.php:301
+#: services.php:87 services.php:182 services.php:214 services.php:296
+#: services.php:326 tickets.php:82 user_location.php:61 user_location.php:79
 #: user_location.php:121 user_location.php:139 user_new.php:114
-#: user_new.php:132 user.php:173 user.php:194 users.php:398
+#: user_new.php:132 user.php:169 user.php:190 users.php:397
 msgid "name"
 msgstr "name"
 
@@ -717,7 +790,7 @@ msgstr ""
 msgid "network technicians"
 msgstr ""
 
-#: user.php:407
+#: user.php:403
 msgid "new"
 msgstr ""
 
@@ -749,7 +822,7 @@ msgstr ""
 msgid "new request"
 msgstr ""
 
-#: services.php:377
+#: services.php:321
 msgid "new service"
 msgstr ""
 
@@ -761,7 +834,7 @@ msgstr ""
 msgid "new traffic"
 msgstr ""
 
-#: include/menu.php:164 user_new.php:127
+#: include/menu.php:171 user_new.php:127
 msgid "new user"
 msgstr ""
 
@@ -773,15 +846,15 @@ msgstr "new value"
 msgid "no location"
 msgstr ""
 
-#: user_new.php:197 user.php:267 users.php:201
+#: user_new.php:197 user.php:263 users.php:200
 msgid "not excluding"
 msgstr "not excluding"
 
-#: ip_edit.php:355 ip_new.php:253 kind_traffic.php:100 kind_traffic.php:181
+#: ip_edit.php:355 ip_new.php:253 kind_traffic.php:100 kind_traffic.php:185
 #: payments.php:336 request_add.php:105 request_add.php:203
 #: request_edit.php:126 request_edit.php:249 requests.php:122 search.php:59
 #: search.php:66 tickets.php:85 user_new.php:164 user_payments.php:184
-#: user_payments.php:307 user_payments.php:338 user.php:226
+#: user_payments.php:307 user_payments.php:338 user.php:222
 #: user_tickets_add.php:100 user_tickets_add.php:168 user_tickets_edit.php:200
 #: user_tickets.php:103
 msgid "notes"
@@ -789,7 +862,7 @@ msgstr "notes"
 
 #: payments.php:333 user_payments.php:137 user_payments.php:200
 #: user_payments.php:309 user_payments.php:334 user_payments.php:340
-#: users.php:193
+#: users.php:192
 msgid "obligation"
 msgstr "obligation"
 
@@ -797,7 +870,7 @@ msgstr "obligation"
 msgid "obligations"
 msgstr "obligations"
 
-#: user.php:366
+#: user.php:362
 msgid "offline"
 msgstr "offline"
 
@@ -805,7 +878,7 @@ msgstr "offline"
 msgid "old value"
 msgstr "old value"
 
-#: user.php:366
+#: user.php:362
 msgid "online"
 msgstr "online"
 
@@ -819,7 +892,7 @@ msgstr ""
 msgid "operator"
 msgstr "operator"
 
-#: include/menu.php:125 operators.php:72
+#: include/menu.php:132 operators.php:72
 msgid "operators"
 msgstr ""
 
@@ -831,13 +904,13 @@ msgstr "order by"
 msgid "original blue"
 msgstr "original blue"
 
-#: users.php:191
+#: expired/index.php:145 users.php:190
 msgid "paid"
 msgstr ""
 
 #: index.php:88 ip_addresses.php:206 ip_edit.php:314 ip_new.php:212
 #: operator_add.php:78 operator_add.php:112 operator_edit.php:120
-#: profile.php:95 search.php:65 user.php:355
+#: profile.php:95 search.php:65 user.php:351
 msgid "password"
 msgstr ""
 
@@ -845,7 +918,7 @@ msgstr ""
 msgid "password (once again)"
 msgstr ""
 
-#: search.php:296 user_new.php:180 user.php:244 users.php:403
+#: search.php:306 user_new.php:180 user.php:240 users.php:402
 msgid "pay"
 msgstr ""
 
@@ -855,7 +928,7 @@ msgstr ""
 msgid "payment"
 msgstr "payment"
 
-#: audit.php:79 user.php:187
+#: audit.php:79 user.php:183
 msgid "payments"
 msgstr "payments"
 
@@ -864,8 +937,8 @@ msgid "pending"
 msgstr ""
 
 #: request_add.php:99 request_add.php:195 request_edit.php:120
-#: request_edit.php:241 requests.php:121 search.php:58 search.php:294
-#: tickets.php:84 user_new.php:156 user.php:218 users.php:401
+#: request_edit.php:241 requests.php:121 search.php:58 search.php:304
+#: tickets.php:84 user_new.php:156 user.php:214 users.php:400
 msgid "phone"
 msgstr ""
 
@@ -876,15 +949,15 @@ msgstr ""
 #: ip_addresses_apply.php:205 ip_addresses_apply.php:222 ip_addresses.php:76
 #: ip_addresses.php:77 ip_addresses.php:88 ip_addresses.php:114
 #: ip_addresses.php:137 ip_addresses.php:207 ip_edit.php:326 ip_new.php:224
-#: user.php:356 users.php:312
+#: user.php:352 users.php:311
 msgid "pool"
 msgstr ""
 
-#: users.php:282
+#: users.php:281
 msgid "pppoe"
 msgstr ""
 
-#: services.php:108 services.php:275 services.php:397
+#: services.php:93 services.php:220 services.php:341
 msgid "price"
 msgstr "price"
 
@@ -892,7 +965,7 @@ msgstr "price"
 msgid "profile"
 msgstr ""
 
-#: ip_addresses.php:208 ip_edit.php:334 ip_new.php:232 user.php:357
+#: ip_addresses.php:208 ip_edit.php:334 ip_new.php:232 user.php:353
 msgid "protocol"
 msgstr ""
 
@@ -922,17 +995,17 @@ msgstr "resource"
 
 #: freeradius_groups.php:239 freeradius_groups.php:409 freeradius_nas.php:174
 #: freeradius_nas.php:305 ip_addresses_apply.php:234 ip_addresses.php:164
-#: ip_edit.php:378 ip_edit.php:388 ip_new.php:263 kind_traffic.php:131
-#: kind_traffic.php:192 operator_add.php:194 operator_edit.php:226
-#: profile.php:184 request_add.php:216 request_edit.php:263 services.php:223
-#: services.php:333 user_location.php:90 user_location.php:158 user_new.php:211
-#: user_payments.php:222 user.php:326 user.php:336 user_tickets_add.php:182
-#: user_tickets_edit.php:215
+#: ip_edit.php:378 ip_edit.php:388 ip_new.php:263 kind_traffic.php:135
+#: kind_traffic.php:196 operator_add.php:194 operator_edit.php:226
+#: profile.php:184 request_add.php:216 request_edit.php:263 services.php:169
+#: services.php:284 user_location.php:90 user_location.php:158
+#: user_new.php:211 user_payments.php:222 user.php:322 user.php:332
+#: user_tickets_add.php:182 user_tickets_edit.php:215
 msgid "save"
 msgstr "save"
 
-#: audit.php:135 include/menu.php:65 ip_addresses.php:90 login_attempts.php:113
-#: payments.php:130 search.php:77 users.php:314
+#: audit.php:135 include/menu.php:65 ip_addresses.php:90
+#: login_attempts.php:113 payments.php:130 search.php:77 users.php:313
 msgid "search"
 msgstr ""
 
@@ -941,15 +1014,15 @@ msgctxt "second short"
 msgid "sec"
 msgstr "sec"
 
-#: search.php:295 user_new.php:172 user.php:234 users.php:402
+#: search.php:305 user_new.php:172 user.php:230 users.php:401
 msgid "service"
 msgstr ""
 
-#: services.php:93 services.php:260
+#: services.php:78 services.php:205
 msgid "service - price"
 msgstr ""
 
-#: include/menu.php:89 users.php:301
+#: include/menu.php:96 users.php:300
 msgid "services"
 msgstr ""
 
@@ -957,11 +1030,11 @@ msgstr ""
 msgid "session time"
 msgstr "session time"
 
-#: user.php:367
+#: user.php:363
 msgid "sessions"
 msgstr "sessions"
 
-#: services.php:383
+#: services.php:327
 msgid "speeds"
 msgstr ""
 
@@ -982,7 +1055,7 @@ msgid "static IP addresses"
 msgstr "static IP addresses"
 
 #: request_add.php:125 request_edit.php:146 requests.php:116 tickets.php:79
-#: users.php:303 user_tickets_edit.php:122 user_tickets.php:100
+#: users.php:302 user_tickets_edit.php:122 user_tickets.php:100
 msgid "status"
 msgstr ""
 
@@ -990,7 +1063,7 @@ msgstr ""
 msgid "stop time"
 msgstr "stop time"
 
-#: ip_addresses.php:209 ip_edit.php:342 ip_new.php:240 user.php:358
+#: ip_addresses.php:209 ip_edit.php:342 ip_new.php:240 user.php:354
 msgid "stopped"
 msgstr ""
 
@@ -1007,11 +1080,15 @@ msgstr "system"
 msgid "system administrators"
 msgstr ""
 
+#: user_pppoe_sessions.php:84
+msgid "terminate cause"
+msgstr ""
+
 #: operator_add.php:167 operator_edit.php:190 profile.php:165
 msgid "theme"
 msgstr ""
 
-#: include/menu.php:37 tickets.php:72 user.php:188
+#: include/menu.php:37 tickets.php:72 user.php:184
 msgid "tickets"
 msgstr ""
 
@@ -1030,15 +1107,23 @@ msgstr "to date"
 
 #: audit.php:264 freeradius_groups.php:448 freeradius_nas.php:321
 #: ip_addresses.php:183 login_attempts.php:149 operators.php:71
-#: payments.php:324 requests.php:110 search.php:283 tickets.php:71
+#: payments.php:324 requests.php:110 search.php:293 tickets.php:71
 #: user_location.php:174 user_payments.php:328 user_pppoe_sessions.php:69
-#: users.php:390 user_tickets.php:88
+#: users.php:389 user_tickets.php:88
 msgid "total"
 msgstr "total"
 
 #: payments.php:392 user_payments.php:380
 msgid "total sum"
 msgstr "total sum"
+
+#: expired/index.php:141
+msgid "unlimited"
+msgstr ""
+
+#: expired/index.php:149
+msgid "unpaid"
+msgstr ""
 
 #: payments.php:60 payments.php:86
 msgid "unreported"
@@ -1070,12 +1155,12 @@ msgid "userid"
 msgstr ""
 
 #: ip_addresses.php:205 ip_edit.php:236 ip_edit.php:306 ip_new.php:135
-#: ip_new.php:204 search.php:64 search.php:300 user.php:354
-#: user_pppoe_sessions.php:70 users.php:407
+#: ip_new.php:204 search.php:64 search.php:310 user.php:350
+#: user_pppoe_sessions.php:70 users.php:406
 msgid "username"
 msgstr "username"
 
-#: search.php:284 users.php:391
+#: search.php:294 users.php:390
 msgid "users"
 msgstr ""
 
@@ -1084,7 +1169,7 @@ msgid "version"
 msgstr "version"
 
 #: administration.php:72 ip_addresses.php:202 ip_edit.php:264 ip_new.php:162
-#: search.php:62 search.php:298 user.php:352 users.php:405
+#: search.php:62 search.php:308 user.php:348 users.php:404
 msgid "vlan"
 msgstr ""
 
