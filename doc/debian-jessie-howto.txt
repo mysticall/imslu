@@ -273,6 +273,10 @@ rm /var/www/html/index.html
 cp /etc/imslu/index.php /var/www/html
 ln -s /etc/imslu/apache-ssl.conf /etc/apache2/sites-enabled/imslu-ssl.conf
 
+NB: Edit "/etc/imslu/expired.conf" and change IP address.
+ln -s /etc/imslu/expired.conf /etc/apache2/sites-enabled/expired.conf
+cp /etc/imslu/000-default.conf /etc/apache2/sites-available
+
 /etc/init.d/apache2 restart
 
 
