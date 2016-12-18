@@ -9,7 +9,7 @@ $html =
 <html>
 <head>
     <title>{$page['title']}</title>
-    <meta name=\"Author\" content=\"MSIUL Developers\">
+    <meta name=\"Author\" content=\"IMSLU Developers\">
     <meta charset=\"utf-8\">
     <link rel=\"stylesheet\" type=\"text/css\" href=\"css.css\"> \n";
 
