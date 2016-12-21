@@ -503,14 +503,14 @@ make -C debian/build/build_amd64_none_amd64 menuconfig
     Device Drivers  --->
       -*- Network device support  --->
         {*} IMQ (intermediate queueing device) support 
-            IMQ behavior (PRE/POSTROUTING) (IMQ BB)  --->
+            IMQ behavior (PRE/POSTROUTING) (IMQ AB)  --->
         (2) Number of IMQ devices
 
-        --- IMQ behavior (PRE/POSTROUTING) (IMQ BB)  --->
+        --- IMQ behavior (PRE/POSTROUTING) (IMQ AB)  --->
             ( ) IMQ AA
-            ( ) IMQ AB
+            (X) IMQ AB
             ( ) IMQ BA
-            (X) IMQ BB
+            ( ) IMQ BB
 
 -----------
 
@@ -527,7 +527,8 @@ cd ..
 dpkg -i linux-image-3.16.0-4-amd64_3.16.36-1+deb8u2_amd64.deb
 
 NB: Install linux headers with IMQ patch or xtables addons will not work.
-dpkg -i linux-compiler-gcc-4.8-x86_3.16.36-1+deb8u2_amd64.deb linux-headers-3.16.0-4-amd64_3.16.36-1+deb8u2_amd64.deb
+apt-get install linux-kbuild-3.16
+dpkg -i linux-headers-3.16.0-4-common_3.16.36-1+deb8u2_amd64.deb linux-compiler-gcc-4.8-x86_3.16.36-1+deb8u2_amd64.deb linux-headers-3.16.0-4-amd64_3.16.36-1+deb8u2_amd64.deb
 
 ##### 3.2 Rebuild iptables #####
 
