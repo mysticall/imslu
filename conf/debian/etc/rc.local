@@ -55,19 +55,18 @@ $IPTABLES -t mangle -A FORWARD -i ${IFACE_INTERNAL}+ -j IMQ --todev ${IFACE_IMQ1
 # Dynamic NAT
 # http://arpnet.pl/dnetmap/
 # Required: xtables-addons - xt_DNETMAP
-#$IPTABLES -t nat -A PREROUTING -i ${IFACE_EXTERNAL}+ -j DNETMAP
+#$IPTABLES -t nat -I PREROUTING -i ${IFACE_EXTERNAL}+ -j DNETMAP
+#$IPTABLES -t nat -A PREROUTING -p tcp --dport 80 ! --dst 192.168.1.254 --match set ! --match-set allowed src -j REDIRECT --to-port 3000
 #$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 10.0.0.0/8 -j DNETMAP --prefix 192.168.1.0/24
 #$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 172.16.0.0/12 -j DNETMAP --prefix 192.168.1.0/24
 #$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j DNETMAP --prefix 192.168.1.0/24
 
+# Redirect expiret users to warning page
+$IPTABLES -t nat -A PREROUTING ! -i ${IFACE_EXTERNAL}+ -p tcp --dport 80 ! --dst 192.168.1.254 --match set ! --match-set allowed src -j REDIRECT --to-port 3000
 # NAT
 $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 10.0.0.0/8 -j SNAT --to 192.168.1.254
 $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 172.16.0.0/12 -j SNAT --to 192.168.1.254
 $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j SNAT --to 192.168.1.254
-
-# Redirect expiret users to warning page
-$IPTABLES -t nat -A PREROUTING -p tcp --dport 80 ! --dst 192.168.1.254 --match set ! --match-set allowed src -j REDIRECT --to-port 3000
-
 
 # Set default policy for chain FORWARD to DROP
 $IPTABLES -P FORWARD DROP
