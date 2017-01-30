@@ -1,7 +1,5 @@
 <?php
-// Load config file
-$CONFIG_FILE = '/etc/imslu/config.php';
-require_once realpath(dirname($CONFIG_FILE)).DIRECTORY_SEPARATOR.basename($CONFIG_FILE);
+require_once $CONFIG_FILE;
 
 require_once dirname(__FILE__).'/defines.php';
 require_once dirname(__FILE__).'/func.php';
@@ -9,7 +7,7 @@ require_once dirname(__FILE__).'/audit.php';
 require_once dirname(__FILE__).'/combobox.php';
 require_once dirname(__FILE__).'/classes/table.php';
 
-$VERSION = 'IMSLU 0.2-alpha';
+$VERSION = 'IMSLU v0.2';
 
 // array - Available languages in the system.
 $LOCALES = array(      

@@ -43,7 +43,6 @@ require_once dirname(__FILE__).'/include/page_header.php';
 echo !empty($_SESSION['msg']) ? '<div id="msg" class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
 $_SESSION['msg'] = null;
 
-
 ####### Edit #######
 if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
 

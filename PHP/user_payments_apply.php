@@ -212,6 +212,19 @@ if (isset($active_until) && isset($userid)) {
 
     $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
+  // User serviceid, required from FreeBSD shaper
+  if (!empty($old['serviceid'])) {
+    $serviceid = $old['serviceid'];
+  } else {
+
+    $sql = 'SELECT serviceid FROM users WHERE userid = :userid LIMIT 1';
+    $sth = $db->dbh->prepare($sql);
+    $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
+    $sth->execute();
+    $user = $sth->fetch(PDO::FETCH_ASSOC);
+    $serviceid = $user['serviceid'];
+  }
+
     // Select user IP Addresses
     $sql = 'SELECT ip FROM ip WHERE userid = :userid';
     $sth = $db->dbh->prepare($sql);
@@ -226,14 +239,14 @@ if (isset($active_until) && isset($userid)) {
         if ($pay == 1 && $active_until < time() && strtotime($expires) > time()) {
             for ($i = 0; $i < count($ip); ++$i) {
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$ip[$i]['ip']} 2>&1";
+                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$serviceid}'";
                 shell_exec($cmd);
             }
         }
         elseif ($pay == 0) {
             for ($i = 0; $i < count($ip); ++$i) {
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip[$i]['ip']} 2>&1";
+                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip[$i]['ip']}";
                 shell_exec($cmd);
             }
         }

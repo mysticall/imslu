@@ -26,13 +26,8 @@ class PDOinstance {
 	 * @param $dbh - PDO instance
 	 */
 	public $dbh;
-    private $sth;
-		
-	/**
-	 * @param Databese configuration patch 
-	 */
-	private static $DATABASE_CONFIGURATION = '/etc/imslu/database_config.php';
-	
+  private $sth;
+
 	private static $dsn;
 	private static $dbtype;
 	private static $dbserver;
@@ -47,8 +42,10 @@ class PDOinstance {
 	
     public function __construct() {
 
-		if (!isset(self::$dsn, self::$dbuser, self::$dbpass)) {		
-		require_once realpath(dirname(self::$DATABASE_CONFIGURATION)).DIRECTORY_SEPARATOR.basename(self::$DATABASE_CONFIGURATION);
+		if (!isset(self::$dsn, self::$dbuser, self::$dbpass)) {
+
+    global $DATABASE_CONFIGURATION;
+		require_once $DATABASE_CONFIGURATION;
 			
 		self::$dbtype = $dbtype;
 		self::$dbserver = $dbserver;

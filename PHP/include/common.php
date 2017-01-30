@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__).'/os.php';
 require_once dirname(__FILE__).'/gettextwrapper.php';
 
 # Set system language

@@ -44,7 +44,7 @@ $html .=
     </div>
     <div class=\"right_container\">
 ".$menu->right_menu('right_menu')."
-      <ul>"._('version').": <br>{$VERSION}</ul>
+      <ul>{$VERSION}</ul>
     </div>
     <div id=\"middle_container\" class=\"middle_container\">\n";
 

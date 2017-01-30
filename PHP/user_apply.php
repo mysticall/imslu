@@ -146,7 +146,7 @@ if (!empty($_POST['edit'])) {
 
             for ($i = 0; $i < count($ip); ++$i) {
         
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$ip[$i]['ip']} 2>&1";
+                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$_POST['serviceid']}' 2>&1";
                 $result = shell_exec($cmd);
                 $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is enabled.', "{$ip[$i]['ip']}").'<br>' : _s('Enabling internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
             }
@@ -184,7 +184,7 @@ if (!empty($_POST['edit'])) {
 
             for ($i = 0; $i < count($ip); ++$i) {
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$ip[$i]['ip']} 2>&1";
+                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$_POST['serviceid']}' 2>&1";
                 $result = shell_exec($cmd);
                 $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is enabled.', "{$ip[$i]['ip']}").'<br>' : _s('Enabling internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
             }

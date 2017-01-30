@@ -42,6 +42,7 @@ if (!empty($_POST['alias']) && !empty($_POST['password'])) {
     if($Operator->login($operator)) {
 
         $url = (!empty($_SESSION['data']['url'])) ? $_SESSION['data']['url'] : 'profile.php';
+        echo 1;
         header("Location: $url");
         exit;
     }

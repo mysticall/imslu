@@ -2,9 +2,10 @@
 // enable debug mode
 // error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-require_once '/etc/imslu/database_config.php';
-require_once '/etc/imslu/config.php';
+require_once dirname(__FILE__).'/../include/os.php';
 require_once dirname(__FILE__).'/../include/gettextwrapper.php';
+require_once $CONFIG_FILE;
+require_once $DATABASE_CONFIGURATION;
 
 // Edit here!
 // English locale
@@ -67,7 +68,7 @@ if (!empty($_POST['limited_access'])) {
   if (!empty($ip)) {
     for ($i = 0; $i < count($ip); ++$i) {
 
-      $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$ip[$i]['ip']} 2>&1";
+      $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$old['serviceid']}' 2>&1";
       shell_exec($cmd);
     }
   }

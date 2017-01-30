@@ -217,7 +217,8 @@ class Operator {
         $sth->bindParam(2, $operator['ip']);
         $sth->execute();
 
-        require_once dirname(__FILE__).'../../config.php';
+        require_once dirname(__FILE__).'../../defines.php';
+        require_once dirname(__FILE__).'../../audit.php';
         // Add audit
         add_audit($db, AUDIT_ACTION_LOGIN, AUDIT_RESOURCE_SYSTEM, "Correct login {$operator['alias']}.");
     }
