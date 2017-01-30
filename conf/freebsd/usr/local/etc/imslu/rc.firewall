@@ -1,0 +1,47 @@
+#!/bin/sh -
+
+. /usr/local/etc/imslu/config.sh
+. /usr/local/etc/imslu/scripts/functions.sh
+
+##### ADD VLANS #####
+create_vlan
+
+##### IPFW #####
+${IPFW} -f flush
+${IPFW} -f queue flush
+${IPFW} -f pipe flush
+${IPFW} -f table all flush
+
+${IPFW} add 11 allow ip from any to any via ${IFACE_EXTERNAL}*
+${IPFW} add 12 allow ip from any to me
+${IPFW} add 13 allow ip from me to any
+
+# Incoming packets - download
+# High priority for download
+# BGP peer - national traffic
+${IPFW} add 51 skipto 71 ip from table\(11\) to any out
+# International traffic
+${IPFW} add 52 pipe tablearg ip from any to table\(3\) out
+# ADD HERE kind traffic: three four five ...
+
+# Outgoing packets - upload
+# BGP peer - national traffic
+${IPFW} add 61 skipto 72 ip from any to table\(11\) in
+# International traffic
+${IPFW} add 62 pipe tablearg ip from table\(4\) to any in
+# ADD HERE kind traffic: three four five ...
+
+# BGP peer - national traffic
+${IPFW} add 71 pipe tablearg ip from any to table\(1\)
+${IPFW} add 72 pipe tablearg ip from table\(2\) to any
+
+# Load peer IP addresses
+/usr/local/etc/imslu/scripts/peer.sh
+# Load shaper
+# This script must be run after the start of MySQL server
+sleep 60 && /usr/local/etc/imslu/scripts/shaper.sh&
+
+
+#route add 10.0.1.2 -iface re1.0013
+$IFCONFIG re1.0013 inet 85.187.224.236/29 add
+#route add 85.187.224.236/32 -iface re1.0013
