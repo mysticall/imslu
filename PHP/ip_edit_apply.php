@@ -23,14 +23,14 @@ require_once dirname(__FILE__).'/include/common.php';
 // Check for active session
 if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
-    header('Location: index.php');
-    exit;
+  header('Location: index.php');
+  exit;
 }
 
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
 
-    header('Location: index.php');
-    exit;
+  header('Location: index.php');
+  exit;
 }
 
 # Must be included after session check
@@ -49,344 +49,281 @@ $id = $old['id'];
 // Onli System Admin or Admin can delete IP
 if (!empty($_POST['delete']) && !empty($_POST['del_ip']) && $admin_permissions) {
 
-    // Add audit
-    add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} is deleted.", json_encode($old));
+  // Add audit
+  add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} is deleted.", json_encode($old));
 
-    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+  $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-    ip_remove($db, $old);
+  ip_remove($db, $old);
 
-    header("Location: user.php?userid={$old['userid']}");
-    exit;
+  header("Location: user.php?userid={$old['userid']}");
+  exit;
 }
 
 ####### Edit ####### 
 if (!empty($_POST['edit'])) {
 
-    // The IP address is changed.
-    if ($old['ip'] != $_POST['ip']) {
+  // Validate IP Address
+  if (!filter_var($_POST['ip'], FILTER_VALIDATE_IP)) {
 
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} changed with {$_POST['ip']}.", json_encode($old));
+    $_SESSION['msg'] .= _('Invalid IP Address!')."<br>";
+    header("Location: user.php?userid={$ip['userid']}");
+    exit;
+  }
+  // Validate MAC
+  if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
 
-        ip_remove($db, $old);
-        $_POST['userid'] = $old['userid'];
-        ip_add($db, $_POST);
+    $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
+    header("Location: user.php?userid={$old['userid']}");
+    exit;
+  }
 
-        header("Location: user.php?userid={$_POST['userid']}");
-        exit;
-    }
-    else {
+  // The IP address is changed.
+  if ($old['ip'] != $_POST['ip']) {
+
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} changed with {$_POST['ip']}.", json_encode($old));
+
+    ip_remove($db, $old);
+    $_POST['userid'] = $old['userid'];
+    ip_add($db, $_POST);
+
+    header("Location: user.php?userid={$_POST['userid']}");
+    exit;
+  }
+  else {
 
     $update = array();
 
-    // VLANs (the condition for PPPoE is out below)
-    if ($USE_VLANS && $old['protocol'] != 'PPPoE') {
+    // The protocol is changed.
+    if ($old['protocol'] != $_POST['protocol']) {
 
-        if ($old['vlan'] != $_POST['vlan']) {
+      $update['vlan'] = $_POST['vlan'];
+      $update['mac'] = $_POST['mac'];
+      $update['free_mac'] = $_POST['free_mac'];
+      $update['protocol'] = $_POST['protocol'];
 
-            $update['vlan'] = $_POST['vlan'];
+      // Point-to-Point Protocol over Ethernet (PPPoE)
+      if ($old['protocol'] != 'PPPoE' && $_POST['protocol'] == 'PPPoE') {
 
-            // added a new vlan
-            if(empty($old['vlan']) && !empty($_POST['vlan'])) {
+        $_POST['userid'] = $old['userid'];
+        pppoe_add($db, $_POST);
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-            // vlan deleted
-            elseif(!empty($old['vlan']) && empty($_POST['vlan'])) {
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
+        shell_exec($cmd);
+      }
+      // Internet Protocol with static address
+      if ($old['protocol'] == 'PPPoE' && $_POST['protocol'] != 'PPPoE') {
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-            // vlan changed
-            elseif(!empty($old['vlan']) && !empty($_POST['vlan'])) {
+        pppoe_remove($db, $old['ip'], $_POST['username']);
 
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-        }
-
-        if ($old['mac'] != $_POST['mac']) {
-
-            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
-
-                $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
-                header("Location: user.php?userid={$old['userid']}");
-                exit;
-            }
-
-            $update['mac'] = $_POST['mac'];
-
-            // if VLAN is not empty, the following rules are applied above
-            if (empty($update['vlan'])) {
-
-                // added a new mac
-                if(empty($old['mac']) && !empty($_POST['mac'])) {
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-                }
-                // mac deleted
-                elseif(!empty($old['mac']) && empty($_POST['mac'])) {
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-                }
-                // mac changed
-                elseif(!empty($old['mac']) && !empty($_POST['mac'])) {
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-                }
-            }
-        }
-
-        if ($old['free_mac'] != $_POST['free_mac']) {
-
-            $update['free_mac'] = $_POST['free_mac'];
-
-            if (empty($update['vlan']) &&  empty($update['mac'])) {
-
-                // free_mac = y
-                if($_POST['free_mac'] == 'y') {
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";    
-                }
-                // free_mac = n
-                elseif($_POST['free_mac'] == 'n') {
-
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-                }
-            }
-        }
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+        shell_exec($cmd);
+      }
     }
 
-    // PPPoE
-    if ($USE_PPPoE && empty($update['vlan']) && empty($update['mac'])) {
+    // Internet Protocol with static address
+    if (empty($update['protocol']) && $old['protocol'] == 'IP') {
 
-        $pppoe_old = array();
-        $pppoe_new = array();
+      // VLANs
+      if ($USE_VLANS && $old['vlan'] != $_POST['vlan']) {
 
-        // Update only VLAN information in DB
-        if ($old['vlan'] != $_POST['vlan']) {
+        $update['vlan'] = $_POST['vlan'];
 
-            $update['vlan'] = $_POST['vlan'];
+        // added a new vlan
+        if(empty($old['vlan']) && !empty($_POST['vlan'])) {
+
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+          shell_exec($cmd);
         }
-        if ($old['mac'] != $_POST['mac']) {
+        // vlan deleted
+        elseif(!empty($old['vlan']) && empty($_POST['vlan'])) {
 
-            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
-
-                $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
-                header("Location: user.php?userid={$old['userid']}");
-                exit;
-            }
-
-            $update['mac'] = $_POST['mac'];
-            $pppoe_old['mac'] = $old['mac'];
-            $pppoe_new['mac'] = $_POST['mac'];
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
+          shell_exec($cmd);
         }
-        if ($old['free_mac'] != $_POST['free_mac']) {
+        // vlan changed
+        elseif(!empty($old['vlan']) && !empty($_POST['vlan'])) {
 
-            $update['free_mac'] = $_POST['free_mac'];
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
+          shell_exec($cmd);
+
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+          shell_exec($cmd);
         }
-        if ($old['groupname'] != $_POST['groupname']) {
+      }
 
-            $pppoe_old['groupname'] = $old['groupname'];
-            $pppoe_new['groupname'] = $_POST['groupname'];
+      if ($old['mac'] != $_POST['mac']) {
+
+        $update['mac'] = $_POST['mac'];
+
+        // if VLAN is not empty, the following rules are applied above
+        if (empty($update['vlan'])) {
+
+          // added a new mac
+          if(empty($old['mac']) && !empty($_POST['mac'])) {
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+            shell_exec($cmd);
+          }
+          // mac deleted
+          elseif(!empty($old['mac']) && empty($_POST['mac'])) {
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
+            shell_exec($cmd);
+          }
+          // mac changed
+          elseif(!empty($old['mac']) && !empty($_POST['mac'])) {
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
+            shell_exec($cmd);
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+            shell_exec($cmd);
+          }
         }
-        if ($old['username'] != $_POST['username']) {
+      }
 
-            $update['username'] = $_POST['username'];
-            $pppoe_old['username'] = $old['username'];
-            $pppoe_new['username'] = $_POST['username'];
+      if ($old['free_mac'] != $_POST['free_mac']) {
+
+        $update['free_mac'] = $_POST['free_mac'];
+
+        if (empty($update['vlan']) && empty($update['mac'])) {
+
+          // free_mac = y
+          if($_POST['free_mac'] == 'y') {
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
+            shell_exec($cmd);  
+          }
+          // free_mac = n
+          elseif($_POST['free_mac'] == 'n') {
+
+            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+            shell_exec($cmd);
+          }
         }
-        if ($old['pass'] != $_POST['pass']) {
+      }
 
-            $update['pass'] = $_POST['pass'];
-            $pppoe_old['pass'] = $old['pass'];
-            $pppoe_new['pass'] = $_POST['pass'];
-        }
-
-        if(!empty($pppoe_old)) {
-
-            $pppoe_old['username'] = $old['username'];
-            $pppoe_new['username'] = $_POST['username'];
-            $pppoe_old['ip'] = $old['ip'];
-            pppoe_update($db, $pppoe_old, $pppoe_new);
-        }
-
-        // The protocol is changed.
-        if ($old['protocol'] != $_POST['protocol']) {
-
-            $update['protocol'] = $_POST['protocol'];
-
-            // Point-to-Point Protocol over Ethernet (PPPoE)
-            if ($old['protocol'] != 'PPPoE' && $_POST['protocol'] == 'PPPoE') {
-
-                $_POST['userid'] = $old['userid'];
-                pppoe_add($db, $_POST);
-
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-            // Internet Protocol with static address
-            if ($old['protocol'] == 'PPPoE' && $_POST['protocol'] != 'PPPoE') {
-
-                pppoe_remove($db, $old['ip'], $_POST['username']);
-
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-        }
+      // Update username and password information in DB
+      if ($old['username'] != $_POST['username']) {
+        $update['username'] = $_POST['username'];
+      }
+      if ($old['pass'] != $_POST['pass']) {
+        $update['pass'] = $_POST['pass'];
+      }
     }
 
-    if (!$USE_VLANS && !$USE_PPPoE) {
+    // Point-to-Point Protocol over Ethernet (PPPoE)
+    if ($USE_PPPoE && empty($update['protocol']) && $old['protocol'] == 'PPPoE') {
 
-        if ($old['mac'] != $_POST['mac']) {
+      $pppoe_old = array();
+      $pppoe_new = array();
 
-            if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
+      // Update only VLAN information in DB
+      if ($old['vlan'] != $_POST['vlan']) {
 
-                $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
-                header("Location: user.php?userid={$old['userid']}");
-                exit;
-            }
+        $update['vlan'] = $_POST['vlan'];
+      }
+      if ($old['mac'] != $_POST['mac']) {
 
-            $update['mac'] = $_POST['mac'];
+        $update['mac'] = $_POST['mac'];
+        $pppoe_old['mac'] = $old['mac'];
+        $pppoe_new['mac'] = $_POST['mac'];
+      }
+      if ($old['free_mac'] != $_POST['free_mac']) {
 
-            // added a new mac
-            if(empty($old['mac']) && !empty($_POST['mac'])) {
-    
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-            // mac deleted
-            elseif(!empty($old['mac']) && empty($_POST['mac'])) {
-    
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-            // mac changed
-            elseif(!empty($old['mac']) && !empty($_POST['mac'])) {
-    
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-    
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-        }
+        $update['free_mac'] = $_POST['free_mac'];
+      }
+      if ($old['groupname'] != $_POST['groupname']) {
 
-        if ($old['free_mac'] != $_POST['free_mac']) {
+        $pppoe_old['groupname'] = $old['groupname'];
+        $pppoe_new['groupname'] = $_POST['groupname'];
+      }
+      if ($old['username'] != $_POST['username']) {
 
-            $update['free_mac'] = $_POST['free_mac'];
+        $update['username'] = $_POST['username'];
+        $pppoe_old['username'] = $old['username'];
+        $pppoe_new['username'] = $_POST['username'];
+      }
+      if ($old['pass'] != $_POST['pass']) {
 
-            if (empty($update['vlan']) &&  empty($update['mac'])) {
+        $update['pass'] = $_POST['pass'];
+        $pppoe_old['pass'] = $old['pass'];
+        $pppoe_new['pass'] = $_POST['pass'];
+      }
 
-                // free_mac = y
-                if($_POST['free_mac'] == 'y') {
-    
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";    
-                }
-                // free_mac = n
-                elseif($_POST['free_mac'] == 'n') {
+      if(!empty($pppoe_old)) {
 
-                    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '' '{$_POST['mac']}' '{$_POST['free_mac']}' 2>&1";
-                    $result = shell_exec($cmd);
-#                    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-                }
-            }
-        }
+        $pppoe_old['username'] = $old['username'];
+        $pppoe_new['username'] = $_POST['username'];
+        $pppoe_old['ip'] = $old['ip'];
+        pppoe_update($db, $pppoe_old, $pppoe_new);
+      }
     }
 
-    // The internet access for IP address is changed.
+    // Stop or allow internet access for IP address.
     if ($old['stopped'] != $_POST['stopped']) {
 
-        $update['stopped'] = $_POST['stopped'];
+      $update['stopped'] = $_POST['stopped'];
 
-        // Stop
-        if ($old['stopped'] == 'n' && $_POST['stopped'] == 'y') {
+      // Stop
+      if ($old['stopped'] == 'n' && $_POST['stopped'] == 'y') {
 
-            // Add audit
-            add_audit($db, AUDIT_ACTION_DISABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} stopped.");
+        // Add audit
+        add_audit($db, AUDIT_ACTION_DISABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} stopped.");
 
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$old['ip']} 2>&1";
-            $result = shell_exec($cmd);
-#            $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$old['ip']}";
+        shell_exec($cmd);
+      }
+      // Allow
+      if ($old['stopped'] == 'y' && $_POST['stopped'] == 'n') {
+
+        $sql = 'SELECT free_access, serviceid, expires FROM users WHERE userid = :userid LIMIT 1';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':userid', $old['userid'], PDO::PARAM_INT);
+        $sth->execute();
+        $user = $sth->fetch(PDO::FETCH_ASSOC);
+
+        $now = date ("YmdHis");
+        $expire = date("YmdHis", strtotime("{$user['expires']}"));
+
+        if ($user['free_access'] == 'y' || $expire > $now) {
+
+          // Add audit
+          add_audit($db, AUDIT_ACTION_ENABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} allowed.");
+
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$old['ip']}' '{$user['serviceid']}'";
+          shell_exec($cmd);
         }
-        // Allow
-        if ($old['stopped'] == 'y' && $_POST['stopped'] == 'n') {
+      }
+    }
 
-            $now = date('Y-m-d H:i:s');
+    // Update notes for IP address.
+    if ($old['notes'] != $_POST['notes']) {
 
-            // Add audit
-            add_audit($db, AUDIT_ACTION_ENABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} allowed.");
-
-            $sql = 'SELECT users.free_access, payments.expires
-                    FROM users
-                    LEFT JOIN payments
-                    ON users.userid = payments.userid
-                    WHERE users.userid = :userid ORDER BY payments.expires DESC LIMIT 1';
-            $sth = $db->dbh->prepare($sql);
-            $sth->bindValue(':userid', $old['userid'], PDO::PARAM_INT);
-            $sth->execute();
-            $user = $sth->fetch(PDO::FETCH_ASSOC);
-
-            if ($user['free_access'] == 'y' || $user['expires'] > $now) {
-
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow {$old['ip']} 2>&1";
-                $result = shell_exec($cmd);
-#                $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-            }
-        }
+      $update['notes'] = $_POST['notes'];
     }
 
     if (!empty($update)) {
 
-        $i = 1;
-        foreach($update as $key => $value) {
-            $keys[$i] = $key;
-            $values[$i] = $value;
+      $i = 1;
+      foreach($update as $key => $value) {
+        $keys[$i] = $key;
+        $values[$i] = $value;
+  
+      $i++;
+      }
 
-        $i++;
-        }
+      $sql = 'UPDATE ip SET '.implode(' = ?, ', $keys).' = ? WHERE ip = ?';
 
-        $sql = 'UPDATE ip SET '.implode(' = ?, ', $keys).' = ? WHERE ip = ?';
-
-        array_push($values, $old['ip']);
-        $db->prepare_array($sql, $values);
+      array_push($values, $old['ip']);
+      $db->prepare_array($sql, $values);
     }
   }
 
-    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+  $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-    header("Location: user.php?userid={$old['userid']}");
-    exit;
+  header("Location: user.php?userid={$old['userid']}");
 }
 ?>
