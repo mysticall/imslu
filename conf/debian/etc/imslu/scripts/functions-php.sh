@@ -4,24 +4,24 @@ ip_add () {
 
   if [[ $USE_VLANS -eq 0 ]]; then
     if [ -f /proc/net/vlan/${2} ]; then
-      IFS=\. read -r a b c d <<< "$1"
+      IFS=\. read -r a b c d <<< "${1}"
 #     ip route add 10.0.1.2 dev eth1.0010 src 10.0.1.1
-      ip route add $1 dev ${2} src ${a}.${b}.${c}.1
+      ip route add ${1} dev ${2} src ${a}.${b}.${c}.1
 
       if [[ "${3}" == "n" && -n "${4}" ]]; then
 #       arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
-        arp -i ${2} -s $1 ${4}
+        arp -i ${2} -s ${1} ${4}
       fi
     fi
   else
-    if [ -n "$1" ]; then
-      IFS=\. read -r a b c d <<< "$1"
+    if [ -n "${1}" ]; then
+      IFS=\. read -r a b c d <<< "${1}"
 #     ip route add 10.0.1.2 dev eth1 src 10.0.1.1
-      ip route add $1 dev $IFACE_INTERNAL src ${a}.${b}.${c}.1
+      ip route add ${1} dev ${IFACE_INTERNAL} src ${a}.${b}.${c}.1
 
       if [[ "${3}" == "n" && -n "${4}" ]]; then
 #       arp -s 10.0.1.2 34:23:87:96:70:27
-        arp -s $1 ${4}
+        arp -s ${1} ${4}
       fi
     fi
   fi
@@ -29,16 +29,16 @@ ip_add () {
 
 ip_rem () {
 
-  if [[ $USE_VLANS -eq 0 && -n "$1" ]]; then
+  if [[ $USE_VLANS -eq 0 && -n "${1}" ]]; then
 #   ip route del 10.0.1.2
-    ip route del $1
+    ip route del ${1}
 #   arp -i eth1.0011 -d 10.0.1.2
-    arp -i ${2} -d $1
+    arp -i ${2} -d ${1}
   else
 #   ip route del 10.0.1.2
-    ip route del $1
+    ip route del ${1}
 #   arp -i eth1 -d 10.0.1.2
-    arp -i $IFACE_INTERNAL -d $1
+    arp -i ${IFACE_INTERNAL} -d ${1}
   fi
 }
 
@@ -48,39 +48,39 @@ mac_add () {
     if [[ -f /proc/net/vlan/${2} && -n "${4}" ]]; then
 
 #     arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
-      arp -i ${2} -s $1 ${4}
+      arp -i ${2} -s ${1} ${4}
     fi
   else
-    if [[ -n "$1" && "${3}" == "n" && -n "${4}" ]]; then
+    if [[ -n "${1}" && "${3}" == "n" && -n "${4}" ]]; then
 
 #       arp -i eth1 -s 10.0.1.2 34:23:87:96:70:27
-        arp -i $IFACE_INTERNAL -s $1 ${4}
+        arp -i ${IFACE_INTERNAL} -s ${1} ${4}
     fi
   fi
 }
 
 mac_rem () {
 
-  if [[ $USE_VLANS -eq 0 && -n "$1" ]]; then
+  if [[ $USE_VLANS -eq 0 && -n "${1}" ]]; then
 #   arp -i eth1.0011 -d 10.0.1.2
-    arp -i ${2} -d $1
+    arp -i ${2} -d ${1}
   else
 #   arp -i eth1 -d 10.0.1.2
-    arp -i $IFACE_INTERNAL -d $1
+    arp -i ${IFACE_INTERNAL} -d ${1}
   fi
 }
 
 ip_allow () {
 
-  ipset add allowed $1
+  ipset add allowed ${1}
 }
 
 ip_stop () {
 
-  ipset del allowed $1
+  ipset del allowed ${1}
 }
 
-if [[ "$1" == "tc_class_add" || "$1" == "tc_class_delete" || "$1" == "tc_class_replace" || "$1" == "tc_filter_add" || "$1" == "tc_filter_replace" || "$1" == "tc_filter_delete" ]]; then
+if [[ "${1}" == "tc_class_add" || "${1}" == "tc_class_delete" || "${1}" == "tc_class_replace" || "${1}" == "tc_filter_add" || "${1}" == "tc_filter_replace" || "${1}" == "tc_filter_delete" ]]; then
 
   . /etc/imslu/config.sh
 
@@ -101,7 +101,7 @@ fi
 
 tc_class_replace () {
 
-  userid=$1
+  userid=${1}
   serviceid=${2}
 
   if [ -n "${services[${serviceid}]}" ]; then
@@ -131,7 +131,7 @@ ${TC} class replace dev ${IFACE_IMQ1} parent 1:6 classid 1:$(printf '%x' $((${us
 
 tc_class_delete () {
 
-  userid=$1
+  userid=${1}
 
 ${TC} class delete dev ${IFACE_IMQ0} parent 1:2 classid 1:$(printf '%x' ${userid})
 ${TC} class delete dev ${IFACE_IMQ1} parent 1:2 classid 1:$(printf '%x' ${userid})
@@ -156,7 +156,7 @@ ${TC} class delete dev ${IFACE_IMQ1} parent 1:6 classid 1:$(printf '%x' $((${use
 
 tc_filter_replace () {
 
-  ip=$1
+  ip=${1}
   userid=${2}
   IFS=\. read -r a b c d <<< "${ip}"
 
@@ -190,7 +190,7 @@ ${TC} filter replace dev ${IFACE_IMQ1} parent 1: protocol ip prio 1 u32 ht $(pri
 
 tc_filter_delete () {
 
-  ip=$1
+  ip=${1}
   IFS=\. read -r a b c d <<< "${ip}"
 
   if [ $c -eq 0 ]; then
@@ -207,7 +207,7 @@ ${TC} filter delete dev ${IFACE_IMQ1} parent 1: prio 1 handle ${row} protocol ip
   done
 }
 
-case "$1" in
+case "${1}" in
 pppd_kill)
   ip=${2}
   IFACE=$(ip route show | grep "${ip}" | grep -o "ppp\w*")
