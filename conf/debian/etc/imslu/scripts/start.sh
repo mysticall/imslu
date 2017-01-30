@@ -216,9 +216,9 @@ if [ $USE_VLANS -eq 0 ]; then
   done < <(echo $query | mysql $database -u $user -p${password} -s)
 else
 
-  # Adding static MAC for IP addresses.
-  query="SELECT ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND mac NOT LIKE '' AND free_mac='n'"
-  while read -r ip mac free_mac; do
+  # Adding routing and static MAC for IP addresses.
+  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE'"
+  while read -r ip free_mac mac ; do
 
     IFS=\. read -r a b c d <<< "${ip}"
 #   ip route add 10.0.1.2 dev eth1 src 10.0.1.1
