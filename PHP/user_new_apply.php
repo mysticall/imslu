@@ -74,9 +74,11 @@ if (!empty($_POST['new'])) {
     $sth->execute();
     $user = $sth->fetch(PDO::FETCH_ASSOC);
 
-    // Add tc class for user
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_add {$user['userid']} {$_POST['serviceid']} 2>&1";
-    $result = shell_exec($cmd);
+    if ($OS == 'Linux') {
+      // Add tc class for user
+      $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_add {$user['userid']} {$_POST['serviceid']}";
+      shell_exec($cmd);
+    }
 
     header("Location: user.php?userid={$user['userid']}");
     exit;

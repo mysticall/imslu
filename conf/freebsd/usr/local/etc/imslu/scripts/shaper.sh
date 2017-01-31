@@ -102,7 +102,7 @@ EOF
 if [ $USE_VLANS -eq 0 ]; then
 
   # Adding routing and static MAC for IP addresses who have vlan.
-  query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan NOT LIKE ''"
+  query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE ''"
   while read -r ip vlan free_mac mac; do
 
     if [ -n $(ifconfig -g vlan | grep ${vlan}) ]; then
@@ -121,7 +121,7 @@ EOF
 else
 
   # Adding routing and static MAC for IP addresses.
-  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE'"
+  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP'"
   while read -r ip free_mac mac ; do
 
 #   route add 10.0.1.2 -iface igb1

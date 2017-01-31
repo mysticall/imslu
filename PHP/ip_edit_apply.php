@@ -273,8 +273,8 @@ if (!empty($_POST['edit'])) {
         // Add audit
         add_audit($db, AUDIT_ACTION_DISABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} stopped.");
 
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$old['ip']}";
-        shell_exec($cmd);
+        // Stop internet access for IP address
+        ip_stop($old['ip']);
       }
       // Allow
       if ($old['stopped'] == 'y' && $_POST['stopped'] == 'n') {
@@ -293,8 +293,8 @@ if (!empty($_POST['edit'])) {
           // Add audit
           add_audit($db, AUDIT_ACTION_ENABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} allowed.");
 
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$old['ip']}' '{$user['serviceid']}'";
-          shell_exec($cmd);
+          // Allow internet access for IP address
+          ip_allow($old['ip'], $user['serviceid']);
         }
       }
     }

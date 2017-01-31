@@ -41,7 +41,3 @@ ${IPFW} add 72 pipe tablearg ip from table\(2\) to any
 # This script must be run after the start of MySQL server
 sleep 60 && /usr/local/etc/imslu/scripts/shaper.sh&
 
-
-#route add 10.0.1.2 -iface re1.0013
-$IFCONFIG re1.0013 inet 85.187.224.236/29 add
-#route add 85.187.224.236/32 -iface re1.0013

@@ -23,14 +23,14 @@ require_once dirname(__FILE__).'/include/common.php';
 // Check for active session
 if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
-    header('Location: index.php');
-    exit;
+  header('Location: index.php');
+  exit;
 }
 
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
 
-    header('Location: index.php');
-    exit;
+  header('Location: index.php');
+  exit;
 }
 
 # Must be included after session check
@@ -50,173 +50,171 @@ $userid = $old['userid'];
 // Onli System Admin or Admin can delete User
 if (!empty($_POST['delete']) && !empty($_POST['del_user']) && $admin_permissions) {
 
-    $sql = 'DELETE FROM users WHERE userid = :userid';
-    $sth = $db->dbh->prepare($sql);
-    $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
-    $sth->execute();
+  $sql = 'DELETE FROM users WHERE userid = :userid';
+  $sth = $db->dbh->prepare($sql);
+  $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
+  $sth->execute();
 
-    // Add audit
-    add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_USER, "User: {$old['name']} is deleted.", "User\n {$_POST['old']} \nIP addresses:\n".json_encode($ip));
+  // Add audit
+  add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_USER, "User: {$old['name']} is deleted.", "User\n {$_POST['old']} \nIP addresses:\n".json_encode($ip));
 
-    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+  $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-    if (!empty($ip)) {
-        for ($i = 0; $i < count($ip); ++$i) {
+  if (!empty($ip)) {
+    for ($i = 0; $i < count($ip); ++$i) {
 
-            ip_remove($db, $ip[$i]);
-        }
+      ip_remove($db, $ip[$i]);
     }
+  }
 
+  if ($OS == 'Linux') {
     // Remove tc class for user
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_delete {$userid} 2>&1";
-    $result = shell_exec($cmd);
-    $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_delete {$userid}";
+    shell_exec($cmd);
+  }
 
-    unset($_POST);
-    header("Location: users.php");
-    exit;
+  unset($_POST);
+  header("Location: users.php");
+  exit;
 }
 
 
 ####### Edit #######
 if (!empty($_POST['edit'])) {
 
-    $now = date ("YmdHis");
-    $expire = date("YmdHis", strtotime("{$_POST['expires']}"));
+  $now = date ("YmdHis");
+  $expire = date("YmdHis", strtotime("{$_POST['expires']}"));
 
-    # Here there are too many checks, because table "users" is indexed.
-    # It is not advisable, to make unnecessary entries in this table.
-    $update = array();
+  # Here there are too many checks, because table "users" is indexed.
+  # It is not advisable, to make unnecessary entries in this table.
+  $update = array();
 
-    if ($old['name'] != $_POST['name']) {
-        
-        $update['name'] = strip_tags($_POST['name']);
+  if ($old['name'] != $_POST['name']) {
 
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "First Name Surname is changed - ID: $userid.", "{$old['name']}", "{$update['name']}");
+    $update['name'] = strip_tags($_POST['name']);
+
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "First Name Surname is changed - ID: $userid.", "{$old['name']}", "{$update['name']}");
+  }
+  $_POST['locationid'] = !empty($_POST['locationid']) ? $_POST['locationid'] : 0;
+  if ($old['locationid'] != $_POST['locationid']) {
+
+    $update['locationid'] = $_POST['locationid'];
+  }
+  if ($old['address'] != $_POST['address']) {
+
+    $update['address'] = strip_tags($_POST['address']);
+  }
+  if ($old['phone_number'] != $_POST['phone_number']) {
+
+    $update['phone_number'] = strip_tags($_POST['phone_number']);
+  }
+  if ($old['notes'] != $_POST['notes']) {
+
+    $update['notes'] = $_POST['notes'];
+  }
+  if (($old['serviceid'] != $_POST['serviceid']) && ($admin_permissions || $cashier_permissions)) {
+
+    $update['serviceid'] = $_POST['serviceid'];
+
+    // FreeBSD
+    if ($OS == 'FreeBSD' && ($_POST['free_access'] == 'y' || $expire > $now) && !empty($ip[0]['ip'])) {
+      for ($i = 0; $i < count($ip); ++$i) {
+
+        // Stop internet access for IP address
+        ip_stop($ip[$i]['ip']);
+
+        // Allow internet access for IP address
+        ip_allow($ip[$i]['ip'], $_POST['serviceid']);
+      }
     }
-    $_POST['locationid'] = !empty($_POST['locationid']) ? $_POST['locationid'] : 0;
-    if ($old['locationid'] != $_POST['locationid']) {
-        
-        $update['locationid'] = $_POST['locationid'];
-    }
-    if ($old['address'] != $_POST['address']) {
-        
-        $update['address'] = strip_tags($_POST['address']);
-    }
-    if ($old['phone_number'] != $_POST['phone_number']) {
-        
-        $update['phone_number'] = strip_tags($_POST['phone_number']);
-    }
-    if ($old['notes'] != $_POST['notes']) {
-        
-        $update['notes'] = $_POST['notes'];
-    }
-    if (($old['serviceid'] != $_POST['serviceid']) && ($admin_permissions || $cashier_permissions)) {
-
-        $update['serviceid'] = $_POST['serviceid'];
-        // Replace tc class for user
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_replace {$old['userid']} {$_POST['serviceid']} 2>&1";
-        $result = shell_exec($cmd);
-        $_SESSION['msg'] .= ($result) ? "$result <br>" : "";
-
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "The tariff plan is changed - ID: $userid, User: {$_POST['name']}.", "Service - {$old['serviceid']}", "Service - {$_POST['serviceid']}");
-    }
-    
-    $_POST['pay'] = !empty($_POST['pay']) ? $_POST['pay'] : '0.00';
-    if (($old['pay'] != $_POST['pay']) && ($admin_permissions)) {
-
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Pay is changed - ID: $userid, User: {$_POST['name']}.", "Pay - {$old['pay']}", "Pay - {$_POST['pay']}");        
-
-        $update['pay'] = $_POST['pay'];
-    }
-
-    // Checks for free internet access
-    if (($old['free_access'] != $_POST['free_access']) && $admin_permissions) {
-
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Free Internet Access is changed - ID: $userid, User: {$_POST['name']}.", "{$old['free_access']}", "{$_POST['free_access']}");        
-        
-        $update['free_access'] = $_POST['free_access'];
-
-        // Start internet access
-        if ($_POST['free_access'] == 'y' && !empty($ip[0]['ip'])) {
-
-            for ($i = 0; $i < count($ip); ++$i) {
-        
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$_POST['serviceid']}' 2>&1";
-                $result = shell_exec($cmd);
-                $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is enabled.', "{$ip[$i]['ip']}").'<br>' : _s('Enabling internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
-            }
-        }
-        // Stop internet access
-        if ($_POST['free_access'] == 'n' && !empty($ip[0]['ip']) && (empty($_POST['expires']) || $expire < $now)) {
-
-            for ($i = 0; $i < count($ip); ++$i) {
-                
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip[$i]['ip']} 2>&1";
-                $result = shell_exec($cmd);
-                $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is stopped.', "{$ip[$i]['ip']}").'<br>' : _s('Stopping internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
-            }
-        }        
+    elseif ($OS == 'Linux') {
+      // Replace tc class for user
+      $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_replace {$old['userid']} {$_POST['serviceid']}";
+      shell_exec($cmd);
     }
 
-    if (($old['not_excluding'] != $_POST['not_excluding']) && $admin_permissions) {
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "The tariff plan is changed - ID: $userid, User: {$_POST['name']}.", "Service - {$old['serviceid']}", "Service - {$_POST['serviceid']}");
+  }
 
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Not excluding is changed - ID: $userid, User: {$_POST['name']}.", "{$old['not_excluding']}", "{$_POST['not_excluding']}");        
+  $_POST['pay'] = !empty($_POST['pay']) ? $_POST['pay'] : '0.00';
+  if (($old['pay'] != $_POST['pay']) && ($admin_permissions)) {
 
-        $update['not_excluding'] = $_POST['not_excluding'];
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Pay is changed - ID: $userid, User: {$_POST['name']}.", "Pay - {$old['pay']}", "Pay - {$_POST['pay']}");    
+
+    $update['pay'] = $_POST['pay'];
+  }
+
+  // Check for "free internet access"
+  if (($old['free_access'] != $_POST['free_access']) && $admin_permissions) {
+
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Free Internet Access is changed - ID: $userid, User: {$_POST['name']}.", "{$old['free_access']}", "{$_POST['free_access']}");    
+
+    $update['free_access'] = $_POST['free_access'];
+
+    // Allow internet access
+    if ($_POST['free_access'] == 'y' && !empty($ip[0]['ip'])) {
+      for ($i = 0; $i < count($ip); ++$i) {
+        ip_allow($ip[$i]['ip'], $_POST['serviceid']);
+      }
+    }
+    // Stop internet access
+    if ($_POST['free_access'] == 'n' && !empty($ip[0]['ip']) && (empty($_POST['expires']) || $expire < $now)) {
+      for ($i = 0; $i < count($ip); ++$i) {
+        ip_stop($ip[$i]['ip']);
+      }
+    }
+  }
+
+  if (($old['not_excluding'] != $_POST['not_excluding']) && $admin_permissions) {
+
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_USER, "Not excluding is changed - ID: $userid, User: {$_POST['name']}.", "{$old['not_excluding']}", "{$_POST['not_excluding']}");    
+
+    $update['not_excluding'] = $_POST['not_excluding'];
+  }
+
+  // Check for "active until"
+  if (!empty($_POST['expires']) && ($old['expires'] != $_POST['expires']) && $admin_permissions) {
+
+    // Add audit
+    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Active until is changed - ID: $userid, User: {$_POST['name']}.", "{$old['expires']}", "{$_POST['expires']}");
+
+    $update['expires'] = $_POST['expires'];
+
+    // Allow internet access
+    if (($_POST['free_access'] == 'y' || $expire > $now) && !empty($ip[0]['ip'])) {
+      for ($i = 0; $i < count($ip); ++$i) {
+        ip_allow($ip[$i]['ip'], $_POST['serviceid']);
+      }
+    }
+    // Stop internet access
+    if ($_POST['free_access'] == 'n' && $expire < $now && !empty($ip[0]['ip'])) {
+      for ($i = 0; $i < count($ip); ++$i) {
+        ip_stop($ip[$i]['ip']);
+      }
+    }
+  }
+
+  if (!empty($update)) {
+
+    $i = 1;
+    foreach($update as $key => $value) {
+      $keys[$i] = $key;
+         $values[$i] = $value;
+
+    $i++;
     }
 
-    # Check for changes on payments and update
-    if (!empty($_POST['expires']) && ($old['expires'] != $_POST['expires']) && $admin_permissions) {
+    $sql = 'UPDATE users SET '.implode(' = ?, ', $keys).' = ? WHERE userid = ?';
 
-        // Add audit
-        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_PAYMENTS, "Active until is changed - ID: $userid, User: {$_POST['name']}.", "{$old['expires']}", "{$_POST['expires']}");
+    array_push($values, $userid);
+    $db->prepare_array($sql, $values);
+  }
 
-        $update['expires'] = $_POST['expires'];
-
-        // Start internet access
-        if (($_POST['free_access'] == 'y' || $expire > $now) && !empty($ip[0]['ip'])) {
-
-            for ($i = 0; $i < count($ip); ++$i) {
-
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip[$i]['ip']}' '{$_POST['serviceid']}' 2>&1";
-                $result = shell_exec($cmd);
-                $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is enabled.', "{$ip[$i]['ip']}").'<br>' : _s('Enabling internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
-            }
-        }
-        // Stop internet access
-        if ($_POST['free_access'] == 'n' && $expire < $now && !empty($ip[0]['ip'])) {
-
-            for ($i = 0; $i < count($ip); ++$i) {
-                    
-                $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop {$ip[$i]['ip']} 2>&1";
-                $result = shell_exec($cmd);
-                $_SESSION['msg'] .= (empty($result)) ? _s('Internet access for IP address %s is stopped.', "{$ip[$i]['ip']}").'<br>' : _s('Stopping internet access for IP address %s is failed', "{$ip[$i]['ip']}").' - '.$result.'<br>';
-            }
-        }
-    }
-
-    if (!empty($update)) {
-
-        $i = 1;
-        foreach($update as $key => $value) {
-            $keys[$i] = $key;
-               $values[$i] = $value;
-
-        $i++;
-        }
-
-        $sql = 'UPDATE users SET '.implode(' = ?, ', $keys).' = ? WHERE userid = ?';
-
-        array_push($values, $userid);
-        $db->prepare_array($sql, $values);
-    }
-
-    header("Location: user.php?userid={$old['userid']}");
+  header("Location: user.php?userid={$old['userid']}");
 }
 ?>

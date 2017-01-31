@@ -276,4 +276,33 @@ function ip_remove($db, $ip) {
     shell_exec($cmd);
   }
 }
+
+/**
+ * Allow internet access for IP address
+ * 
+ * @param String $ip, Integer $serviceid
+ */
+function ip_allow($ip, $serviceid) {
+
+  global $SUDO;
+  global $IMSLU_SCRIPTS;
+
+  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_allow '{$ip}' '{$serviceid}'";
+  shell_exec($cmd);
+}
+
+/**
+ * Stop internet access for IP address
+ * 
+ * @param String $ip
+ */
+function ip_stop($ip) {
+
+  global $SUDO;
+  global $IMSLU_SCRIPTS;
+
+  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_stop '{$ip}'";
+  shell_exec($cmd);
+}
+
 ?>

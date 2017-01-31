@@ -98,46 +98,6 @@ ip_stop () {
   fi
 }
 
-if [ "${1}" == "tc_class_add" ] || [ "${1}" == "tc_class_delete" ] || [ "${1}" == "tc_class_replace" ] || [ "${1}" == "tc_filter_add" ]; then
-
-  ####### Services #######
-  query="SELECT serviceid, in_max0, out_max0, in_max1, out_max1, in_max2, out_max2, in_max3, out_max3, in_max4, out_max4 FROM services"
-  while read -r serviceid tmp; do
-
-    services${serviceid}="${serviceid} ${tmp}"
-  done <<EOF
-$(echo ${query} | ${MYSQL} $database -u $user -p${password} -s)
-EOF
-fi
-
-tc_class_replace () {
-
-  userid=${1}
-  serviceid=${2}
-
-}
-
-tc_class_delete () {
-
-  userid=${1}
-
-
-}
-
-tc_filter_replace () {
-
-  ip=${1}
-  userid=${2}
-
-}
-
-tc_filter_delete () {
-
-  ip=${1}
-
-}
-
-
 
 case "${1}" in
 pppd_kill)
@@ -173,22 +133,6 @@ ip_allow)
 
 ip_stop)
 	ip_stop ${2}
-	;;
-
-tc_class_add|tc_class_replace)
-	tc_class_replace ${2} ${3}
-	;;
-
-tc_class_delete)
-	tc_class_delete ${2}
-	;;
-
-tc_filter_add|tc_filter_replace)
-	tc_filter_replace ${2} ${3}
-	;;
-
-tc_filter_delete)
-	tc_filter_delete ${2}
 	;;
 
 *)

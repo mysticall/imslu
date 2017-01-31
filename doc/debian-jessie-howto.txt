@@ -277,6 +277,8 @@ NB: Edit "/etc/imslu/expired.conf" and change IP address.
 ln -s /etc/imslu/expired.conf /etc/apache2/sites-enabled/expired.conf
 cp /etc/imslu/000-default.conf /etc/apache2/sites-available
 
+NB: Edit "/usr/share/imslu/include/os.php" and uncomment "//$OS = 'Linux';"
+
 /etc/init.d/apache2 restart
 
 
