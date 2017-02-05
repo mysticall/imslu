@@ -47,7 +47,12 @@ $_GET['resource'] = (!empty($_GET['resource'])) ? $_GET['resource'] : '';
 switch($_GET['resource']) {
 	case "ping":
 		$resource = array('ping' => 'ping', 'arping' => 'arping');
-		$cmd = "$PING -s $packetsize -c $count $ipaddress 2>&1";
+    if ($OS == 'FreeBSD') {
+      $cmd = "$SUDO $PING -s $packetsize -c $count $ipaddress 2>&1";
+    }
+    elseif ($OS == 'Linux') {
+      $cmd = "$PING -s $packetsize -c $count $ipaddress 2>&1";
+    }
 		break;
 	case "arping":
 		$resource = array('arping' => 'arping', 'ping' => 'ping');
@@ -68,12 +73,12 @@ switch($_GET['resource']) {
             <th>
               <label>".combobox('middle', 'resource', null, $resource)."</label>
               <label>
-               <input class=\"middle\" type=\"text\" name=\"packetsize\" value=\"$packetsize\" maxlength=\"5\" size=\"5\">
+               <input class=\"middle\" type=\"text\" name=\"packetsize\" value=\"$packetsize\" maxlength=\"5\">
               </label>
               <label>
-               <input class=\"middle\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"3\" size=\"3\">
+               <input class=\"middle\" type=\"text\" name=\"count\" value=\"$count\" maxlength=\"3\">
               </label>
-               <input class=\"middle\" type=\"text\" name=\"ipaddress\" value=\"$ipaddress\">
+               <input type=\"text\" name=\"ipaddress\" value=\"$ipaddress\">
               <input class=\"button\" type=\"submit\" value=\""._('start')."\">
             </th>
           </tr>

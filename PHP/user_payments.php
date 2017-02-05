@@ -183,7 +183,7 @@ if (!empty($_GET['userid'])) {
           </tr>
           <tr>
             <td class=\"dt right\">
-              <label>"._s('%s days', $LIMITED_INTERNET_ACCESS)."</label>
+              <label>"._s('%s days', $TEMPORARY_INTERNET_ACCESS)."</label>
             </td>
             <td class=\"dd\">
               <label>{$payment['limited']}</label>
@@ -237,12 +237,10 @@ if (!empty($_GET['userid'])) {
     if (!empty($payments[0]['expires']) && strtotime($payments[0]['expires']) > time()) {
 
         $time = strtotime(substr($payments[0]['expires'], 0, 10));
-        $expires = date("Y-m-d", strtotime("+1 month", $time))." 23:59:00";
-        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59:00";
+        $expires = date("Y-m-d", strtotime("+$FEE_PERIOD", $time))." 23:59:00";
     }
     else {
-        $expires = date("Y-m-d", strtotime("+1 month"))." 23:59:00";
-        $limited_access = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59:00";
+        $expires = date("Y-m-d", strtotime("+$FEE_PERIOD"))." 23:59:00";
     }
 
     $sum = ($user['pay'] != 0.00 && $user['pay'] != $services[$user['serviceid']]) ? $user['pay'] : $services[$user['serviceid']];
@@ -299,11 +297,9 @@ if (!empty($_GET['userid'])) {
 
         $form .=
 "              ". _('notes') ." <input id=\"notes\" type=\"text\" name=\"notes\">
-                <input class=\"button\" type=\"submit\" name=\"limited_access\" value=\""._s('%s days', $LIMITED_INTERNET_ACCESS)."\">
                 <input class=\"button\" type=\"submit\" name=\"obligation\" value=\""._('obligation')."\">
                 <input class=\"button\" type=\"submit\" name=\"payment\" value=\""._('payment')."\">
                 <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
-                <input type=\"hidden\" name=\"limited\" value=\"{$limited_access}\">
                 <input type=\"hidden\" name=\"active_until\" value=\"{$active_until}\">
                 <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'>
             </th>
@@ -330,7 +326,7 @@ if (!empty($_GET['userid'])) {
             <th>"._('expires')."</th>
             <th>"._('sum')."</th>
             <th>"._('notes')."</th>
-            <th>"._s('%s days', $LIMITED_INTERNET_ACCESS)."</th>
+            <th>"._s('%s days', $TEMPORARY_INTERNET_ACCESS)."</th>
             <th>"._('obligation')."</th>
           </tr>
         </thead>
@@ -357,7 +353,7 @@ if (!empty($_GET['userid'])) {
             <td>".chars($payments[$i]['notes'])."</td>\n";
 
             $form .= ($payments[$i]['limited'] == 1) ?
-"            <td><a href=\"user_payments_apply.php?pay_limited=1&userid={$user['userid']}&id={$payments[$i]['id']}&active_until={$active_until}\">["._('payment')."]</a></td> \n" :
+"            <td><a href=\"user_payments_apply.php?pay_temporary=1&userid={$user['userid']}&id={$payments[$i]['id']}&active_until={$active_until}\">["._('payment')."]</a></td> \n" :
 "            <td></td> \n";
 
             $form .= ($payments[$i]['unpaid'] == 1) ?

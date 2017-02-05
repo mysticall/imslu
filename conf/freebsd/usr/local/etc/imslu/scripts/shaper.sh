@@ -69,26 +69,26 @@ EOF
     if [ "${expires}" != "0000-00-00" ]; then
       d=$(date -j -f "%Y-%m-%d %H:%M:%S" "${expires} ${expires2}" +"%Y%m%d%H%M%S")
     else
-      d=$(date -j +"%Y%m%d000000")
+      d=0
     fi
     if [ "${stopped}" == "n" ] && [ "${free_access}" == "y" ] || [ ${d} -gt ${now} ]; then
 
       ${IPFW} table 1 add ${ip}/32 ${serviceid}1
       ${IPFW} table 2 add ${ip}/32 ${serviceid}11
 
-      if [ $kind_traffic -ge 2 ]; then
+      if [ ${kind_traffic} -ge 2 ]; then
         ${IPFW} table 3 add ${ip}/32 ${serviceid}2
         ${IPFW} table 4 add ${ip}/32 ${serviceid}22
       fi
-      if [ $kind_traffic -ge 3 ]; then
+      if [ ${kind_traffic} -ge 3 ]; then
         ${IPFW} table 5 add ${ip}/32 ${serviceid}3
         ${IPFW} table 6 add ${ip}/32 ${serviceid}33
       fi
-      if [ $kind_traffic -ge 4 ]; then
+      if [ ${kind_traffic} -ge 4 ]; then
         ${IPFW} table 7 add ${ip}/32 ${serviceid}4
         ${IPFW} table 8 add ${ip}/32 ${serviceid}44
       fi
-      if [ $kind_traffic -ge 5 ]; then
+      if [ ${kind_traffic} -ge 5 ]; then
         ${IPFW} table 9 add ${ip}/32 ${serviceid}5
         ${IPFW} table 10 add ${ip}/32 ${serviceid}55
       fi

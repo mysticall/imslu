@@ -45,19 +45,19 @@ for row in "${ipaddresses[@]}"; do
     # Allow internet access
     read -r serviceid pay free_access not_excluding expires expires2 name <<< "${payments[${userid}]}"
 
-    if [[ ${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now} ]]; then
+    if [[ ${stopped} == "n" && (${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
-    elif [ ${not_excluding} == "y" ]; then
+    elif [ "${not_excluding}" == "y" ]; then
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
 
-        if [ ${expires} != "0000-00-00" ]; then
+        if [ "${expires}" != "0000-00-00" ]; then
             expires="$(date +%Y-%m-%d -d "${expires} + 1 month") 23:59:00"
         else
             expires="$(date +%Y-%m-%d -d "+ 1 month") 23:59:00"
         fi
         date_payment1=$(date +"%Y-%m-%d %H:%M:%S")
 
-        if [ ${pay} != "0.00" ]; then
+        if [ "${pay}" != "0.00" ]; then
             sum=${pay}
         else
             sum=${services[${serviceid}]}

@@ -53,6 +53,10 @@ USE_VLANS=0
 # VLAN ID range
 VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
 
+####### payments #######
+#see: https://www.freebsd.org/cgi/man.cgi?query=date
+# Monthly fee period
+FEE_PERIOD=1m
 
 ##### MYSQL Settings #####
 MYSQL=/usr/local/bin/mysql

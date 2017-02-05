@@ -34,7 +34,7 @@ catch (PDOException $e) {
     exit();
 }
 
-if (!empty($_POST['limited_access'])) {
+if (!empty($_POST['temporary_access'])) {
 
   $old = json_decode($_POST['old'], true);
 
@@ -172,10 +172,10 @@ if ($sth->rowCount() == 1) {
       if (!empty($payments[0]['expires']) && strtotime($payments[0]['expires']) > time()) {
 
         $time = strtotime(substr($payments[0]['expires'], 0, 10));
-        $user['limited'] = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days", $time))." 23:59:00";
+        $user['limited'] = date("Y-m-d", strtotime("+$TEMPORARY_INTERNET_ACCESS days", $time))." 23:59:00";
       }
       else {
-        $user['limited'] = date("Y-m-d", strtotime("+$LIMITED_INTERNET_ACCESS days"))." 23:59:00";
+        $user['limited'] = date("Y-m-d", strtotime("+$TEMPORARY_INTERNET_ACCESS days"))." 23:59:00";
       }
     }
 
@@ -223,14 +223,14 @@ if ($sth->rowCount() == 1) {
           </td>
         </tr> \n";
 
-    if ($check_payment > 0 && $obligation == 0 && $LIMITED_INTERNET_ACCESS > 0) {
+    if ($check_payment > 0 && $obligation == 0 && $TEMPORARY_INTERNET_ACCESS > 0) {
 
       $form .=
 "       <tr>
           <td colspan=\"2\">
             <br>
-            "._('Activate tolerance for')." 
-            <input class=\"button\" type=\"submit\" name=\"limited_access\" value=\""._s('%s days', $LIMITED_INTERNET_ACCESS)."\">
+            "._('Activate temporary internet access for')." 
+            <input class=\"button\" type=\"submit\" name=\"temporary_access\" value=\""._s('%s days', $TEMPORARY_INTERNET_ACCESS)."\">
             <input type=\"hidden\" name=\"old\" value='".json_encode($user)."'><br>
             <br>
           </td>

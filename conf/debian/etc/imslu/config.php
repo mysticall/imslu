@@ -34,6 +34,11 @@ $USE_PPPoE = TRUE;
 # boolean FALSE or TRUE
 $USE_VLANS = TRUE;
 
-# int - Days for limited internet acces
-$LIMITED_INTERNET_ACCESS = 3;
+####### Payments #######
+#see: http://www.php.net/manual/en/function.strtotime.php
+// int Days for temporary internet access
+$TEMPORARY_INTERNET_ACCESS = 3;
+// str Monthly fee period
+$FEE_PERIOD = '1 month';
+
 ?>

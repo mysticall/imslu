@@ -47,16 +47,16 @@ if (!empty($_GET)) {
     }
     $userid = $_GET['userid'];
 
-    if (!empty($_GET['pay_limited'])) {
+    if (!empty($_GET['pay_temporary'])) {
 
         $active_until = $_GET['active_until'];
         $pay = 1;
 
         if ($active_until > time()) {
-            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days", $active_until))." 23:59:00";
+            $expires = date("Y-m-d", strtotime("+$FEE_PERIOD -$TEMPORARY_INTERNET_ACCESS days", $active_until))." 23:59:00";
         }
         else {
-            $expires = date("Y-m-d", strtotime("+1 month -$LIMITED_INTERNET_ACCESS days"))." 23:59:00";
+            $expires = date("Y-m-d", strtotime("+$FEE_PERIOD -$TEMPORARY_INTERNET_ACCESS days"))." 23:59:00";
         }
 
         $sql = 'UPDATE payments SET limited = :limited, operator2 = :operator2, date_payment2 = :date_payment2, expires = :expires 
@@ -178,22 +178,6 @@ if (!empty($_POST)) {
         $sth->bindValue(':operator1', $_SESSION['data']['alias']);
         $sth->bindValue(':date_payment1', date('Y-m-d H:i:s'));
         $sth->bindValue(':expires', $_POST['expires']);
-        $sth->bindValue(':sum', $_POST['sum']);
-        $sth->bindValue(':notes', $_POST['notes']);
-        $sth->execute();
-    }
-    elseif (!empty($_POST['limited_access'])) {
-
-        $pay = 1;
-        $sql = 'INSERT INTO payments (userid, name, limited, operator1, date_payment1, expires, sum, notes) 
-                VALUES (:userid, :name, :limited, :operator1, :date_payment1, :expires, :sum, :notes)';
-        $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':userid', $userid);
-        $sth->bindValue(':name', $old['name']);
-        $sth->bindValue(':limited', 1);
-        $sth->bindValue(':operator1', $_SESSION['data']['alias']);
-        $sth->bindValue(':date_payment1', date('Y-m-d H:i:s'));
-        $sth->bindValue(':expires', $_POST['limited']);
         $sth->bindValue(':sum', $_POST['sum']);
         $sth->bindValue(':notes', $_POST['notes']);
         $sth->execute();

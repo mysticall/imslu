@@ -2,11 +2,22 @@
 # GENERIC -- Generic kernel configuration file for FreeBSD/amd64
 #
 
-cpu		HAMMER
-ident		IMSLU
+cpu   HAMMER
+ident IMSLU
 
-makeoptions	DEBUG=-g		# Build kernel with gdb(1) debug symbols
-makeoptions	WITH_CTF=1		# Run ctfconvert(1) for DTrace support
+makeoptions	DEBUG=-g   # Build kernel with gdb(1) debug symbols
+makeoptions	WITH_CTF=1 # Run ctfconvert(1) for DTrace support
+
+#options 	MROUTING
+#options 	IPFIREWALL # enables IPFW
+options 	IPFIREWALL_VERBOSE # enable logging for rules with log keyword
+options 	IPFIREWALL_VERBOSE_LIMIT=3 # limits number of logged packets per-entry
+#options 	IPFIREWALL_NAT # IPFW in-Kernel NAT support
+#options 	LIBALIAS # required for in-Kernel NAT / replacement for NATd
+options   IPSTEALTH
+#options 	DUMMYNET
+#options 	ROUTETABLES=2
+options 	HZ=100
 
 options 	SCHED_ULE		# ULE scheduler
 options 	PREEMPTION		# Enable kernel thread preemption

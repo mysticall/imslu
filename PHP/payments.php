@@ -54,7 +54,7 @@ if ($admin_permissions) {
 		'unreported' => _('unreported'),
 		'reported' => _('reported'),
 		'obligations' => _('obligations'),
-		'limited' => _s('%s days', $LIMITED_INTERNET_ACCESS),
+		'limited' => _s('%s days', $TEMPORARY_INTERNET_ACCESS),
 		//'turnover' => _('Turnover for the day'),
 		);
 
