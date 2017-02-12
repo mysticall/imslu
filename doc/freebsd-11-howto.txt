@@ -118,7 +118,7 @@ AS ROOT in user ~/src:
 root@imslu:/home/mystical/src # ln -s `pwd` ~/src
 
 mkdir /usr/local/etc/imslu
-cp -r ~/src/imslu/conf/debian/etc/imslu/* /usr/local/etc/imslu
+cp -r ~/src/imslu/conf/freebsd/usr/local/etc/imslu/* /usr/local/etc/imslu
 chmod +x /usr/local/etc/imslu/scripts/*
 
 mkdir /var/log/imslu
