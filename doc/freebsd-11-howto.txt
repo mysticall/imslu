@@ -1,0 +1,311 @@
+
+Mini HOWTO for IMSLU (Internet Management System for LAN Users) on FreeBSD
+
+
+   Table of Contents
+
+   1 Intro
+
+    1.1 About IMSLU
+    1.2 IMSLU Developers
+    1.2.1 Others
+
+    1.4 Other Information
+
+  2 Installation and configuration
+
+    2.1 Requirements
+    2.2 Download and install
+    2.3 System upgrade
+    2.4 Database server
+    2.5 Apache2 and PHP7
+
+  3 System changes
+
+  4 User Interface
+
+___________________________________________________
+
+
+Chapter 1. Intro
+
+1.1 About IMSLU
+
+
+1.2 IMSLU Developers
+
+  * PHP Code:
+    Fahri Hasan - fahri_hasan@hotmail.com
+
+  * Bourne Shell:
+    Fahri Hasan
+
+  * Design:
+    Fahri Hasan
+
+  * HTML, JavaScript, CSS:
+    Fahri Hasan
+
+  * Images:
+
+  * Documentation:
+    Fahri Hasan
+     
+  * Beta testing:
+    Veselin Alexandrov
+    Fahri Hasan
+
+  * http://www.linux-bg.org/forum/index.php?topic=45276:
+    Naka
+    gat3way
+    edmon
+
+1.2.1 Others
+
+  IMSLU uses elements of other software:
+    - http://www.zabbix.com/rn2.0.4.php
+    - http://www.wikihow.com/Create-a-Secure-Login-Script-in-PHP-and-MySQL
+    - http://www.wikihow.com/Create-a-Secure-Session-Managment-System-in-PHP-and-MySQL
+     
+  Used selected content or guides:
+
+___________________________________________________________
+
+Chapter 2 Installation and configuration
+
+####### 2.1 Requirements #######
+
+  * OS - FreeBSD
+    - https://www.freebsd.org/
+    
+  * Apache2
+    - http://www.apache.org/
+    
+  * PHP >= 5.4
+    - http://php.net/
+    
+  * Database Server - during the development was used MariaDB
+    - https://mariadb.org/
+  
+  * Freeradius
+    - http://freeradius.org/
+
+
+####### 2.2 Download and install #######
+
+rm -rf /var/cache/pkg/*
+pkg update -f
+
+
+### Setting sh as default shell ###
+
+Change shell for root:
+chsh -s /bin/sh root
+
+echo 'ENV=$HOME/.shrc; export ENV' >> /root/.profile
+
+
+### git ###
+pkg install git-2.11.0_3
+
+$ mkdir ~/src
+$ cd ~/src
+$ git clone https://github.com/mysticall/imslu.git
+$ su
+Password:
+
+AS ROOT in user ~/src:
+root@imslu:/home/mystical/src # ln -s `pwd` ~/src
+
+mkdir /usr/local/etc/imslu
+cp -r ~/src/imslu/conf/debian/etc/imslu/* /usr/local/etc/imslu
+chmod +x /usr/local/etc/imslu/scripts/*
+
+mkdir /var/log/imslu
+cp ~/src/imslu/conf/cron/imslu /etc/cron.d/
+
+
+####### 2.3 System upgrade #######
+
+
+
+####### 2.4 MariaDB #######
+https://www.cyberciti.biz/faq/how-to-install-mariadb-databases-on-a-freebsd-v10-unix-server/
+
+pkg version | grep mariadb
+pkg install mariadb100-server-10.0.29 mariadb100-client-10.0.29
+
+cp /usr/local/openssl/openssl.cnf.sample /usr/local/openssl/openssl.cnf
+echo 'mysql_enable="YES"' >> /etc/rc.conf
+cp /usr/local/share/mysql/my-medium.cnf /usr/local/etc/my.cnf
+service mysql-server start
+
+### CREATE IMSLU Database ###
+
+mysql -u root -p
+CREATE DATABASE imslu DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON imslu.* TO imslu@localhost IDENTIFIED BY 'imslu_password';
+quit;
+
+### CREATE Tables and insert data ###
+
+. /usr/local/etc/imslu/config.sh
+cd ~/src/imslu/database/mysql
+
+mysql $database -u $user -p${password} < 01_schema.sql
+mysql $database -u $user -p${password} < 03_example_static_ip-addresses.sql
+mysql $database -u $user -p${password} < 04_freeradius_schema.sql
+mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
+
+
+####### 2.5 Apache 2.4 and PHP 7 #######
+
+pkg install apache24-2.4.25_1 mod_php70-7.0.15 php70-7.0.15 php70-pdo-7.0.15 php70-pdo_mysql-7.0.15 php70-gettext-7.0.15 php70-session-7.0.15 php70-json-7.0.15 php70-filter-7.0.15
+
+### php ###
+cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini
+sed -i -e 's/;date.timezone =/date.timezone = "Europe\/Sofia"/' /usr/local/etc/php.ini
+
+echo -e '
+<FilesMatch "\.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+<FilesMatch "\.phps$">
+    SetHandler application/x-httpd-php-source
+</FilesMatch>' >> /usr/local/etc/apache24/httpd.conf
+
+### apache ###
+echo 'apache24_enable="YES"' >> /etc/rc.conf
+
+mkdir /usr/local/etc/apache24/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /usr/local/etc/apache24/ssl/apache.key -out /usr/local/etc/apache24/ssl/apache.crt
+
+The most important line is "Common Name". Enter your official domain name here or, if you don't have one yet, your site's IP address.
+
+example:
+-----------
+Generating a 2048 bit RSA private key
+..+++
+..........................+++
+writing new private key to '/usr/local/etc/apache24/ssl/apache.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:BG
+State or Province Name (full name) [Some-State]:Sofia
+Locality Name (eg, city) []:Sofia
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:imslu
+Organizational Unit Name (eg, section) []:imslu
+Common Name (e.g. server FQDN or YOUR name) []:192.168.1.254
+Email Address []:webmaster@localhost
+-----------
+
+sed -i -e 's/^\#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/etc/apache24/httpd.conf
+sed -i -e 's/^\#LoadModule rewrite_module/LoadModule rewrite_module/' /usr/local/etc/apache24/httpd.conf
+sed -i -e 's/index.html/index.php/' /usr/local/etc/apache24/httpd.conf
+
+### imslu ###
+chown www:www /usr/local/etc/imslu/backup
+
+mkdir /usr/local/www/imslu
+chown www:www /usr/local/www/imslu
+cp -r ~/src/imslu/PHP/* /usr/local/www/imslu
+
+rm /usr/local/www/apache24/data/index.html
+cp ~/src/imslu/conf/freebsd/usr/local/www/apache24/data/index.php /usr/local/www/apache24/data
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/apache24/Includes/imslu-ssl.conf /usr/local/etc/apache24/Includes
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/apache24/Includes/expired.conf /usr/local/etc/apache24/Includes
+
+NB: Edit the following files:
+vi /usr/local/www/imslu/include/os.php
+vi /usr/local/etc/apache24/Includes/expired.conf
+
+service apache24 restart
+
+
+####### 3 System changes #######
+https://bsdrp.net/documentation/technical_docs/performance - FreeBSD forwarding Performance
+https://www.usenix.org/legacy/events/bsdcon/full_papers/lidl/lidl_html/ - Flexible Packet Filtering
+
+http://alexandr.sysoev.ru/node/113 - Производительный роутер на FreeBSD
+http://www.andrewblog.ru/freebsd-10-3-ustanovka-shlyuza-na-staryj-server-hp-proliant-g3/ - FreeBSD 10.3. Установка шлюза
+https://habrahabr.ru/post/111580/ - Обзор и сравнение способов настройки NAT на FreeBSD
+http://nuclight.livejournal.com/124348.html - ipfw: порядок прохождения пакетов, сложные случаи
+
+
+NB: Edit the following files:
+
+vi ~/src/imslu/conf/freebsd/boot/loader.conf
+vi ~/src/imslu/conf/freebsd/etc/sysctl.conf
+vi ~/src/imslu/conf/freebsd/etc/rc.conf
+
+install -c -m 644 ~/src/imslu/conf/freebsd/boot/loader.conf /boot
+install -c -m 644 ~/src/imslu/conf/freebsd/etc/sysctl.conf /etc
+install -c -m 644 ~/src/imslu/conf/freebsd/etc/rc.conf /etc
+
+### Rebuild FreeBSD kernel ###
+https://blog.zespre.com/2014/12/08/freebsd-kernel-and-world-rebuilding.html
+
+pkg install subversion-1.9.5
+svn checkout https://svn.FreeBSD.org/base/stable/11 /usr/src
+
+echo "WITHOUT_MODULES = linux linux64 linux_common \
+nfslock procfs linprocfs pseudofs \
+sound speaker splash \
+virtio vkbd vmm vmware vnic hyperv \
+ppc ppbus lpt ppi vpo \
+rtwn rtwnfw wlan wlan_acl wlan_amrr wlan_ccmp wlan_rssadapt \
+wlan_wep wlan_tkip wlan_xauth an ath ath_pci ath_ahb bwi bwn \
+bwn_pci ipw ipwfw iwi iwifw iwn iwnfw malo mwl mwlfw ral ralfw \
+wds wi wpi wpifw wl" >> /etc/make.conf
+
+cp ~/src/imslu/conf/kernel/IMSLU /usr/src/sys/amd64/conf
+cd /usr/src/sys/amd64/conf && make LINT
+
+cd /usr/src
+make buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
+mv /boot/kernel /boot/kernel_old
+make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
+
+
+### netmap-ipfw ###
+http://info.iet.unipi.it/~luigi/netmap/ - netmap - the fast packet I/O framework
+
+cd ~/src
+git clone https://github.com/luigirizzo/netmap-ipfw.git
+
+
+### sudo ###
+
+pkg install sudo-1.8.19p2
+
+PHP use sudo to start scripts, that need root access
+Add to /usr/local/etc/sudoers as exsample:
+vi /usr/local/etc/sudoers
+------------------------------------------------------------------------
+# Cmnd alias specification
+Cmnd_Alias FUNCTIONS_PHP = /usr/local/etc/imslu/scripts/functions-php.sh
+Cmnd_Alias PING = /sbin/ping
+Cmnd_Alias ARPING = /usr/sbin/arping
+
+# Allow members of group www to execute commands
+%www ALL=(root) NOPASSWD: FUNCTIONS_PHP, PING, ARPING
+------------------------------------------------------------------------
+service sudo restart
+
+
+
+####### User Interface #######
+
+Group:    System administrators
+User:     sadmin
+Password: sadmin
+
+Group:    Administrators
+User:     admin
+Password: admin
