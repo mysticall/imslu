@@ -238,6 +238,7 @@ https://habrahabr.ru/post/111580/ - Обзор и сравнение спосо�
 http://nuclight.livejournal.com/124348.html - ipfw: порядок прохождения пакетов, сложные случаи
 
 
+NB: Make sure that RAID kernel modules are loaded at the boot time. Add the driver in loader.conf
 NB: Edit the following files:
 
 vi ~/src/imslu/conf/freebsd/boot/loader.conf
@@ -268,7 +269,7 @@ cp ~/src/imslu/conf/kernel/IMSLU /usr/src/sys/amd64/conf
 cd /usr/src/sys/amd64/conf && make LINT
 
 cd /usr/src
-make buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
+make -j 4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 mv /boot/kernel /boot/kernel_old
 make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 
