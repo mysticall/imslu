@@ -14,7 +14,7 @@ ${IPFW} -f table all flush
 
 ${IPFW} add 11 allow ip from any to any via ${IFACE_EXTERNAL}*
 ${IPFW} add 12 allow ip from any to me
-${IPFW} add 13 allow ip from me to any
+${IPFW} add 13 allow ip from me to any !src-port 3000
 
 # Incoming packets - download
 # High priority for download
@@ -41,4 +41,8 @@ ${IPFW} add 72 pipe tablearg ip from table\(2\) to any
 # This script must be run after the start of MySQL server
 sleep 60 && /usr/local/etc/imslu/scripts/shaper.sh&
 
+# expired users
+${IPFW} nat 3000 config log redirect_port tcp localhost:3000 80
+${IPFW} add 65500 nat 3000 ip from me to any src-port 3000
+${IPFW} add 65501 nat 3000 ip from any to any recv ${IFACE_INTERNAL}* dst-port 80
 
