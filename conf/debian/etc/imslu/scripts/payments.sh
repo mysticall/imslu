@@ -26,7 +26,7 @@ done < <(echo $query | mysql $database -u $user -p${password} -s)
 #echo ${!payments[@]}
 
 i=0
-query="SELECT userid, ip FROM ip WHERE userid != 0"
+query="SELECT userid, ip, stopped FROM ip WHERE userid != 0"
 while read -r row; do
   ipaddresses[${i}]=${row}
   ((i++))
@@ -41,13 +41,13 @@ fi
 
 for row in "${ipaddresses[@]}"; do
 
-    read -r userid ip <<< "${row}"
+    read -r userid ip stopped <<< "${row}"
     # Allow internet access
     read -r serviceid pay free_access not_excluding expires expires2 name <<< "${payments[${userid}]}"
 
     if [[ ${stopped} == "n" && (${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
-    elif [ "${not_excluding}" == "y" ]; then
+    elif [[ "${not_excluding}" == "y" && $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -lt ${now} ]]; then
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
 
         if [ "${expires}" != "0000-00-00" ]; then
