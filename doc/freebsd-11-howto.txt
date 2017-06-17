@@ -122,8 +122,9 @@ cp -r ~/src/imslu/conf/freebsd/usr/local/etc/imslu/* /usr/local/etc/imslu
 chmod +x /usr/local/etc/imslu/scripts/*
 
 mkdir /var/log/imslu
-cp ~/src/imslu/conf/cron/imslu /etc/cron.d/
 
+cp ~/src/imslu/conf/freebsd/var/cron/tabs/root /var/cron/tabs/
+/etc/rc.d/cron restart
 
 ####### 2.3 System upgrade #######
 

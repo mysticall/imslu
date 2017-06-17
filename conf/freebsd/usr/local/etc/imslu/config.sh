@@ -78,10 +78,10 @@ port=3306
 
 
 # Backup directory
-SQL_BACKUP_DIR=/etc/imslu/backup/
+SQL_BACKUP_DIR=/usr/local/etc/imslu/backup
 
 # mysqldump location
-MYSQLDUMP=/usr/bin/mysqldump
+MYSQLDUMP=/usr/local/bin/mysqldump
 
 # gzip location
 GZIP=/bin/gzip
