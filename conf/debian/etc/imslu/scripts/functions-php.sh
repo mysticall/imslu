@@ -15,7 +15,7 @@ ip_add () {
     fi
   else
     if [ -n "${1}" ]; then
-      IFS=\. read -r a b c d <<< "${1}"
+#     IFS=\. read -r a b c d <<< "${1}"
 #     ip route add 10.0.1.2 dev eth1 src 10.0.1.1
 #     ip route add ${1} dev ${IFACE_INTERNAL} src ${a}.${b}.${c}.1
 

@@ -147,7 +147,7 @@ scan_ip_mac () {
     local NET
 
     for NET in ${SUBNET}; do
-        $ARP_SCAN -I ${IFACE_INTERNAL} ${NET}/24 -q | grep ${NET:0:-5} >/tmp/arp-scan/${NET:0:-3}&
+        $ARP_SCAN -I ${IFACE_INTERNAL} ${NET} -q | grep ${NET:0:-5} >/tmp/arp-scan/${NET:0:-3}&
     done
 }
 

@@ -218,10 +218,10 @@ if [ $USE_VLANS -eq 0 ]; then
 else
 
   # Adding routing and static MAC for IP addresses.
-  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP'"
+  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND free_mac = 'n' AND mac NOT LIKE ''"
   while read -r ip free_mac mac ; do
 
-    IFS=\. read -r a b c d <<< "${ip}"
+#   IFS=\. read -r a b c d <<< "${ip}"
 #   ip route add 10.0.1.2 dev eth1 src 10.0.1.1
 #   ip route add ${ip} dev $IFACE_INTERNAL src ${a}.${b}.${c}.1
 
