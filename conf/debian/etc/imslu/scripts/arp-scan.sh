@@ -5,7 +5,7 @@ check_status_vlan () {
 
     local status
     # Search for users who not have a VLAN and MAC
-    query="SELECT id FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND (vlan LIKE '' OR (mac LIKE '' AND free_mac='n')) LIMIT 1"
+    query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND (vlan LIKE '' OR (mac LIKE '' AND free_mac='n')) LIMIT 1"
     status=$(echo $query | mysql $database -u $user -p${password} -s)
 
     if [ -n "${status}" ]; then
@@ -75,7 +75,7 @@ find_ip_mac_vlan () {
 #    echo "ip_vlan: ${ip_vlan[@]}"
 
     # Search for users who not have a VLAN and MAC
-    query="SELECT id, ip, free_mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan LIKE '' AND mac LIKE ''"
+    query="SELECT id, ip, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac LIKE ''"
     while read -r id ip free_mac; do
 
         if [ -n "${ip_vlan_mac[${ip}]}" ]; then
@@ -93,7 +93,7 @@ find_ip_mac_vlan () {
 
 
     # Search for users who have a MAC, but not have VLAN
-    query="SELECT id, ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan LIKE '' AND mac NOT LIKE ''"
+    query="SELECT id, ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac NOT LIKE ''"
     while read -r id ip mac free_mac; do
 
         if [ -n "${ip_vlan_mac[${ip}]}" ]; then
@@ -111,7 +111,7 @@ find_ip_mac_vlan () {
 
 
     # Search for users who have a VLAN, but not have MAC
-    query="SELECT id, ip, vlan FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan NOT LIKE '' AND mac LIKE '' AND free_mac='n'"
+    query="SELECT id, ip, vlan FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE '' AND mac LIKE '' AND free_mac='n'"
     while read -r id ip free_mac; do
 
         if [ -n "${ip_vlan[${vlan}_${ip}]}" ]; then
@@ -130,8 +130,8 @@ find_ip_mac_vlan () {
 check_status() {
 
     local status
-    # Search for users who not have a VLAN and MAC
-    query="SELECT id FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND mac LIKE '' AND free_mac='n' LIMIT 1"
+    # Search for users who not have a MAC
+    query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n' LIMIT 1"
     status=$(echo $query | mysql $database -u $user -p${password} -s)
 
     if [ -n "${status}" ]; then
@@ -147,7 +147,7 @@ scan_ip_mac () {
     local NET
 
     for NET in ${SUBNET}; do
-        $ARP_SCAN -I ${IFACE_INTERNAL} ${NET} -q | grep ${NET:0:-5} >/tmp/arp-scan/${NET:0:-3}&
+        $ARP_SCAN -I ${IFACE_INTERNAL} ${NET}/24 -q | grep ${NET:0:-5} >/tmp/arp-scan/${NET:0:-3}&
     done
 }
 
@@ -176,7 +176,7 @@ find_ip_mac () {
 
 
     # Search for users who not have MAC
-    query="SELECT id, ip FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND mac LIKE '' AND free_mac='n'"
+    query="SELECT id, ip FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n'"
 
     while read -r id ip free_mac; do
 

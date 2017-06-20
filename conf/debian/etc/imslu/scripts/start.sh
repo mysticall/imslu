@@ -183,9 +183,14 @@ for row in "${ipaddresses[@]}"; do
   ${TC} filter add dev ${IFACE_IMQ0} parent 1: protocol ip prio 1 u32 ht $(printf '%x' $hash_table):$(printf '%x' $d): match ip dst ${ip}/32 flowid 1:$(printf '%x' ${userid})
   ${TC} filter add dev ${IFACE_IMQ1} parent 1: protocol ip prio 1 u32 ht $(printf '%x' $hash_table):$(printf '%x' $d): match ip src ${ip}/32 flowid 1:$(printf '%x' ${userid})
 
+  if [ "${expires}" != "0000-00-00" ]; then
+    d=$(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S")
+  else
+    d=0
+  fi
 
   # Allow internet access
-  if [[ ${stopped} == "n" && (${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
+  if [[ ${stopped} == "n" && (${free_access} == "y" ||  ${d} -gt ${now}) ]]; then
   echo "add allowed ${ip}" >> /tmp/allowed
   fi
 done
@@ -196,7 +201,7 @@ $IPSET restore -file /tmp/allowed
 if [ $USE_VLANS -eq 0 ]; then
 
   # Adding routing and static MAC for IP addresses who have vlan.
-  query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE' AND vlan NOT LIKE ''"
+  query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE ''"
   while read -r ip vlan free_mac mac; do
 
   if [ -f /proc/net/vlan/${vlan} ]; then
@@ -213,12 +218,12 @@ if [ $USE_VLANS -eq 0 ]; then
 else
 
   # Adding routing and static MAC for IP addresses.
-  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol != 'PPPoE'"
+  query="SELECT ip, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP'"
   while read -r ip free_mac mac ; do
 
     IFS=\. read -r a b c d <<< "${ip}"
 #   ip route add 10.0.1.2 dev eth1 src 10.0.1.1
-    ip route add ${ip} dev $IFACE_INTERNAL src ${a}.${b}.${c}.1
+#   ip route add ${ip} dev $IFACE_INTERNAL src ${a}.${b}.${c}.1
 
 #   arp -s 10.0.1.2 34:23:87:96:70:27
     arp -s ${ip} ${mac}

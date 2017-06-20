@@ -90,6 +90,7 @@ echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
 #cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 
 /etc/imslu/scripts/start.sh&
+killall -q -s 9 arp-scan.sh
 /etc/imslu/scripts/arp-scan.sh&
 
 if [ ! -d ${RRD_DIR} ]; then

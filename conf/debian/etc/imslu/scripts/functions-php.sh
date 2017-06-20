@@ -17,7 +17,7 @@ ip_add () {
     if [ -n "${1}" ]; then
       IFS=\. read -r a b c d <<< "${1}"
 #     ip route add 10.0.1.2 dev eth1 src 10.0.1.1
-      ip route add ${1} dev ${IFACE_INTERNAL} src ${a}.${b}.${c}.1
+#     ip route add ${1} dev ${IFACE_INTERNAL} src ${a}.${b}.${c}.1
 
       if [[ "${3}" == "n" && -n "${4}" ]]; then
 #       arp -s 10.0.1.2 34:23:87:96:70:27
@@ -36,7 +36,7 @@ ip_rem () {
     arp -i ${2} -d ${1}
   else
 #   ip route del 10.0.1.2
-    ip route del ${1}
+#   ip route del ${1}
 #   arp -i eth1 -d 10.0.1.2
     arp -i ${IFACE_INTERNAL} -d ${1}
   fi
