@@ -161,7 +161,7 @@ mkdir /usr/share/imslu
 cp -r ~/src/imslu/PHP/* /usr/share/imslu
 
 mkdir /etc/imslu
-cp -r ~/src/imslu/conf/debian/imslu/* /etc/imslu/
+cp -r ~/src/imslu/conf/debian/etc/imslu/* /etc/imslu/
 chmod +x /etc/imslu/scripts/*
 
 mkdir /etc/imslu/backup
@@ -366,11 +366,11 @@ cd ..
 dpkg -i pppoe_3.8-3_amd64.deb
 
 
-Hold PPPoE Server version on current:
-echo pppoe hold | dpkg --set-selections
+Keep the PPPoE Server at the current version:
+echo "pppoe hold" | dpkg --set-selections
 
-If need to recompile and reinstall PPPoE Server:
-echo pppoe install | dpkg --set-selections
+Remove the hold:
+echo "pppoe install" | dpkg --set-selections
 
 
 Copy PPPoE server configuration files:
@@ -460,6 +460,7 @@ install -c -m 644 ~/src/imslu/conf/debian/etc/ulogd.conf /etc
 https://tracker.debian.org/pkg/linux
 
 apt-get build-dep linux
+apt-get install fakeroot libncurses5-dev
 :~# exit
 cd ~/src
 apt-get source linux
@@ -467,7 +468,7 @@ apt-get source linux
 ### Apply IMQ patch ###
 https://github.com/imq/linuximq
 
-cd linux-3.16.36
+cd linux-3.16.*
 patch -p 1 < ~/src/imslu/conf/kernel/linux-3.16-imq.diff
 sed -i -e 's|$(MAKE) |$(MAKE) -j4 |' debian/rules.gen
 fakeroot make -f debian/rules setup 2>&1 | tee setup.log
@@ -526,11 +527,18 @@ fakeroot make -f debian/rules binary-arch 2>&1 | tee binary2.log
 -----------
 
 cd ..
-dpkg -i linux-image-3.16.0-4-amd64_3.16.36-1+deb8u2_amd64.deb
+linux-image-3.16.0-4-amd64_3.16.43-2_amd64.deb
 
 NB: Install linux headers with IMQ patch or xtables addons will not work.
 apt-get install linux-kbuild-3.16
-dpkg -i linux-headers-3.16.0-4-common_3.16.36-1+deb8u2_amd64.deb linux-compiler-gcc-4.8-x86_3.16.36-1+deb8u2_amd64.deb linux-headers-3.16.0-4-amd64_3.16.36-1+deb8u2_amd64.deb
+dpkg -i linux-headers-3.16.0-4-common_3.16.43-2_amd64.deb linux-compiler-gcc-4.8-x86_3.16.43-2_amd64.deb linux-headers-3.16.0-4-amd64_3.16.43-2_amd64.deb
+
+Keep the Linux (kernel) at the current version:
+echo "linux-image-3.16.0-4-amd64 hold" | dpkg --set-selections
+echo "linux-headers-3.16.0-4-common hold" | dpkg --set-selections
+echo "linux-compiler-gcc-4.8-x86 hold" | dpkg --set-selections
+echo "linux-headers-3.16.0-4-amd64 hold" | dpkg --set-selections
+
 
 ##### 3.2 Rebuild iptables #####
 
@@ -548,6 +556,8 @@ cd ..
 dpkg -i iptables_1.4.21-2+b1_amd64.deb libxtables10_1.4.21-2+b1_amd64.deb
 dpkg -i iptables-dev_1.4.21-2+b1_amd64.deb
 
+Keep the iptables at the current version:
+echo "iptables hold" | dpkg --set-selections
 
 ### DNETMAP ###
 http://arpnet.pl/dnetmap/
