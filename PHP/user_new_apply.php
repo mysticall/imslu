@@ -44,8 +44,8 @@ if (!empty($_POST['new'])) {
 
     $name = strip_tags($_POST['name']);
 
-    $sql = 'INSERT INTO users (name, locationid, address, phone_number, notes, created, serviceid, pay, free_access, not_excluding)
-            VALUES (:name, :locationid, :address, :phone_number, :notes, :created, :serviceid, :pay, :free_access, :not_excluding)';
+    $sql = 'INSERT INTO users (name, locationid, address, phone_number, notes, created, serviceid, pay, free_access, not_excluding, expires)
+            VALUES (:name, :locationid, :address, :phone_number, :notes, :created, :serviceid, :pay, :free_access, :not_excluding, :expires)';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':name', $name, PDO::PARAM_STR);
     $sth->bindValue(':locationid', $_POST['locationid'], PDO::PARAM_INT);
@@ -65,6 +65,7 @@ if (!empty($_POST['new'])) {
         $sth->bindValue(':free_access', 'n', PDO::PARAM_STR);
         $sth->bindValue(':not_excluding', 'n', PDO::PARAM_STR);
     }
+    $sth->bindValue(':expires', '0000-00-00 23:59:00');
     $sth->execute();
 
     // Return info for new user
