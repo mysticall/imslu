@@ -1,4 +1,5 @@
 #!/bin/bash
+. /etc/imslu/config.sh
 
 ip_add () {
 
@@ -220,43 +221,43 @@ pppd_kill)
 	;;
 
 ip_add)
-	ip_add ${2} ${3} ${4} ${5}
+	ip_add "${2}" "${3}" "${4}" "${5}"
 	;;
 
 ip_rem)
-	ip_rem ${2} ${3}
+	ip_rem "${2}" "${3}"
 	;;
 
 mac_add)
-	mac_add ${2} ${3} ${4} ${5}
+	mac_add "${2}" "${3}" "${4}" "${5}"
 	;;
 
 mac_rem)
-	mac_rem ${2} ${3}
+	mac_rem "${2}" "${3}"
 	;;
 
 ip_allow)
-	ip_allow ${2}
+	ip_allow "${2}"
 	;;
 
 ip_stop)
-	ip_stop ${2}
+	ip_stop "${2}"
 	;;
 
 tc_class_add|tc_class_replace)
-	tc_class_replace ${2} ${3}
+	tc_class_replace "${2}" "${3}"
 	;;
 
 tc_class_delete)
-	tc_class_delete ${2}
+	tc_class_delete "${2}"
 	;;
 
 tc_filter_add|tc_filter_replace)
-	tc_filter_replace ${2} ${3}
+	tc_filter_replace "${2}" "${3}"
 	;;
 
 tc_filter_delete)
-	tc_filter_delete ${2}
+	tc_filter_delete "${2}"
 	;;
 
 *)
