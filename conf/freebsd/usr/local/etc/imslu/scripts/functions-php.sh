@@ -112,27 +112,27 @@ pppd_kill)
 	;;
 
 ip_add)
-	ip_add ${2} ${3} ${4} ${5}
+	ip_add "${2}" "${3}" "${4}" "${5}"
 	;;
 
 ip_rem)
-	ip_rem ${2} ${3}
+	ip_rem "${2}" "${3}"
 	;;
 
 mac_add)
-	mac_add ${2} ${3} ${4} ${5}
+	mac_add "${2}" "${3}" "${4}" "${5}"
 	;;
 
 mac_rem)
-	mac_rem ${2} ${3}
+	mac_rem "${2}" "${3}"
 	;;
 
 ip_allow)
-	ip_allow ${2} ${3}
+	ip_allow "${2}" "${3}"
 	;;
 
 ip_stop)
-	ip_stop ${2}
+	ip_stop "${2}"
 	;;
 
 *)
