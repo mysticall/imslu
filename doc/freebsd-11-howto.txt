@@ -229,6 +229,11 @@ vi /usr/local/etc/apache24/Includes/expired.conf
 service apache24 restart
 
 
+####### 2.6 Multi-link PPP daemon #######
+pkg install mpd5
+
+
+
 ####### 3 System changes #######
 https://bsdrp.net/documentation/technical_docs/performance - FreeBSD forwarding Performance
 https://www.usenix.org/legacy/events/bsdcon/full_papers/lidl/lidl_html/ - Flexible Packet Filtering
@@ -270,6 +275,11 @@ cp ~/src/imslu/conf/kernel/IMSLU /usr/src/sys/amd64/conf
 cd /usr/src/sys/amd64/conf && make LINT
 
 cd /usr/src
+
+# Allow port redirection with any destination address for expired users.
+fetch https://reviews.freebsd.org/D11155?download=true -o D11155.diff
+patch < D11155.diff
+
 make -j 4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 mv /boot/kernel /boot/kernel_old
 make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
