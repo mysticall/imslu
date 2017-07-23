@@ -276,10 +276,6 @@ cd /usr/src/sys/amd64/conf && make LINT
 
 cd /usr/src
 
-# Allow port redirection with any destination address for expired users.
-fetch https://reviews.freebsd.org/D11155?download=true -o D11155.diff
-patch < D11155.diff
-
 make -j 4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 mv /boot/kernel /boot/kernel_old
 make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
