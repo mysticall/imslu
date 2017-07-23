@@ -71,7 +71,7 @@ EOF
     else
       d=0
     fi
-    if [ "${stopped}" == "n" ] && [ "${free_access}" == "y" ] || [ ${d} -gt ${now} ]; then
+    if [ "${stopped}" == "n" ] && ([ "${free_access}" == "y" ] || [ ${d} -gt ${now} ]); then
 
       ${IPFW} table 1 add ${ip}/32 ${serviceid}1
       ${IPFW} table 2 add ${ip}/32 ${serviceid}11
