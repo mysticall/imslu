@@ -211,7 +211,7 @@ ${TC} filter delete dev ${IFACE_IMQ1} parent 1: prio 1 handle ${row} protocol ip
 case "${1}" in
 pppd_kill)
   ip=${2}
-  IFACE=$(ip route show | grep "${ip}" | grep -o "ppp\w*")
+  IFACE=$(ip route show | grep "${ip}/32" | grep -o "ppp\w*")
   if [ -f /var/run/${IFACE}.pid ]; then
     PID=$(cat /var/run/${IFACE}.pid)
     kill -9 $PID

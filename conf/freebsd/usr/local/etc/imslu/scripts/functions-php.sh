@@ -101,44 +101,37 @@ ip_stop () {
 
 case "${1}" in
 pppd_kill)
-  ip=${2}
-  IFACE=$(ip route show | grep "${ip}" | grep -o "ppp\w*")
-  if [ -f /var/run/${IFACE}.pid ]; then
-    PID=$(cat /var/run/${IFACE}.pid)
-    kill -9 $PID
-    sed -i "/${ip}/d" /tmp/ip_activity_pppoe
-    sed -i "/${ip}/d" /tmp/ip_activity
-  fi
-	;;
+  ${IMSLU_SCRIPTS}/mpd.sh "close_session" "${2}"
+  ;;
 
 ip_add)
-	ip_add "${2}" "${3}" "${4}" "${5}"
-	;;
+  ip_add "${2}" "${3}" "${4}" "${5}"
+  ;;
 
 ip_rem)
-	ip_rem "${2}" "${3}"
-	;;
+  ip_rem "${2}" "${3}"
+  ;;
 
 mac_add)
-	mac_add "${2}" "${3}" "${4}" "${5}"
-	;;
+  mac_add "${2}" "${3}" "${4}" "${5}"
+  ;;
 
 mac_rem)
-	mac_rem "${2}" "${3}"
-	;;
+  mac_rem "${2}" "${3}"
+  ;;
 
 ip_allow)
-	ip_allow "${2}" "${3}"
-	;;
+  ip_allow "${2}" "${3}"
+  ;;
 
 ip_stop)
-	ip_stop "${2}"
-	;;
+  ip_stop "${2}"
+  ;;
 
 *)
-	echo "Usage: /usr/local/etc/imslu/scripts/functions-php.sh {pppd_kill|ip_add|ip_rem}"
-	exit 1
-	;;
+  echo "Usage: /usr/local/etc/imslu/scripts/functions-php.sh {pppd_kill|ip_add|ip_rem}"
+  exit 1
+  ;;
 esac
 
 exit 0

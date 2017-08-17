@@ -1,0 +1,7 @@
+sqlippool {
+  sql_module_instance = "sql"
+  dialect = "mysql"
+  ippool_table = "ip"
+  lease_duration = 3600
+  $INCLUDE ${modconfdir}/sql/ippool/${dialect}/queries.conf
+}

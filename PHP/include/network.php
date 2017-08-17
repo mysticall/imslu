@@ -131,7 +131,7 @@ function pppoe_update($db, $pppoe_old, $pppoe_new) {
 
   $db->dbh->commit();
 
-  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$pppoe_old['ip']}/32'";
+  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$pppoe_old['ip']}'";
   shell_exec($cmd);
 }
 
@@ -155,7 +155,7 @@ function pppoe_remove($db, $ip, $username) {
   $sth->bindValue(':username', $username);
   $sth->execute();
 
-  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$ip}/32'";
+  $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh pppd_kill '{$ip}'";
   shell_exec($cmd);
 }
 

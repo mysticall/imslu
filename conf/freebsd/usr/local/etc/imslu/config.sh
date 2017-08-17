@@ -8,6 +8,7 @@ IFACE_INTERNAL=re1
 
 STEP=4000
 
+IMSLU_SCRIPTS=/usr/local/etc/imslu/scripts
 # Log files location
 LOG_DIR=/var/log/imslu/
 

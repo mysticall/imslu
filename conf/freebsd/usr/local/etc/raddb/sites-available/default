@@ -1,0 +1,75 @@
+server default {
+
+listen {
+    type = auth
+#    ipv6addr = ::
+    ipaddr = *
+    port = 1812
+
+    limit {
+        max_connections = 16
+        lifetime = 0
+        idle_timeout = 30
+    }
+}
+
+listen {
+    type = acct
+#    ipv6addr = ::
+    ipaddr = *
+    port = 1813
+
+    limit {
+    }
+}
+
+authorize {
+  preprocess
+  sql
+  pap
+  rewrite_calling_station_id
+}
+
+authenticate {
+  Auth-Type PAP {
+    pap
+
+#   Check MAC
+    if ("%{sql:SELECT free_mac FROM ip WHERE username='%{User-Name}'}" == "y") {
+      ok
+    }
+    elsif (&control:Calling-Station-Id == "") {
+
+      %{sql:UPDATE radcheck SET value='%{Calling-Station-Id}' WHERE username='%{User-Name}' AND attribute='Calling-Station-Id'}
+      %{sql:UPDATE ip SET mac='%{Calling-Station-Id}' WHERE username='%{User-Name}'}
+      ok
+    }
+    elsif (&request:Calling-Station-Id == &control:Calling-Station-Id) {
+      ok
+    }
+    else {
+      reject
+    }
+  }
+}
+
+preacct {
+  preprocess
+  acct_unique
+  rewrite_calling_station_id
+}
+
+accounting {
+  sql
+}
+
+session {
+}
+
+post-auth {
+  sqlippool
+  Post-Auth-Type REJECT {
+    attr_filter.access_reject
+  }
+}
+}

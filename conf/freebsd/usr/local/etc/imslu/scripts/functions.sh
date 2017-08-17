@@ -32,8 +32,8 @@ create_vlan () {
 
     for VLAN_ID in ${VLAN_SEQ}; do
 
-      IFACE=${IFACE_INTERNAL}.$(printf %04d ${VLAN_ID})
-
+#     IFACE=${IFACE_INTERNAL}.$(printf %04d ${VLAN_ID})
+      IFACE=vlan${VLAN_ID}
       $IFCONFIG ${IFACE} create vlan ${VLAN_ID} vlandev ${IFACE_INTERNAL}
       $IFCONFIG ${IFACE} up
 
@@ -60,15 +60,10 @@ remove_vlan () {
     local IFACE
     VLAN_SEQ=$(echo $VLAN_SEQ | tr '\n' ' ')
 
-    # Stop PPPoE sessions and PPPoE servers
-    if [ $USE_PPPoE -eq 0 ]; then
-
-      pppoe_rem
-    fi
-
     for VLAN_ID in ${VLAN_SEQ}; do
 
-      IFACE=${IFACE_INTERNAL}.$(printf %04d ${VLAN_ID})
+#     IFACE=${IFACE_INTERNAL}.$(printf %04d ${VLAN_ID})
+      IFACE=vlan${VLAN_ID}
       $IFCONFIG ${IFACE} destroy
     done
   else

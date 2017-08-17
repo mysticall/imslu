@@ -126,6 +126,14 @@ mkdir /var/log/imslu
 cp ~/src/imslu/conf/freebsd/var/cron/tabs/root /var/cron/tabs/
 /etc/rc.d/cron restart
 
+### Using the Ports Collection ###
+https://www.freebsd.org/doc/handbook/ports-using.html
+
+portsnap fetch
+portsnap extract
+portsnap update
+
+
 ####### 2.3 System upgrade #######
 
 
@@ -230,8 +238,72 @@ service apache24 restart
 
 
 ####### 2.6 Multi-link PPP daemon #######
-pkg install mpd5
+https://habrahabr.ru/sandbox/22902/
 
+pkg install mpd5
+echo 'mpd_enable="YES"' >> /etc/rc.conf
+
+NB: Edit the mpd.conf
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/mpd5/mpd.conf /usr/local/etc/mpd5/
+
+### Configuring a MPD5 logs ###
+
+Edit the syslog.conf and add the following lines to the end of the file:
+vi /etc/syslog.conf
+-----------
+!mpd
+*.*                                             /var/log/mpd.log
+!*
+-----------
+
+Set the log rotation parameters:
+vi /etc/newsyslog.conf
+-----------
+#Daily rotation at midnight with preservation of 7 logs in compressed format:
+/var/log/mpd.log                        600  7     *    @T00  JC
+#Alternatively, monthly rotation and storage of logs for the last three months:
+#/var/log/mpd.log                        600  3    *    $M1D0 JC
+-----------
+
+touch /var/log/mpd.log
+service syslogd reload
+service mpd5 start
+
+
+####### 2.7 FreeRadius server #######
+cd /usr/ports/net/freeradius3/
+make config
+
+[X] MYSQL        With MySQL database support
+[X] USER         Run as user freeradius, group freeradius
+
+make install clean
+
+echo 'radiusd_enable="YES"' >> /etc/rc.conf
+
+rm /usr/local/etc/raddb/sites-enabled/inner-tunnel
+echo '' > /usr/local/etc/raddb/mods-config/preprocess/huntgroups
+echo 'ATTRIBUTE   Acct-Interim-Interval   85  integer' >> /usr/local/etc/raddb/dictionary
+
+NB: Edit radiusd.conf and change variable "libdir". 
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/radiusd.conf /usr/local/etc/raddb/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/sites-available/default /usr/local/etc/raddb/sites-available/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/mods-available/sql /usr/local/etc/raddb/mods-available/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/mods-available/sqlippool /usr/local/etc/raddb/mods-available/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/mods-config/sql/main/mysql/queries.conf /usr/local/etc/raddb/mods-config/sql/main/mysql/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/mods-config/sql/ippool/mysql/queries.conf /usr/local/etc/raddb/mods-config/sql/ippool/mysql/
+install -c -m 640 ~/src/imslu/conf/freebsd/usr/local/etc/raddb/policy.d/canonicalization /usr/local/etc/raddb/policy.d/
+
+Set the log rotation parameters:
+vi /etc/newsyslog.conf
+-----------
+#Daily rotation at midnight with preservation of 7 logs in compressed format:
+/var/log/radius.log                     600  7     *    @T00  JC
+-----------
+
+service radiusd start
+chmod 755 /var/log/radius.log
+service syslogd reload
 
 
 ####### 3 System changes #######

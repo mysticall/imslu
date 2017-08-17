@@ -1,0 +1,37 @@
+sql {
+  driver = "rlm_sql_mysql"
+  server = "localhost"
+  dialect = "mysql"
+  port = 3306
+  login = "imslu"
+  password = "imslu_password"
+  radius_db = "imslu"
+
+  acct_table1 = "radacct"
+  acct_table2 = "radacct"
+
+  postauth_table = "radpostauth"
+  authcheck_table = "radcheck"
+  authreply_table = "radreply"
+  groupcheck_table = "radgroupcheck"
+  groupreply_table = "radgroupreply"
+  usergroup_table = "radusergroup"
+  read_groups = yes
+  delete_stale_sessions = yes
+
+  pool {
+    start = ${thread[pool].start_servers}
+    min = ${thread[pool].min_spare_servers}
+    max = ${thread[pool].max_servers}
+    spare = ${thread[pool].max_spare_servers}
+    uses = 0
+    retry_delay = 30
+    lifetime = 0
+    idle_timeout = 60
+  }
+
+  read_clients = yes
+  client_table = "nas"
+  group_attribute = "SQL-Group"
+  $INCLUDE ${modconfdir}/${.:name}/main/${dialect}/queries.conf
+}

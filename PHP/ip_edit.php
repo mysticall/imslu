@@ -167,10 +167,6 @@ else {
         header("Location: users.php");
         exit;
     }
-    if (!empty($_GET['ip'])) {
-
-        $ip['ip'] = $_GET['ip'];
-    }
 
     ####### FreeRadius Groups #######
     //Check available Freeradius Groups if $USE_PPPoE == True
@@ -249,7 +245,9 @@ function validateForm() {
               <label>"._('IP address')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"ip\" type=\"text\" name=\"ip\" value=\"{$ip['ip']}\" onkeyup=\"value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."')\">
+              <input id=\"ip\" type=\"text\" name=\"ip\" value=\"";
+    $form .= !empty($_GET['ip']) ? $_GET['ip'] : $ip['ip'];
+    $form .= "\" onkeyup=\"value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."')\">
               <a href=\"ip_edit.php?id={$_GET['id']}&change=1\">["._('change')."]</a>
             </td>
           </tr>

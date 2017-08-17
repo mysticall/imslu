@@ -8,7 +8,7 @@ $IFACE_EXTERNAL = "igb0";
 $LOG_DIR = "/var/log/imslu";
 
 # FreeRadius log files location
-$FR_LOG_FILE = "/var/log/freeradius/radius.log";
+$FR_LOG_FILE = "/var/log/radius.log";
 
 # str IMSLU scripts directory patch
 $IMSLU_SCRIPTS = '/usr/local/etc/imslu/scripts';
