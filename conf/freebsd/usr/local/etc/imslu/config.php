@@ -4,10 +4,10 @@ $IFACE_INTERNAL = "igb1";
 # WAN Interface
 $IFACE_EXTERNAL = "igb0";
 
-# Log files location
+# Log directory
 $LOG_DIR = "/var/log/imslu";
 
-# FreeRadius log files location
+# FreeRadius log file
 $FR_LOG_FILE = "/var/log/radius.log";
 
 # str IMSLU scripts directory patch

@@ -38,6 +38,8 @@ PPPOE_DEFAULT_IP="10.0.2.1"
 # FreeRadius networks
 FR_NETWORKS="10.0.2.0/24 10.0.7.0/24"
 
+# FreeRadius log file
+FR_LOG_FILE="/var/log/radius.log"
 
 ##### Subnetwork settings for static IP addresses #####
 NETWORKS="10.0.0.0/24 10.0.1.0/24"

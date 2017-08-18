@@ -260,6 +260,10 @@ tc_filter_delete)
 	tc_filter_delete "${2}"
 	;;
 
+show_freeradius_log)
+  awk '{ if ($7 == "Auth:") print $0}' ${FR_LOG_FILE} 2>&1
+  ;;
+
 *)
 	echo "Usage: /etc/imslu/scripts/functions-php.sh {pppd_kill|ip_add|ip_rem}"
 	exit 1

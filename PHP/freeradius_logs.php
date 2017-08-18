@@ -48,7 +48,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
     echo !empty($_SESSION['msg']) ? '<div class="msg"><label>'. $_SESSION['msg'] .'</label></div>' : '';
     $_SESSION['msg'] = null;
 
-    $cmd = "awk '{ if ($7 == \"Auth:\") print $0}' $FR_LOG_FILE 2>&1";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh show_freeradius_log";
     $result = shell_exec($cmd);
 
     $form =

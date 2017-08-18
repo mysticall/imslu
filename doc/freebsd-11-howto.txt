@@ -302,7 +302,6 @@ vi /etc/newsyslog.conf
 -----------
 
 service radiusd start
-chmod 755 /var/log/radius.log
 service syslogd reload
 
 

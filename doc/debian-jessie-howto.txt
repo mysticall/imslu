@@ -409,7 +409,6 @@ install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/2.2/sqlippool.conf /etc
 install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/2.2/sites-available/default /etc/freeradius/sites-available
 
 /etc/init.d/freeradius restart
-chmod 755 /var/log/freeradius
 
 
 ####### 3 Scripts #######
