@@ -290,20 +290,20 @@ $form =
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>"._('location')."</th>
-            <th>".combobox('', 'locationid', $locationid, $location)."</th>
+            <th>".combobox('users', 'locationid', $locationid, $location)."</th>
             <th>"._('services')."</th>
-            <th>".combobox('', 'serviceid', $serviceid, $services)."</th>
+            <th>".combobox('users', 'serviceid', $serviceid, $services)."</th>
             <th>"._('status')."</th>
-            <th>".combobox('', 'payment', $status, $payments)."</th>
+            <th>".combobox('users', 'payment', $status, $payments)."</th>
             <th></th>
           </tr>
           <tr class=\"header_top\">
             <th>"._('more')."</th>
-            <th>".combobox('', 'more', $more, $more_)."</th>
+            <th>".combobox('users', 'more', $more, $more_)."</th>
             <th>"._('activity')."</th>
-            <th>".combobox('', 'activity', $activ, $activity)."</th>
+            <th>".combobox('users', 'activity', $activ, $activity)."</th>
             <th>"._('pool')."</th>
-            <th>".combobox('', 'pool', $pool, $pools)."</th>
+            <th>".combobox('users', 'pool', $pool, $pools)."</th>
             <th><input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\"></th>
           </tr>
         </tbody>

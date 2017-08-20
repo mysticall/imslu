@@ -92,6 +92,10 @@ input:hover {
     width: 400px;
 }
 
+.users {
+    width: 155px;
+}
+
 a:link, a:visited {
     color:#2F2F2F;
 }
