@@ -5,6 +5,7 @@ require_once dirname(__FILE__).'/gettextwrapper.php';
 # Set system language
 if (!empty($_COOKIE['lang'])) {
 
+    putenv('LC_MESSAGES='.$_COOKIE['lang']);
     setlocale(LC_MESSAGES, $_COOKIE['lang'].'.UTF-8');
     bindtextdomain('frontend', 'locale');
     textdomain('frontend');
@@ -12,6 +13,7 @@ if (!empty($_COOKIE['lang'])) {
 }
 else {
 
+    putenv('LC_MESSAGES=en_US');
     setlocale(LC_MESSAGES, 'en_US.UTF-8');
     bindtextdomain('frontend', 'locale');
     textdomain('frontend');
@@ -22,7 +24,7 @@ require_once dirname(__FILE__).'/classes/pdoinstance.php';
 require_once dirname(__FILE__).'/classes/operator.php';
 
 /**
- * @param = new Operator instance, see inlude/classes/operator.php
+ * @param = new Operator instance, see include/classes/operator.php
  */
 $Operator = new Operator;
 
