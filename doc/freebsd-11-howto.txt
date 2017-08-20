@@ -19,6 +19,9 @@ Mini HOWTO for IMSLU (Internet Management System for LAN Users) on FreeBSD
     2.3 System upgrade
     2.4 Database server
     2.5 Apache2 and PHP7
+    2.6 Multi-link PPP daemon
+    2.7 FreeRadius server
+    2.8 Domain Name System (DNS)
 
   3 System changes
 
@@ -279,6 +282,12 @@ make config
 
 make install clean
 
+pkg lock freeradius3
+-----------
+freeradius3-3.0.15_1: lock this package? [y/N]: y
+Locking freeradius3-3.0.15_1
+-----------
+
 echo 'radiusd_enable="YES"' >> /etc/rc.conf
 
 rm /usr/local/etc/raddb/sites-enabled/inner-tunnel
@@ -303,6 +312,27 @@ vi /etc/newsyslog.conf
 
 service radiusd start
 service syslogd reload
+
+
+####### 2.8 bind9 #######
+http://www.site-motor.ru/docs/freebsd/dns_bind910.shtml
+
+pkg install bind911
+
+echo 'named_enable="YES"' >> /etc/rc.conf
+echo 'named_chrootdir="/var/named"' >> /etc/rc.conf
+
+Bind Chroot
+
+mkdir -p /var/named/usr/local/etc/
+mv /usr/local/etc/namedb /var/named/usr/local/etc/
+ln -s /var/named/usr/local/etc/namedb /usr/local/etc/
+
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/namedb/named.conf /usr/local/etc/namedb/
+
+sysrc altlog_proglist+=named
+service syslogd restart
+service named start
 
 
 ####### 3 System changes #######
