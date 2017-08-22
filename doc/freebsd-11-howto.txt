@@ -391,7 +391,7 @@ git clone https://github.com/luigirizzo/netmap-ipfw.git
 
 ### sudo ###
 
-pkg install sudo-1.8.19p2
+pkg install sudo-1.8.19p2 
 
 PHP use sudo to start scripts, that need root access
 Add to /usr/local/etc/sudoers as exsample:
@@ -405,8 +405,13 @@ Cmnd_Alias ARPING = /usr/sbin/arping
 # Allow members of group www to execute commands
 %www ALL=(root) NOPASSWD: FUNCTIONS_PHP, PING, ARPING
 ------------------------------------------------------------------------
-service sudo restart
 
+
+### GRAPHICS ###
+
+pkg install rrdtool
+
+mkdir /var/lib/rrd
 
 
 ####### User Interface #######

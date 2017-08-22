@@ -46,34 +46,34 @@ $graph_width = (isMobile()) ? " style=\"width:99.5%;\"" : "";
 "      <table>
         <tbody>";
 
-if (!empty($_GET['graph_imq_traffic'])) {
+if (!empty($_GET['bps'])) {
 
     ### IMQ GRAPHICS ###
-    $cmd = "/etc/imslu/scripts/system-graphics.sh graph_imq";
-    $result = shell_exec($cmd);
+    $cmd = "$IMSLU_SCRIPTS/system-graphics.sh graph";
+    shell_exec($cmd);
 
     $form .=
 "          <tr class=\"header_top\">
             <th>"._('Bits per second')."</th>
           </tr>
           <tr>
-		    <td><br>"._('Daily Graph (5 minute averages)')."<img src=\"rrd/imq_traffic-day.png\"{$graph_width}></a></td>
+		    <td>"._('Daily Graph (5 minute averages)')."<br><img src=\"rrd/bps-day.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-		    <td><br>"._('Weekly Graph (30 minute averages)')."<img src=\"rrd/imq_traffic-week.png\"{$graph_width}></a></td>
+		    <td>"._('Weekly Graph (30 minute averages)')."<br><img src=\"rrd/bps-week.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-		    <td><br>"._('Monthly Graph (2 hour averages)')."<img src=\"rrd/imq_traffic-month.png\"{$graph_width}></a></td>
+		    <td>"._('Monthly Graph (2 hour averages)')."<br><img src=\"rrd/bps-month.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-            <td><br>"._('Yearly Graph (12 hour averages)')."<img src=\"rrd/imq_traffic-year.png\"{$graph_width}></a></td>
+            <td>"._('Yearly Graph (12 hour averages)')."<br><img src=\"rrd/bps-year.png\"{$graph_width}></a></td>
           </tr>";
 }
-elseif (!empty($_GET['graph_imq_packets'])) {
+elseif (!empty($_GET['pps'])) {
 
     ### IMQ GRAPHICS ###
-    $cmd = "/etc/imslu/scripts/system-graphics.sh graph_imq";
-    $result = shell_exec($cmd);
+    $cmd = "$IMSLU_SCRIPTS/system-graphics.sh graph";
+    shell_exec($cmd);
 
     $form .=
 "
@@ -81,16 +81,16 @@ elseif (!empty($_GET['graph_imq_packets'])) {
             <th>"._('Packets per second')."</th>
           </tr>
           <tr>
-            <td><br>"._('Daily Graph (5 minute averages)')."<img src=\"rrd/imq_packets-day.png\"{$graph_width}></a></td>
+            <td>"._('Daily Graph (5 minute averages)')."<br><img src=\"rrd/pps-day.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-            <td><br>"._('Weekly Graph (30 minute averages)')."<img src=\"rrd/imq_packets-week.png\"{$graph_width}></a></td>
+            <td>"._('Weekly Graph (30 minute averages)')."<br><img src=\"rrd/pps-week.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-            <td><br>"._('Monthly Graph (2 hour averages)')."<img src=\"rrd/imq_packets-month.png\"{$graph_width}></a></td>
+            <td>"._('Monthly Graph (2 hour averages)')."<br><img src=\"rrd/pps-month.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-            <td><br>"._('Yearly Graph (12 hour averages)')."<img src=\"rrd/imq_packets-year.png\"{$graph_width}></a></td>
+            <td>"._('Yearly Graph (12 hour averages)')."<br><img src=\"rrd/pps-year.png\"{$graph_width}></a></td>
           </tr>";
 }
 else {
@@ -99,10 +99,10 @@ else {
             <th>"._('Daily Graph (5 minute averages)')."</th>
           </tr>
           <tr>
-            <td><a href=\"system_graphics.php?graph_imq_traffic=1\"><img src=\"rrd/imq_traffic-day.png\"{$graph_width}></a></td>
+            <td><a href=\"system_graphics.php?bps=1\"><img src=\"rrd/bps-day.png\"{$graph_width}></a></td>
           </tr>
           <tr>
-            <td><a href=\"system_graphics.php?graph_imq_packets=1\"><img src=\"rrd/imq_packets-day.png\"{$graph_width}></a></td>
+            <td><a href=\"system_graphics.php?pps=1\"><img src=\"rrd/pps-day.png\"{$graph_width}></a></td>
           </tr>";
 }
 

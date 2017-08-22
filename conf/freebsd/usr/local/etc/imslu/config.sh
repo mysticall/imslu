@@ -96,6 +96,6 @@ PEER="http://ip.ludost.net/cgi/process?country=1&country_list=bg&format_template
 #PEER="http://ipacct.com/f/peers"
 
 ##### rrdtool #####
-RRDTOOL=/usr/bin/rrdtool
+RRDTOOL=/usr/local/bin/rrdtool
 RRD_DIR=/var/lib/rrd
 RRD_IMG=/tmp/rrd

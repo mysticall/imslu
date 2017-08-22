@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # http://martybugs.net/linux/rrdtool/traffic.cgi
 # http://oss.oetiker.ch/rrdtool/doc/
@@ -6,26 +6,7 @@
 # https://wiki.alpinelinux.org/wiki/Setting_up_traffic_monitoring_using_rrdtool_(and_snmp)
 # https://hookrace.net/blog/server-statistics/
 
-. /etc/imslu/config.sh
-
-declare -A bits
-declare -A packets 
-while read -r Interface RXbytes RXpackets RXerrs RXdrop RXfifo RXframe RXcompressed RXmulticast TXbytes TXpackets TXerrs TXdrop TXfifo TXcolls TXcarrier TXcompressed; do
-
-    iface=${Interface:0:-1}
-
-    if [[ $iface == $IFACE_IMQ0 ]]; then
-        bits[${iface}]=$((${RXbytes}*8))
-        packets[${iface}]=${RXpackets}
-    elif [[ $iface == $IFACE_IMQ1 ]]; then
-        bits[${iface}]=$((${TXbytes}*8))
-        packets[${iface}]=${TXpackets}
-    else
-        bits[${iface}]=$((${RXbytes}*8)):$((${TXbytes}*8))
-        packets[${iface}]=${RXpackets}:${TXpackets}
-    fi
-done < <(cat /proc/net/dev | grep ":")
-
+. /usr/local/etc/imslu/config.sh
 
 ####### GRAPHICS #######
 create () {
@@ -60,51 +41,40 @@ chmod 755 ${RRD_DIR}/pps.rrd
 
 update () {
 
-declare -A in_bits
-in_bits[2]=0
-in_bits[3]=0
+while read -r rule_number packets bytes action matches protocol from any1 to any2 direction; do
 
-declare -A out_bits
-out_bits[2]=0
-out_bits[3]=0
+    if [ "${action}" == "pipe" ]; then
 
-local previous=''
-
-while read -r str1 str2 str3 str4 str5 str6; do
-
-    if [[ ${str1} == "class" ]]; then
-
-        if [[ ${str3} == "1:2" ]]; then
-            previous=2
-        elif [[ ${str3} == "1:3" ]]; then
-            previous=3
+        if [ "${any2}" == "table(3)" ]; then
+          # Incoming packets - download / International traffic
+            export in_int_bps in_int_pps
+            in_int_bps=${bytes}
+            in_int_pps=${packets}
+        elif [ "${any1}" == "table(4)" ]; then
+          # Outgoing packets - upload / International traffic
+            export out_int_bps out_int_pps
+            out_int_bps=${bytes}
+            out_int_pps=${packets}
+        elif [ "${any2}" == "table(1)" ]; then
+          # Incoming packets - download / BGP peer - national traffic
+            export in_peer_bps in_peer_pps
+            in_peer_bps=${bytes}
+            in_peer_pps=${packets}
+        elif [ "${any1}" == "table(2)" ]; then
+          # Outgoing packets - upload / BGP peer - national traffic
+            export out_peer_bps out_peer_pps
+            out_peer_bps=${bytes}
+            out_peer_pps=${packets}
         fi
-
-    elif [[ -n ${previous} && ${str1} == "period" ]]; then
-        in_bits[${previous}]=$((${str4}*8))
-        previous=''
     fi
-done < <($TC -s class show dev ${IFACE_IMQ0})
+done <<EOF
+$(${IPFW} -a list)
+EOF
 
-while read -r str1 str2 str3 str4 str5 str6; do
-
-    if [[ ${str1} == "class" ]]; then
-
-        if [[ ${str3} == "1:2" ]]; then
-            previous=2
-        elif [[ ${str3} == "1:3" ]]; then
-            previous=3
-        fi
-
-    elif [[ -n ${previous} && ${str1} == "period" ]]; then
-        out_bits[${previous}]=$((${str4}*8))
-        previous=''
-    fi
-done < <($TC -s class show dev ${IFACE_IMQ1})
-# echo ${in_bits[@]}
-# echo ${!in_bits[@]}
-# echo ${out_bits[@]}
-# echo ${!out_bits[@]}
+#echo "Download bps: INT ${in_int_bps};  PEER ${in_peer_bps}; TOTAL `expr ${in_int_bps} + ${in_peer_bps}`"
+#echo "Download pps: INT ${in_int_pps};  PEER ${in_peer_pps}; TOTAL `expr ${in_int_pps} + ${in_peer_pps}`"
+#echo "Upload   bps: INT ${out_int_bps}; PEER ${out_peer_bps}; TOTAL `expr ${out_int_bps} + ${out_peer_bps}`"
+#echo "Upload   pps: INT ${out_int_pps}; PEER ${out_peer_pps}; TOTAL `expr ${out_int_pps} + ${out_peer_pps}`"
 
 if [ ! -d ${RRD_DIR} ]; then
     mkdir -p ${RRD_DIR}
@@ -115,20 +85,23 @@ if [ ! -f ${RRD_DIR}/bps.rrd ]; then
     create
 fi
 
-${RRDTOOL} update ${RRD_DIR}/bps.rrd N:${bits[${IFACE_IMQ0}]}:${in_bits[2]}:${in_bits[3]}:${bits[${IFACE_IMQ1}]}:${out_bits[2]}:${out_bits[3]}
-${RRDTOOL} update ${RRD_DIR}/pps.rrd N:${packets[${IFACE_IMQ0}]}:${packets[${IFACE_IMQ1}]}
+in_total=`expr ${in_int_bps} + ${in_peer_bps}`
+out_total=`expr ${out_int_bps} + ${out_peer_bps}`
+
+${RRDTOOL} update ${RRD_DIR}/bps.rrd N:`expr ${in_total} \* 8`:`expr ${in_peer_bps} \* 8`:`expr ${in_int_bps} \* 8`:`expr ${out_total} \* 8`:`expr ${out_peer_bps} \* 8`:`expr ${out_int_bps} \* 8`
+${RRDTOOL} update ${RRD_DIR}/pps.rrd N:`expr ${in_int_pps} + ${in_peer_pps}`:`expr ${out_int_pps} + ${out_peer_pps}`
 }
 
 graph () {
 # $1: interval (ie, day, week, month, year)
 
-if [[ $1 == "day" ]]; then
+if [ $1 == "day" ]; then
     interval='172800'
-elif [[ $1 == "week" ]]; then
+elif [ $1 == "week" ]; then
     interval='604800'
-elif [[ $1 == "month" ]]; then
+elif [ $1 == "month" ]; then
     interval='2678400'
-elif [[ $1 == "year" ]]; then
+elif [ $1 == "year" ]; then
     interval='31536000'
 fi
 
@@ -242,21 +215,21 @@ HRULE:0#000000
 
 case "$1" in
 update)
-    update
+	update
     graph day
-    ;;
+	;;
 
 graph)
-    graph day
-    graph week
-    graph month
-    graph year
-    ;;
+	graph day
+	graph week
+	graph month
+	graph year
+	;;
 
 *)
-    echo "Usage: /etc/imslu/scripts/system-graphics.sh {update}"
-    exit 1
-    ;;
+	echo "Usage: /usr/local/etc/imslu/scripts/system-graphics.sh {update}"
+	exit 1
+	;;
 esac
 
 

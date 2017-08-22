@@ -93,13 +93,4 @@ echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
 killall -q -s 9 arp-scan.sh
 /etc/imslu/scripts/arp-scan.sh&
 
-if [ ! -d ${RRD_DIR} ]; then
-    mkdir -p ${RRD_DIR}
-    chmod 755 ${RRD_DIR}
-fi
-
-if [ ! -d ${RRD_IMG} ]; then
-    mkdir -p ${RRD_IMG}
-    chmod 777 ${RRD_IMG}
-fi
 exit 0

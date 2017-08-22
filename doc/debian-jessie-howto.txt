@@ -423,8 +423,8 @@ Add to /etc/sudoers as exsample:
 nano /etc/sudoers
 ------------------------------------------------------------------------
 # Cmnd alias specification
-Cmnd_Alias      FUNCTIONS_PHP = /etc/imslu/scripts/functions-php.sh
-Cmnd_Alias      ARPING = /usr/sbin/arping
+Cmnd_Alias FUNCTIONS_PHP = /etc/imslu/scripts/functions-php.sh
+Cmnd_Alias ARPING = /usr/sbin/arping
 
 # Allow members of group www-data to execute commands
 %www-data ALL=NOPASSWD: FUNCTIONS_PHP, ARPING

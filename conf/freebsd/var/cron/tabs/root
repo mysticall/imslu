@@ -1,2 +1,2 @@
-
+*/5 * * * * /usr/local/etc/imslu/scripts/system-graphics.sh update
 1 0 * * * /usr/local/etc/imslu/scripts/payments.sh
