@@ -6,42 +6,73 @@
 ##### ADD VLANS #####
 create_vlan
 
-##### IPFW #####
+####### IPFW #######
 ${IPFW} -f flush
 ${IPFW} -f queue flush
 ${IPFW} -f pipe flush
 ${IPFW} -f table all flush
 
-${IPFW} add 11 allow ip from any to any via ${IFACE_EXTERNAL}*
-${IPFW} add 12 allow ip from any to me
-${IPFW} add 13 allow ip from me to any
+
+##### External Interface Rules - WAN #####
+
+### NAT ###
+# NB: Change "192.168.1" with real IP addresses!
+
+#$IFCONFIG ${IFACE_EXTERNAL} inet 192.168.1.236/32 add
+#$IFCONFIG ${IFACE_EXTERNAL} inet 192.168.1.237/32 add
+#$IFCONFIG ${IFACE_EXTERNAL} inet 192.168.1.238/32 add
+
+#${IPFW} nat 1 config ip 192.168.1.236
+#${IPFW} nat 2 config ip 192.168.1.237
+#${IPFW} nat 3 config ip 192.168.1.238
+
+#${IPFW} add 1000 nat tablearg ip from any to table\(15\) recv ${IFACE_EXTERNAL}* in
+#${IPFW} table 15 add 192.168.1.236/32 1
+#${IPFW} table 15 add 192.168.1.237/32 2
+#${IPFW} table 15 add 192.168.1.238/32 3
+
+#${IPFW} add 1100 nat tablearg ip from table\(16\) to any xmit ${IFACE_EXTERNAL}* out
+#${IPFW} table 16 add 10.0.0.0/25 1
+#${IPFW} table 16 add 10.0.0.128/25 2
+#${IPFW} table 16 add 10.0.1.0/25 1
+#${IPFW} table 16 add 10.0.1.128/25 2
+#${IPFW} table 16 add 10.0.2.0/24 3
+### END NAT ###
+
+${IPFW} add 1200 allow ip from any to any via ${IFACE_EXTERNAL}*
+
+
+##### Internal Interface Rules - LAN #####
+${IPFW} add 2001 allow ip from any to me
+${IPFW} add 2002 allow ip from me to any
 
 # Incoming packets - download
 # High priority for download
 # BGP peer - national traffic
-${IPFW} add 51 skipto 71 ip from table\(11\) to any out
+${IPFW} add 2100 skipto 2500 ip from table\(11\) to any out
 # International traffic
-${IPFW} add 52 pipe tablearg ip from any to table\(3\) out
+${IPFW} add 2200 pipe tablearg ip from any to table\(3\) out
 # ADD HERE kind traffic: three four five ...
 
 # Outgoing packets - upload
 # BGP peer - national traffic
-${IPFW} add 61 skipto 72 ip from any to table\(11\) in
+${IPFW} add 2300 skipto 2501 ip from any to table\(11\) in
 # International traffic
-${IPFW} add 62 pipe tablearg ip from table\(4\) to any in
+${IPFW} add 2400 pipe tablearg ip from table\(4\) to any in
 # ADD HERE kind traffic: three four five ...
 
 # BGP peer - national traffic
-${IPFW} add 71 pipe tablearg ip from any to table\(1\)
-${IPFW} add 72 pipe tablearg ip from table\(2\) to any
+${IPFW} add 2500 pipe tablearg ip from any to table\(1\)
+${IPFW} add 2501 pipe tablearg ip from table\(2\) to any
 
-# Load peer IP addresses
-/usr/local/etc/imslu/scripts/peer.sh
-# Load shaper
+### Load peer IP addresses ###
+sleep 60 && /usr/local/etc/imslu/scripts/peer.sh&
+
+### Load Shaper ###
 # This script must be run after the start of MySQL server
 sleep 60 && /usr/local/etc/imslu/scripts/shaper.sh&
 
-# expired users
+### Expired Users ###
 ${IPFW} add 65499 fwd localhost,3000 tcp from any to any dst-port 80 recv ng*
 ${IPFW} add 65500 fwd localhost,3000 tcp from any to any dst-port 80 recv ${IFACE_INTERNAL}*
 ${IPFW} add 65501 allow ip from any to any src-port 80,3000 out
