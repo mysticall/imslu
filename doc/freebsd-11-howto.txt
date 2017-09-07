@@ -377,7 +377,7 @@ cd /usr/src/sys/amd64/conf && make LINT
 
 cd /usr/src
 
-make -j 4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
+make -j4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 mv /boot/kernel /boot/kernel_old
 make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 
@@ -405,6 +405,26 @@ Cmnd_Alias ARPING = /usr/sbin/arping
 # Allow members of group www to execute commands
 %www ALL=(root) NOPASSWD: FUNCTIONS_PHP, PING, ARPING
 ------------------------------------------------------------------------
+
+
+### LOGS ###
+Edit the syslog.conf and add the following lines to the end of the file:
+vi /etc/syslog.conf
+-----------
+!ipfw
+*.*                                             /var/log/ipfw/traffic_data.log
+-----------
+
+Set the log rotation parameters:
+vi /etc/newsyslog.conf
+-----------
+#Daily rotation at midnight with logs in compressed format:
+/var/log/ipfw/traffic_data.log          600  *     *    @T00  JC
+-----------
+
+mkdir /var/log/ipfw
+touch /var/log/ipfw/traffic_data.log
+service syslogd reload
 
 
 ### GRAPHICS ###

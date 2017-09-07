@@ -46,11 +46,19 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
 
     if ($USE_VLANS) {
 
-        $cmd = "ls /proc/net/vlan/";
-        $result = shell_exec($cmd);
-        if ($result) {
-
+        if ($OS == 'FreeBSD') {
+            $cmd = "ifconfig -l";
+            $result = shell_exec($cmd);
+            $str = explode(" ", $result);
+        }
+        elseif ($OS == 'Linux') {
+            $cmd = "ls /proc/net/vlan/";
+            $result = shell_exec($cmd);
             $str = str_replace("config", "", explode("\n", $result));
+        }
+
+        if ($str) {
+
             $vlan = array('' => '');
             foreach ($str as $value) {
 
@@ -89,22 +97,19 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
                 unset($values[$key]);
                 array_unshift($values, $selected);
             }
-        }        
-
-        $log = file_get_contents("$LOG_DIR/{$values[0]}");
-        $log_name = $values[0];
+        }
     }
     else {
 
         $cmd = "ls --reverse $LOG_DIR";
         $data = shell_exec($cmd);
         $values = explode("\n", $data);
-        $log = file_get_contents("$LOG_DIR/{$values[0]}");
-        $log_name = $values[0];
     }
 
-    if (!empty($values)) {
-        
+    if (!empty($values[0])) {
+
+        $log = file_get_contents("$LOG_DIR/{$values[0]}");
+        $log_name = $values[0];
         $combobox =
 "              <select class=\"input select\" name=\"log\" OnChange=\"this.form.submit()\">\n";
         foreach ($values as $value) {
@@ -116,7 +121,12 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
         $combobox .= 
 "              </select>";
     }
-    
+    else {
+        $log_name = '';
+        $combobox = '';
+        $log = '';
+    }
+
     $form .=
 "    <form method=\"post\">
       <table class=\"tableinfo\">

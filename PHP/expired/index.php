@@ -9,8 +9,10 @@ require_once $DATABASE_CONFIGURATION;
 
 // Edit here!
 // English locale
+putenv('LC_MESSAGES=en_US');
 setlocale(LC_MESSAGES, 'en_US.UTF-8');
 // Bulgarian locale
+//putenv('LC_MESSAGES=bg_BG');
 //setlocale(LC_MESSAGES, 'bg_BG.UTF-8');
 bindtextdomain('frontend', '../locale');
 textdomain('frontend');

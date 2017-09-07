@@ -19,43 +19,6 @@ ARP=/usr/sbin/arp
 ARP_SCAN=/usr/bin/arp-scan
 
 
-##### PPPoE server settings #####
-# false; echo $? # 1
-# true; echo $?  # 0
-# false=1
-# true=0
-USE_PPPoE=1
-
-PPPOE_SERVER=/usr/sbin/pppoe-server
-PPPOE_SERVER_NAME=imslu
-
-# Default gateway IP for PPPoE session
-PPPOE_DEFAULT_IP="10.0.2.1"
-
-
-##### FreeRadius settings #####
-
-# FreeRadius networks
-FR_NETWORKS="10.0.2.0/24 10.0.7.0/24"
-
-# FreeRadius log file
-FR_LOG_FILE="/var/log/radius.log"
-
-##### Subnetwork settings for static IP addresses #####
-NETWORKS="10.0.0.0/24 10.0.1.0/24"
-DEFAULT_GATEWAYS="10.0.0.1/32 10.0.1.1/32"
-
-
-##### VLAN settings #####
-# false; echo $? # 1
-# true; echo $?  # 0
-# false=1
-# true=0
-USE_VLANS=0
-
-# VLAN ID range
-VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
-
 ####### payments #######
 #see: https://www.freebsd.org/cgi/man.cgi?query=date
 # Monthly fee period
