@@ -22,7 +22,7 @@ ip_add () {
     if [ -n "${1}" ]; then
 
 #     route add 10.0.1.2 -iface igb0
-      ${ROUTE} add ${1}/32 -iface ${IFACE_INTERNAL}
+#     ${ROUTE} add ${1}/32 -iface ${IFACE_INTERNAL}
 
       if [ -n "${3}" ] && [ "${4}" == "n" ]; then
 #       arp -S 10.0.1.2 34:23:87:96:70:27

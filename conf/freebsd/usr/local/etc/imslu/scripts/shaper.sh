@@ -125,7 +125,7 @@ else
   while read -r ip free_mac mac ; do
 
 #   route add 10.0.1.2 -iface igb1
-    ${ROUTE} add ${ip}/32 -iface ${IFACE_INTERNAL}
+#   ${ROUTE} add ${ip}/32 -iface ${IFACE_INTERNAL}
     
     if [ "${free_mac}" == "n" ] && [ -n "${mac}" ]; then
 #     arp -S 10.0.1.2 34:23:87:96:70:27

@@ -18,6 +18,12 @@ IPFW=/sbin/ipfw
 ARP=/usr/sbin/arp
 ARP_SCAN=/usr/bin/arp-scan
 
+##### VLAN settings #####
+# /bin/false; echo $? # 1
+# /bin/true; echo $?  # 0
+# false=1
+# true=0
+USE_VLANS=0
 
 ####### payments #######
 #see: https://www.freebsd.org/cgi/man.cgi?query=date

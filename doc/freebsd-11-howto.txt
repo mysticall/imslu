@@ -407,24 +407,23 @@ Cmnd_Alias ARPING = /usr/sbin/arping
 ------------------------------------------------------------------------
 
 
-### LOGS ###
-Edit the syslog.conf and add the following lines to the end of the file:
-vi /etc/syslog.conf
------------
-!ipfw
-*.*                                             /var/log/ipfw/traffic_data.log
------------
+### flow-tools ###
 
-Set the log rotation parameters:
-vi /etc/newsyslog.conf
------------
-#Daily rotation at midnight with logs in compressed format:
-/var/log/ipfw/traffic_data.log          600  *     *    @T00  JC
------------
+pkg install flow-tools
+service flow_capture start
 
-mkdir /var/log/ipfw
-touch /var/log/ipfw/traffic_data.log
-service syslogd reload
+flow-print -f5 < /var/db/flows/2017-09-20/ft-v05.2017-09-20.200001+0300
+
+
+### ipcad - static ip addresses only ###
+
+pkg install ipcad
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/ipcad.conf /usr/local/etc
+service ipcad start
+
+rsh localhost help
+rsh localhost status
+rsh localhost show ip accounting
 
 
 ### GRAPHICS ###
