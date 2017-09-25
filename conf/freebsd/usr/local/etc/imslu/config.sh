@@ -16,7 +16,6 @@ IFCONFIG=/sbin/ifconfig
 ROUTE=/sbin/route
 IPFW=/sbin/ipfw
 ARP=/usr/sbin/arp
-ARP_SCAN=/usr/bin/arp-scan
 
 ##### VLAN settings #####
 # /bin/false; echo $? # 1

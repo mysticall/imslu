@@ -426,6 +426,15 @@ rsh localhost status
 rsh localhost show ip accounting
 
 
+### imslu_find - static ip addresses only ###
+
+Auto find a MAC address or VLAN when you add a static IP address for the device.
+
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/rc.d/imslu_find /usr/local/etc/rc.d
+chmod +x /usr/local/etc/rc.d/imslu_find
+service imslu_find start
+
+
 ### GRAPHICS ###
 
 pkg install rrdtool

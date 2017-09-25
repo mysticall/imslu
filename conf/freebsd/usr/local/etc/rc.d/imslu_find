@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# PROVIDE: imslu_find
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+# Auto find a MAC address or VLAN when you add a static IP address for the device.
+#
+# Add the following lines to /etc/rc.conf to enable imslu_find:
+#
+#imslu_find_enable="YES"
+#
+: ${imslu_find_enable="NO"}
+
+. /etc/rc.subr
+
+name="imslu_find"
+desc="Auto find a MAC address or VLAN when you add a static IP address"
+rcvar="imslu_find_enable"
+command="/usr/local/etc/imslu/scripts/imslu_find.sh"
+command_interpreter="/bin/sh"
+command_args="&"
+
+load_rc_config ${name}
+run_rc_command "$1"
