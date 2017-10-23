@@ -337,7 +337,7 @@ foreach ($rows as $value) {
     $str = strip_tags($value['name']);
     $username = preg_replace('/\s+/', '_', $str);
     $password = strip_tags($value['pass']);
-    $mac = !empty($xmacs[$value['id']]) ? strtoupper($xmacs[$value['id']]) : '';
+    $mac = !empty($xmacs[$value['id']]) ? strtolower($xmacs[$value['id']]) : '';
 
     $sql = 'UPDATE ip SET userid = :userid, mac = :mac, free_mac = :free_mac, username = :username, pass = :pass, protocol = :protocol, stopped = :stopped WHERE ip = :ip';
     $sth = $imslu->prepare($sql);

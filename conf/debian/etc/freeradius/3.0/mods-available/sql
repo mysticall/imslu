@@ -18,10 +18,17 @@ sql {
   usergroup_table = "radusergroup"
   read_groups = yes
   delete_stale_sessions = yes
-  num_sql_socks = 5
-  connect_failure_retry_delay = 60
-  lifetime = 0
-  max_queries = 0
+
+  pool {
+    start = ${thread[pool].start_servers}
+    min = ${thread[pool].min_spare_servers}
+    max = ${thread[pool].max_servers}
+    spare = ${thread[pool].max_spare_servers}
+    uses = 0
+    retry_delay = 30
+    lifetime = 0
+    idle_timeout = 60
+  }
 
   read_clients = yes
   client_table = "nas"

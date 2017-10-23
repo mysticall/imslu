@@ -6,5 +6,5 @@ modem
 show-password
 proxyarp
 ms-dns 10.0.2.1
-ms-dns 8.8.8.8
+# ms-dns 8.8.8.8
 noipx

@@ -1,0 +1,67 @@
+options {
+	directory "/var/cache/bind";
+
+	// If there is a firewall between you and nameservers you want
+	// to talk to, you may need to fix the firewall to allow multiple
+	// ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+
+	// If your ISP provided one or more IP addresses for stable 
+	// nameservers, you probably want to use them as forwarders.  
+	// Uncomment the following block, and insert the addresses replacing 
+	// the all-0's placeholder.
+
+	// forwarders {
+	// 	0.0.0.0;
+	// };
+
+	//========================================================================
+	// If BIND logs error messages about the root key being expired,
+	// you will need to update your keys.  See https://www.isc.org/bind-keys
+	//========================================================================
+	dnssec-validation auto;
+
+	auth-nxdomain no;    # conform to RFC1035
+	listen-on { 127.0.0.1; 10.0.0.1; 10.0.1.1; 10.0.2.1; };
+	// listen-on-v6 { any; };
+
+	recursion yes;
+	allow-recursion { ACCESS; };
+	recursive-clients 30000;
+
+	// Do not make public version of BIND
+	version none;
+	hostname none;
+	server-id none;
+};
+
+/*
+logging {
+	channel default-log {
+		file "/var/log/named.log" versions 3 size 1m;
+		print-time yes;
+		print-category yes;
+	};
+	channel queries-log {
+		file "/var/log/queries.log" versions 3 size 1m;
+		print-time yes;
+		print-category yes;
+	};
+	category default { default-log; };
+	category general { default-log; };
+	category database { default-log; };
+	category security { default-log; };
+	category config { default-log; };
+	category resolver { default-log; };
+	category xfer-in { default-log; };
+	category xfer-out { default-log; };
+	category notify { default-log; };
+	category client { default-log; };
+	category unmatched { default-log; };
+	category network { default-log; };
+	category update { default-log; };
+	category queries { queries-log; };
+	category dispatch { default-log; };
+	category dnssec { default-log; };
+	category lame-servers { default-log; };
+};
+*/

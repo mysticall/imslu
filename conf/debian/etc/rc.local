@@ -6,8 +6,8 @@
 ####### IMQ #######
 # https://github.com/imq/linuximq/wiki
 # modprobe imq
-# $IP link set dev imq0 up
-# $IP link set dev imq1 up
+$IP link set dev imq0 up
+$IP link set dev imq1 up
 
 ##### ADD VLANS #####
 vconfig_add
@@ -69,28 +69,27 @@ $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 172.16.0.0/12 -j SNAT -
 $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j SNAT --to 192.168.1.254
 
 # Set default policy for chain FORWARD to DROP
-$IPTABLES -P FORWARD DROP
-# traffic data
-$IPTABLES -I FORWARD -m state --state NEW -j NFLOG --nflog-group 2 --nflog-prefix [NEW]
+$IPTABLES -t filter -P FORWARD DROP
+
+# High performance NetFlow v5, v9, IPFIX flow data export module for Linux kernel.
+$IPTABLES -t filter -A FORWARD -j NETFLOW
+
 # Incoming packets - download
 $IPTABLES -t filter -A FORWARD -i ${IFACE_EXTERNAL}+ -m set --match-set allowed dst -j ACCEPT
 # Outgoing packets - upload
 $IPTABLES -t filter -A FORWARD -m set --match-set allowed src -j ACCEPT
 
-sysctl -p
 
 # change hashsize on the fly
 # https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
 echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
 
-# check current hashsize
-#cat /sys/module/nf_conntrack/parameters/hashsize
+# ipt-netflow
+sysctl -w net.netflow.active_timeout=300
+sysctl -w net.netflow.destination="127.0.0.1:9996"
 
-# check current tracked connections
-#cat /proc/sys/net/ipv4/netfilter/ip_conntrack_count
-
-/etc/imslu/scripts/start.sh&
+/etc/imslu/scripts/start.sh &
 killall -q -s 9 arp-scan.sh
-/etc/imslu/scripts/arp-scan.sh&
+/etc/imslu/scripts/arp-scan.sh &
 
 exit 0
