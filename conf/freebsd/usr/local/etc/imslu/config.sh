@@ -17,6 +17,11 @@ ROUTE=/sbin/route
 IPFW=/sbin/ipfw
 ARP=/usr/sbin/arp
 
+##### payments #####
+#see: https://www.freebsd.org/cgi/man.cgi?query=date
+# Monthly fee period
+FEE_PERIOD=1m
+
 ##### VLAN settings #####
 # /bin/false; echo $? # 1
 # /bin/true; echo $?  # 0
@@ -24,36 +29,25 @@ ARP=/usr/sbin/arp
 # true=0
 USE_VLANS=0
 
-####### payments #######
-#see: https://www.freebsd.org/cgi/man.cgi?query=date
-# Monthly fee period
-FEE_PERIOD=1m
-
 ##### MYSQL Settings #####
 MYSQL=/usr/local/bin/mysql
 
 # database: name of database
 database=imslu
-
 # user: database user
 user=imslu
-
 # password: database user password
 password=imslu_password
-
 # host: database host
 host=127.0.0.1
-
 # port: database port
 port=3306
 
 
 # Backup directory
 SQL_BACKUP_DIR=/usr/local/etc/imslu/backup
-
 # mysqldump location
 MYSQLDUMP=/usr/local/bin/mysqldump
-
 # gzip location
 GZIP=/bin/gzip
 

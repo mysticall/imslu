@@ -1,23 +1,18 @@
 #!/bin/sh
 
 # Auto find a MAC address or VLAN when you add a static IP address for the device.
-#
-# Add the following lines to /etc/rc.conf to enable imslu_find:
-#
-#imslu_find_enable="YES"
-#
 
 ARP_EXPIRES=/tmp/arp_expires
 
 arp_expires() {
 
   arp=""
-  while read -r tmp1 tmp_ip tmp2 mac tmp3 interface tmp4; do
+  while read -r tmp1 tmp_ip tmp2 mac tmp3 tmp4 interface; do
 
     ip=$(expr "${tmp_ip}" : '[\(\)]*\([0-9a-f.:]*\)')
     arp="${arp}${ip} ${mac} ${interface}\n"
   done <<EOF
-$(${ARP} -a | grep expires)
+$(${ARP} -a | grep -v "PERM\|incomplete")
 EOF
 
   echo ${arp} > ${ARP_EXPIRES}
@@ -60,13 +55,12 @@ find_mac_vlan() {
 $(echo ${found})
 EOF
 
-#       route add 10.0.1.2 -iface igb1.0010
-        ${ROUTE} add ${ip}/32 -iface ${vlan}
+        ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${ip}/32 ${vlan}" -c 'exit' -c 'exit'
 
-        if [ "${free_mac}" == "n" ]; then
+        if [ "${free_mac}" = "n" ]; then
 
-#         arp -S 10.0.1.2 34:23:87:96:70:27
-          ${ARP} -S ${ip} ${mac}
+#         arp -i vlan10 -s 10.0.1.2 34:23:87:96:70:27
+          ${ARP} -i ${vlan} -s ${ip} ${mac}
         fi
 
         ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}', mac='${mac}' WHERE id='${id}';"
@@ -93,13 +87,12 @@ EOF
 $(echo ${found})
 EOF
 
-#       route add 10.0.1.2 -iface igb1.0010
-        ${ROUTE} add ${ip}/32 -iface ${vlan}
+        ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${ip}/32 ${vlan}" -c 'exit' -c 'exit'
 
-        if [ "${free_mac}" == "n" ]; then
+        if [ "${free_mac}" = "n" ]; then
 
-#         arp -S 10.0.1.2 34:23:87:96:70:27
-          ${ARP} -S ${ip} ${mac}
+#         arp -i vlan10 -s 10.0.1.2 34:23:87:96:70:27
+          ${ARP} -i ${vlan} -s ${ip} ${mac}
         fi
 
         ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}' WHERE id='${id}';"
@@ -119,15 +112,15 @@ EOF
 
     if [ -n "${id}" ]; then
 
-      found=$(cat ${ARP_EXPIRES} | grep -oE "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
+      found=$(cat ${ARP_EXPIRES} | grep -o -E "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
       if [ -n "${found}" ]; then
 
         read -r ip mac vlan <<EOF
 $(echo ${found})
 EOF
 
-#       arp -S 10.0.1.2 34:23:87:96:70:27
-        ${ARP} -S ${ip} ${mac}
+#       arp -i vlan10 -s 10.0.1.2 34:23:87:96:70:27
+        ${ARP} -i ${vlan} -s ${ip} ${mac}
 
         ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
         unset found id
@@ -175,8 +168,8 @@ find_mac() {
 $(echo ${found})
 EOF
 
-#       arp -S 10.0.1.2 34:23:87:96:70:27
-        ${ARP} -S ${ip} ${mac}
+#       arp -s 10.0.1.2 34:23:87:96:70:27
+        ${ARP} -s ${ip} ${mac}
 
         ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
         unset found id
@@ -191,7 +184,7 @@ EOF
 
 while true; do
 
-  . /usr/local/etc/imslu/config.sh
+  . /etc/imslu/config.sh
 
   if [ $USE_VLANS -eq 0 ]; then
 

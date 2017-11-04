@@ -1,79 +1,90 @@
-#!/bin/bash
+#!/bin/sh
 
 . /etc/imslu/config.sh
-#declare variables
+
 now=$(date +%Y%m%d%H%M%S)
-declare -a services payments
 
-
-####### Services #######
+# services
 query="SELECT serviceid, price FROM services"
+
 while read -r serviceid price; do
-    services[${serviceid}]=$price
 
-done < <(echo $query | mysql $database -u $user -p${password} -s)
-#echo ${services[@]}
-#echo ${!services[@]}
+    export services${serviceid}="${price}"
+
+done <<EOF
+$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
+EOF
 
 
-####### payments #######
+# payments
 query="SELECT userid, serviceid, pay, free_access, not_excluding, expires, name FROM users"
+
+# Reading users from database and export user info
 while read -r userid tmp; do
-    payments[${userid}]="${tmp}"
 
-done < <(echo $query | mysql $database -u $user -p${password} -s)
-#echo ${payments[@]}
-#echo ${!payments[@]}
+    export users${userid}="${tmp}"
 
-i=0
+done <<EOF
+$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
+EOF
+
+> /tmp/allowed_temp
+
 query="SELECT userid, ip, stopped FROM ip WHERE userid != 0"
-while read -r row; do
-  ipaddresses[${i}]=${row}
-  ((i++))
 
-done < <(echo $query | mysql $database -u $user -p${password} -s)
-#echo ${ipaddresses[@]}
-#echo ${!ipaddresses[@]}
+while read -r userid ip stopped; do
 
-if [ -f /tmp/allowed_temp ]; then
-  rm /tmp/allowed_temp
-fi
+  found=$(eval echo \$users${userid})
+  if [ -n "${found}" ]; then
 
-for row in "${ipaddresses[@]}"; do
+    read -r serviceid pay free_access not_excluding expires expires2 name <<EOF
+$(echo ${found})
+EOF
 
-    read -r userid ip stopped <<< "${row}"
-    # Allow internet access
-    read -r serviceid pay free_access not_excluding expires expires2 name <<< "${payments[${userid}]}"
+    if [ "${expires}" != "0000-00-00" ]; then
+      d=$(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S")
+    else
+      d=0
+    fi
+  
+    if [ "${stopped}" = "n" ] && ([ "${free_access}" = "y" ] || [ ${d} -gt ${now} ]); then
 
-    if [[ ${stopped} == "n" && (${free_access} == "y" || $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -gt ${now}) ]]; then
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
-    elif [[ "${not_excluding}" == "y" && $(date -d "${expires} ${expires2}" +"%Y%m%d%H%M%S") -lt ${now} ]]; then
+
+    elif [ "${stopped}" = "n" ] && [ "${not_excluding}" = "y" ] && [ ${d} -lt ${now} ]; then
+
         echo "add allowed_temp ${ip}" >> /tmp/allowed_temp
 
         if [ "${expires}" != "0000-00-00" ]; then
-            expires="$(date +%Y-%m-%d -d "${expires} + 1 month") 23:59:00"
+            expires="$(date +%Y-%m-%d -d "${expires} + ${FEE_PERIOD}") 23:59:00"
         else
-            expires="$(date +%Y-%m-%d -d "+ 1 month") 23:59:00"
+            expires="$(date +%Y-%m-%d -d "+ ${FEE_PERIOD}") 23:59:00"
         fi
+
         date_payment1=$(date +"%Y-%m-%d %H:%M:%S")
 
         if [ "${pay}" != "0.00" ]; then
             sum=${pay}
         else
-            sum=${services[${serviceid}]}
+            sum=$(eval echo \${services${serviceid}})
         fi
 
-        mysql $database -u $user -p${password} -e "INSERT INTO payments (userid, name, unpaid, operator1, date_payment1, expires, sum, notes) VALUES ( '${userid}', '${name}', '1', 'system', '${date_payment1}', '${expires}', '${sum}', 'This payment is added automatically by the system for users who are not excluded.');"
-        mysql $database -u $user -p${password} -e "UPDATE users SET expires='${expires}' WHERE userid='${userid}';"
+        ${MYSQL} ${database} -u ${user} -p${password} -e "INSERT INTO payments (userid, name, unpaid, operator1, date_payment1, expires, sum, notes) VALUES ( '${userid}', '${name}', '1', 'system', '${date_payment1}', '${expires}', '${sum}', 'This payment is added automatically by the system for users who are not excluded.');"
+        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE users SET expires='${expires}' WHERE userid='${userid}';"
 
-        payments[${userid}]="${userid} ${serviceid} ${pay} ${free_access} ${not_excluding} ${expires}"
+        export users${userid}="${userid} ${serviceid} ${pay} ${free_access} ${not_excluding} ${expires}"
     fi
-done
+
+    unset found
+  fi
+done <<EOF
+$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
+EOF
 
 
-$IPSET create -exist allowed_temp hash:ip
-$IPSET restore -file /tmp/allowed_temp
-$IPSET swap allowed_temp allowed
-$IPSET destroy allowed_temp
+${IPSET} create -exist allowed_temp hash:ip
+${IPSET} restore -file /tmp/allowed_temp
+${IPSET} swap allowed_temp allowed
+${IPSET} destroy allowed_temp
 
-cd $SQL_BACKUP_DIR; $MYSQLDUMP $database -u $user -p${password} > $(date +"%Y-%m-%d-%H:%M:%S")_${database}_full-dump.sql
+cd ${SQL_BACKUP_DIR}; ${MYSQLDUMP} ${database} -u ${user} -p${password} > $(date +"%Y-%m-%d-%H:%M:%S")_${database}_full-dump.sql

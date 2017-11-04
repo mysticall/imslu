@@ -1,6 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 
-ip=$5
+ip=${5}
 sed -i "/${ip}/d" /tmp/ip_activity_pppoe
-sed -i "/${ip}/d" /tmp/ip_activity
 exit 0

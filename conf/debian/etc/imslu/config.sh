@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # WAN Interface
 IFACE_EXTERNAL=eth0
@@ -17,8 +17,12 @@ IPTABLES=/sbin/iptables
 IP=/sbin/ip
 TC=/sbin/tc
 IPSET=/sbin/ipset
-ARP_SCAN=/usr/bin/arp-scan
+ARP=/usr/sbin/arp
+VTYSH=/usr/bin/vtysh
 
+##### payments #####
+# Monthly fee period
+FEE_PERIOD="1 month"
 
 ##### PPPoE server settings #####
 # /bin/false; echo $? # 1
@@ -29,27 +33,22 @@ USE_PPPoE=0
 
 PPPOE_SERVER=/usr/sbin/pppoe-server
 PPPOE_SERVER_NAME=imslu
-
 # Default gateway IP for PPPoE session
 PPPOE_DEFAULT_IP="10.0.2.1"
 
-
 ##### FreeRadius settings #####
-
-# FreeRadius networks
-FR_NETWORKS="10.0.2.0/24 10.0.7.0/24"
-
 # FreeRadius log file
 FR_LOG_FILE="/var/log/freeradius/radius.log"
 
-##### Subnetwork settings #####
-# !!! Add all subnetworks that are used. !!!
-# tc filter rules work only with /16 subnets
-declare -A NETWORKS
-NETWORKS['10.0.0.0/8']="10.0.1.0/24 10.0.2.0/24 10.0.7.0/24"
-#NETWORKS['172.16.0.0/12']="172.16.1.0/24 172.16.2.0/24"
-#NETWORKS['192.168.0.0/16']="192.168.3.0/24 192.168.4.0/24 192.168.5.0/24"
+##### Traffic shaping settings #####
 
+# tc filter rules work only with /16 subnets
+NETWORKS="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+# !!! Add all subnets that are used. !!!
+SUBNETS="10.0.0.0/24 10.0.1.0/24 10.0.2.0/24 172.16.0.0/24 172.16.1.0/24 172.16.2.0/24 192.168.3.0/24 192.168.4.0/24 192.168.5.0/24"
+
+##### Default routes for static IP addresses route #####
+STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32"
 
 ##### VLAN settings #####
 # /bin/false; echo $? # 1
@@ -63,28 +62,24 @@ VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
 
 
 ##### MYSQL Settings #####
+MYSQL=/usr/bin/mysql
+
 # database: name of database
 database=imslu
-
 # user: database user
 user=imslu
-
 # password: database user password
 password=imslu_password
-
 # host: database host
 host=127.0.0.1
-
 # port: database port
 port=3306
 
 
 # Backup directory
 SQL_BACKUP_DIR=/etc/imslu/backup/
-
 # mysqldump location
 MYSQLDUMP=/usr/bin/mysqldump
-
 # gzip location
 GZIP=/bin/gzip
 

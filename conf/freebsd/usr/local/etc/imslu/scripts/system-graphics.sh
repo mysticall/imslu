@@ -8,8 +8,7 @@
 
 . /usr/local/etc/imslu/config.sh
 
-####### GRAPHICS #######
-create () {
+create_bps () {
 
 # Bits per second (bps)
 $RRDTOOL create ${RRD_DIR}/bps.rrd \
@@ -25,6 +24,10 @@ RRA:AVERAGE:0.5:6:672 \
 RRA:AVERAGE:0.5:24:73 \
 RRA:AVERAGE:0.5:144:1460
 
+chmod 755 ${RRD_DIR}/bps.rrd 
+}
+
+create_pps () {
 # Packets per second (pps)
 $RRDTOOL create ${RRD_DIR}/pps.rrd \
 -s 300 \
@@ -35,7 +38,6 @@ RRA:AVERAGE:0.5:6:672 \
 RRA:AVERAGE:0.5:24:73 \
 RRA:AVERAGE:0.5:144:1460
 
-chmod 755 ${RRD_DIR}/bps.rrd 
 chmod 755 ${RRD_DIR}/pps.rrd 
 }
 
@@ -71,18 +73,15 @@ done <<EOF
 $(${IPFW} -a list)
 EOF
 
-#echo "Download bps: INT ${in_int_bps};  PEER ${in_peer_bps}; TOTAL `expr ${in_int_bps} + ${in_peer_bps}`"
-#echo "Download pps: INT ${in_int_pps};  PEER ${in_peer_pps}; TOTAL `expr ${in_int_pps} + ${in_peer_pps}`"
-#echo "Upload   bps: INT ${out_int_bps}; PEER ${out_peer_bps}; TOTAL `expr ${out_int_bps} + ${out_peer_bps}`"
-#echo "Upload   pps: INT ${out_int_pps}; PEER ${out_peer_pps}; TOTAL `expr ${out_int_pps} + ${out_peer_pps}`"
-
 if [ ! -d ${RRD_DIR} ]; then
     mkdir -p ${RRD_DIR}
     chmod 755 ${RRD_DIR}
 fi
 
 if [ ! -f ${RRD_DIR}/bps.rrd ]; then
-    create
+    create_bps
+elif [ ! -f ${RRD_DIR}/pps.rrd ]; then
+    create_pps
 fi
 
 in_total=`expr ${in_int_bps} + ${in_peer_bps}`

@@ -69,7 +69,7 @@ if (!empty($_POST['delete']) && !empty($_POST['del_user']) && $admin_permissions
 
   if ($OS == 'Linux') {
     // Remove tc class for user
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_delete {$userid}";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh tc_class_delete {$userid} {$old['serviceid']}";
     shell_exec($cmd);
   }
 

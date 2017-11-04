@@ -101,34 +101,49 @@ if (!empty($_GET['userid'])) {
     $sth->execute();
     $ip = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-    // Select pool
-    $sql = 'SELECT pool FROM ip GROUP BY pool';
-    $sth = $db->dbh->prepare($sql);
-    $sth->execute();
-    $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($ip)) {
 
-    if ($rows) {
-        foreach ($rows as $value) {
+        // Select pool
+        $sql = 'SELECT pool FROM ip GROUP BY pool';
+        $sth = $db->dbh->prepare($sql);
+        $sth->execute();
+        $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-            $pool[$value['pool']] = $value['pool'];
+        if ($rows) {
+            foreach ($rows as $value) {
+
+                $pool[$value['pool']] = $value['pool'];
+            }
         }
-    }
-    unset($rows);
+        unset($rows);
 
-    ### activity ###
-    $cmd = "cat /tmp/ip_activity";
-    $result = shell_exec($cmd);
-    foreach (explode("\n", $result) as $value) {
-        
-        $activity_[$value] = $value;
-    }
+        // Static IP activity
+        if ($OS == 'FreeBSD') {
 
-    if ($USE_PPPoE) {
-        $cmd = "cat /tmp/ip_activity_pppoe";
-        $result = shell_exec($cmd);
-        foreach (explode("\n", $result) as $value) {
-        
-            $activity_[$value] = $value;
+        }
+        elseif ($OS == 'Linux') {
+            $cmd = "ip -s neighbour show";
+            $result = shell_exec($cmd);
+            foreach (explode("\n", $result) as $value) {
+                if (!empty($value)) {
+                    $tmp = explode(" ", $value);
+                    $used = ($tmp[5] == "ref") ? explode("/", $tmp[8]) : explode("/", $tmp[6]);
+
+                    if ($used[1] < 31 || $used[2] < 31) {
+                        $activity_[$tmp[0]] = $tmp[0];
+                    }
+                }
+            }
+        }
+
+        // PPPoE activity
+        if ($USE_PPPoE) {
+            $cmd = "cat /tmp/ip_activity_pppoe";
+            $result = shell_exec($cmd);
+            foreach (explode("\n", $result) as $value) {
+            
+                $activity_[$value] = $value;
+            }
         }
     }
 
@@ -354,8 +369,8 @@ function validateForm() {
         for ($i = 0; $i < count($ip); ++$i) {
 
             $ip_activity = (!empty($activity_[$ip[$i]['ip']])) ? "<span style=\"color: #00c500; font-weight:bold;\">"._('online')."</span>" : "<span style=\"color: #ff0000; font-weight:bold;\">"._('offline')."</span>";
-            $sessions = (!empty($ip[$i]['username'])) ? "<a class=\"link\" href=\"user_pppoe_sessions.php?userid={$userid}&username={$ip[$i]['username']}\">["._('sessions')."]</a>" : "";
-            $kill = (!empty($ip[$i]['username']) && !empty($activity_[$ip[$i]['ip']])) ? "<a class=\"link\" href=\"pppd_kill.php?userid={$userid}&ip={$ip[$i]['ip']}\">[ kill ]</a>" : "";
+            $sessions = ($ip[$i]['protocol'] == "PPPoE") ? "<a class=\"link\" href=\"user_pppoe_sessions.php?userid={$userid}&username={$ip[$i]['username']}\">["._('sessions')."]</a>" : "";
+            $kill = ($ip[$i]['protocol'] == "PPPoE" && !empty($activity_[$ip[$i]['ip']])) ? "<a class=\"link\" href=\"pppd_kill.php?userid={$userid}&ip={$ip[$i]['ip']}\">[ kill ]</a>" : "";
 
             $form .=
 "          <tr>

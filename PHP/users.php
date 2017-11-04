@@ -196,14 +196,26 @@ $more_ = array(
 
 ####### IP & pool #######
 
-### activity ###
-$cmd = "cat /tmp/ip_activity";
-$result = shell_exec($cmd);
-foreach (explode("\n", $result) as $value) {
+// Static IP activity
+if ($OS == 'FreeBSD') {
 
-    $activity_[$value] = $value;
+}
+elseif ($OS == 'Linux') {
+    $cmd = "ip -s neighbour show";
+    $result = shell_exec($cmd);
+    foreach (explode("\n", $result) as $value) {
+        if (!empty($value)) {
+            $tmp = explode(" ", $value);
+            $used = ($tmp[5] == "ref") ? explode("/", $tmp[8]) : explode("/", $tmp[6]);
+
+    if ($used[1] < 31 || $used[2] < 31) {
+                $activity_[$tmp[0]] = $tmp[0];
+            }
+        }
+    }
 }
 
+// PPPoE activity
 if ($USE_PPPoE) {
     $cmd = "cat /tmp/ip_activity_pppoe";
     $result = shell_exec($cmd);

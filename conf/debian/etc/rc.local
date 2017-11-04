@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 . /etc/imslu/config.sh
 . /etc/imslu/scripts/functions.sh
@@ -22,35 +22,35 @@ $IPSET create -exist peers hash:net
 /etc/imslu/scripts/peer.sh
 
 ####### iptables #######
+# iptables raw table is disabled in the minimal kernel config
 $IPTABLES -F
 $IPTABLES -F -t mangle
 $IPTABLES -F -t nat
-$IPTABLES -F -t raw
+# $IPTABLES -F -t raw
 
 $IPTABLES -X
 $IPTABLES -X -t mangle
 $IPTABLES -X -t nat
-$IPTABLES -X -t raw
+# $IPTABLES -X -t raw
 
 $IPTABLES -Z
 $IPTABLES -Z -t mangle
 $IPTABLES -Z -t nat
-$IPTABLES -Z -t raw
-
+# $IPTABLES -Z -t raw
 
 ### kinds of traffic ###
 # Incoming packets - download
 $IPTABLES -t mangle -A PREROUTING -i ${IFACE_EXTERNAL}+ -m set ! --match-set peers src -j TOS --set-tos 0x2
 # Outgoing packets - upload
 $IPTABLES -t mangle -A PREROUTING -i ppp+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
-$IPTABLES -t mangle -A PREROUTING -i ${IFACE_INTERNAL}+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
+$IPTABLES -t mangle -A PREROUTING -i vlan+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
 
 ### Shaper ###
 # Incoming packets - download
-$IPTABLES -t mangle -A FORWARD -i ${IFACE_EXTERNAL}+ -j IMQ --todev ${IFACE_IMQ0:3}
+$IPTABLES -t mangle -A FORWARD -i ${IFACE_EXTERNAL}+ -j IMQ --todev $(expr "${IFACE_IMQ0}" : "imq\([0-9]\)")
 # Outgoing packets - upload
-$IPTABLES -t mangle -A FORWARD -i ppp+ -j IMQ --todev ${IFACE_IMQ1:3}
-$IPTABLES -t mangle -A FORWARD -i ${IFACE_INTERNAL}+ -j IMQ --todev ${IFACE_IMQ1:3}
+$IPTABLES -t mangle -A FORWARD -i ppp+ -j IMQ --todev $(expr "${IFACE_IMQ1}" : "imq\([0-9]\)")
+$IPTABLES -t mangle -A FORWARD -i vlan+ -j IMQ --todev $(expr "${IFACE_IMQ1}" : "imq\([0-9]\)")
 
 # Dynamic NAT
 # http://arpnet.pl/dnetmap/
@@ -70,15 +70,12 @@ $IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j SNAT 
 
 # Set default policy for chain FORWARD to DROP
 $IPTABLES -t filter -P FORWARD DROP
-
 # High performance NetFlow v5, v9, IPFIX flow data export module for Linux kernel.
 $IPTABLES -t filter -A FORWARD -j NETFLOW
-
 # Incoming packets - download
 $IPTABLES -t filter -A FORWARD -i ${IFACE_EXTERNAL}+ -m set --match-set allowed dst -j ACCEPT
 # Outgoing packets - upload
 $IPTABLES -t filter -A FORWARD -m set --match-set allowed src -j ACCEPT
-
 
 # change hashsize on the fly
 # https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
@@ -88,8 +85,13 @@ echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
 sysctl -w net.netflow.active_timeout=300
 sysctl -w net.netflow.destination="127.0.0.1:9996"
 
-/etc/imslu/scripts/start.sh &
-killall -q -s 9 arp-scan.sh
-/etc/imslu/scripts/arp-scan.sh &
+/etc/imslu/scripts/shaper.sh &
+
+### Static IP addresses only ###
+/etc/imslu/scripts/static_routing.sh &
+
+echo 1 > /proc/sys/net/ipv4/conf/${IFACE_INTERNAL}/arp_accept
+killall -q -s 9 imslu_find.sh
+/etc/imslu/scripts/imslu_find.sh &
 
 exit 0

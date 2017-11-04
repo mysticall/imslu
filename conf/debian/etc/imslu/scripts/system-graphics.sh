@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # http://martybugs.net/linux/rrdtool/traffic.cgi
 # http://oss.oetiker.ch/rrdtool/doc/
@@ -7,25 +7,6 @@
 # https://hookrace.net/blog/server-statistics/
 
 . /etc/imslu/config.sh
-
-declare -A bits
-declare -A packets 
-while read -r Interface RXbytes RXpackets RXerrs RXdrop RXfifo RXframe RXcompressed RXmulticast TXbytes TXpackets TXerrs TXdrop TXfifo TXcolls TXcarrier TXcompressed; do
-
-    iface=${Interface:0:-1}
-
-    if [[ $iface == $IFACE_IMQ0 ]]; then
-        bits[${iface}]=$((${RXbytes}*8))
-        packets[${iface}]=${RXpackets}
-    elif [[ $iface == $IFACE_IMQ1 ]]; then
-        bits[${iface}]=$((${TXbytes}*8))
-        packets[${iface}]=${TXpackets}
-    else
-        bits[${iface}]=$((${RXbytes}*8)):$((${TXbytes}*8))
-        packets[${iface}]=${RXpackets}:${TXpackets}
-    fi
-done < <(cat /proc/net/dev | grep ":")
-
 
 ####### GRAPHICS #######
 create () {
@@ -60,51 +41,64 @@ chmod 755 ${RRD_DIR}/pps.rrd
 
 update () {
 
-declare -A in_bits
-in_bits[2]=0
-in_bits[3]=0
+while read -r Interface RXbytes RXpackets RXerrs RXdrop RXfifo RXframe RXcompressed RXmulticast TXbytes TXpackets TXerrs TXdrop TXfifo TXcolls TXcarrier TXcompressed; do
 
-declare -A out_bits
-out_bits[2]=0
-out_bits[3]=0
+    iface=$(expr "${Interface}" : "\(imq[0-9]\)")
+
+    if [ ${iface} = ${IFACE_IMQ0} ]; then
+        export in_total_bps=${RXbytes}
+        export in_total_pps=${RXpackets}
+    elif [ ${iface} = ${IFACE_IMQ1} ]; then
+        export out_total_bps=${TXbytes}
+        export out_total_pps=${TXpackets}
+    fi
+
+done <<EOF
+$(cat /proc/net/dev | grep "${IFACE_IMQ0}:\|${IFACE_IMQ1}:")
+EOF
 
 local previous=''
 
 while read -r str1 str2 str3 str4 str5 str6; do
 
-    if [[ ${str1} == "class" ]]; then
-
-        if [[ ${str3} == "1:2" ]]; then
+    if [ ${str1} = "class" ]; then
+        if [ ${str3} = "1:2" ]; then
             previous=2
-        elif [[ ${str3} == "1:3" ]]; then
+        elif [ ${str3} = "1:3" ]; then
             previous=3
         fi
-
-    elif [[ -n ${previous} && ${str1} == "period" ]]; then
-        in_bits[${previous}]=$((${str4}*8))
+    elif [ -n ${previous} ] && [ ${str1} = "period" ]; then
+        if [ ${previous} -eq 2 ]; then
+            export in_peer_bps=${str4}
+        else
+            export in_int_bps=${str4}
+        fi
         previous=''
     fi
-done < <($TC -s class show dev ${IFACE_IMQ0})
+done <<EOF
+$(${TC} -s class show dev ${IFACE_IMQ0} | grep -A 3 "1:2 parent 1:1\|1:3 parent 1:1")
+EOF
 
 while read -r str1 str2 str3 str4 str5 str6; do
 
-    if [[ ${str1} == "class" ]]; then
-
-        if [[ ${str3} == "1:2" ]]; then
+    if [ ${str1} = "class" ]; then
+        if [ ${str3} = "1:2" ]; then
             previous=2
-        elif [[ ${str3} == "1:3" ]]; then
+        elif [ ${str3} = "1:3" ]; then
             previous=3
         fi
-
-    elif [[ -n ${previous} && ${str1} == "period" ]]; then
-        out_bits[${previous}]=$((${str4}*8))
+    elif [ -n ${previous} ] && [ ${str1} = "period" ]; then
+        if [ ${previous} -eq 2 ]; then
+            export out_peer_bps=${str4}
+        else
+            export out_int_bps=${str4}
+        fi
         previous=''
     fi
-done < <($TC -s class show dev ${IFACE_IMQ1})
-# echo ${in_bits[@]}
-# echo ${!in_bits[@]}
-# echo ${out_bits[@]}
-# echo ${!out_bits[@]}
+done <<EOF
+$(${TC} -s class show dev ${IFACE_IMQ1} | grep -A 3 "1:2 parent 1:1\|1:3 parent 1:1")
+EOF
+
 
 if [ ! -d ${RRD_DIR} ]; then
     mkdir -p ${RRD_DIR}
@@ -115,20 +109,20 @@ if [ ! -f ${RRD_DIR}/bps.rrd ]; then
     create
 fi
 
-${RRDTOOL} update ${RRD_DIR}/bps.rrd N:${bits[${IFACE_IMQ0}]}:${in_bits[2]}:${in_bits[3]}:${bits[${IFACE_IMQ1}]}:${out_bits[2]}:${out_bits[3]}
-${RRDTOOL} update ${RRD_DIR}/pps.rrd N:${packets[${IFACE_IMQ0}]}:${packets[${IFACE_IMQ1}]}
+${RRDTOOL} update ${RRD_DIR}/bps.rrd N:`expr ${in_total_bps} \* 8`:`expr ${in_peer_bps} \* 8`:`expr ${in_int_bps} \* 8`:`expr ${out_total_bps} \* 8`:`expr ${out_peer_bps} \* 8`:`expr ${out_int_bps} \* 8`
+${RRDTOOL} update ${RRD_DIR}/pps.rrd N:${in_total_pps}:${out_total_pps}
 }
 
 graph () {
 # $1: interval (ie, day, week, month, year)
 
-if [[ $1 == "day" ]]; then
+if [ $1 = "day" ]; then
     interval='172800'
-elif [[ $1 == "week" ]]; then
+elif [ $1 = "week" ]; then
     interval='604800'
-elif [[ $1 == "month" ]]; then
+elif [ $1 = "month" ]; then
     interval='2678400'
-elif [[ $1 == "year" ]]; then
+elif [ $1 = "year" ]; then
     interval='31536000'
 fi
 
@@ -137,7 +131,7 @@ if [ ! -d ${RRD_IMG} ]; then
     chmod 777 ${RRD_IMG}
 fi
 
-${RRDTOOL} graph ${RRD_IMG}/bps-$1.png \
+${RRDTOOL} graph ${RRD_IMG}/bps-${1}.png \
 -s -${interval} -e now \
 -v "Bits per second" \
 -w 800 -h 130 \
