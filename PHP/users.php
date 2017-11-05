@@ -201,14 +201,14 @@ if ($OS == 'FreeBSD') {
 
 }
 elseif ($OS == 'Linux') {
-    $cmd = "ip -s neighbour show";
+    $cmd = "ip -s neighbour show | grep -v 'FAILED'";
     $result = shell_exec($cmd);
     foreach (explode("\n", $result) as $value) {
         if (!empty($value)) {
             $tmp = explode(" ", $value);
             $used = ($tmp[5] == "ref") ? explode("/", $tmp[8]) : explode("/", $tmp[6]);
 
-    if ($used[1] < 31 || $used[2] < 31) {
+            if ($used[1] < 31 || $used[2] < 31) {
                 $activity_[$tmp[0]] = $tmp[0];
             }
         }
@@ -220,8 +220,9 @@ if ($USE_PPPoE) {
     $cmd = "cat /tmp/ip_activity_pppoe";
     $result = shell_exec($cmd);
     foreach (explode("\n", $result) as $value) {
-
-        $activity_[$value] = $value;
+        if (!empty($value)) {
+            $activity_[$value] = $value;
+        }
     }
 }
 

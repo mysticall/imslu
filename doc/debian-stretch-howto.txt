@@ -581,6 +581,25 @@ systemctl start flow-capture
 flow-print -f5 < /var/flows/2017-10-23/ft-v05.2017-10-23.204518+0300
 
 
+### quagga ###
+
+apt install quagga
+
+systemctl disable bgpd.service
+systemctl disable ospfd.service
+systemctl disable ospf6d.service
+systemctl disable ripd.service
+systemctl disable ripngd.service
+systemctl disable isisd.service
+systemctl disable pimd.service
+
+install -c -m 640 ~/src/imslu/conf/debian/etc/quagga/daemons /etc/quagga
+install -c -m 640 ~/src/imslu/conf/debian/etc/quagga/vtysh.conf /etc/quagga
+touch /etc/quagga/zebra.conf
+
+systemctl start zebra
+
+
 ####### 3.3 GRAPHICS #######
 
 apt install rrdtool

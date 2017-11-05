@@ -291,40 +291,12 @@ NB: Edit "/usr/share/imslu/include/os.php" and uncomment "//$OS = 'Linux';"
 https://wiki.debian.org/Bind9
 
 apt-get install bind9 
+/etc/init.d/bind9 stop
 
-nano /etc/bind/named.conf
-Add before 'include "/etc/bind/named.conf.options";'
-------------------------------------------------------------------------
-logging{
-  channel simple_log {
-    file "/var/bind9/chroot/var/log/bind.log" versions 3 size 5m;
-    severity error;
-    print-time yes;
-    print-severity yes;
-    print-category yes;
-  };
-  category default{
-    simple_log;
-  };
-};
-------------------------------------------------------------------------
-
-nano /etc/bind/named.conf.options 
-Add after "listen-on-v6 { any; };"
-------------------------------------------------------------------------
-    listen-on { 127.0.0.1; 10.0.1.1; 10.0.2.1; };
-
-    allow-transfer { none; };
-    recursion yes;
-    allow-query { 127.0.0.1; 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
-
-    // Do not make public version of BIND
-    version none;
-------------------------------------------------------------------------
+install -c -m 644 ~/src/imslu/conf/debian/etc/bind/named.conf /etc/bind
+install -c -m 644 ~/src/imslu/conf/debian/etc/bind/named.conf.options /etc/bind
 
 Bind Chroot
-
-/etc/init.d/bind9 stop
 
 nano /etc/default/bind9
 ------------------------------------------------------------------------
@@ -419,7 +391,7 @@ install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/2.2/sites-available/def
 
 Install system tools:
 
-apt-get install sudo vlan ipset arp-scan arping ethtool minicom
+apt-get install sudo vlan ipset arping ethtool minicom
 
 
 PHP use sudo to start scripts, that need root access
@@ -448,15 +420,6 @@ update-grub2
 
 ### Stop Clearing Console ###
 sed -i 's/TTYVTDisallocate=yes/TTYVTDisallocate=no/' /lib/systemd/system/getty@.service
-
-
-### ULOGD ###
-
-apt-get install ulogd2
-
-rm /etc/logrotate.d/ulogd2
-install -c -m 644 ~/src/imslu/conf/debian/etc/ulogd.conf /etc
-/etc/init.d/ulogd2 restart
 
 
 ##### 3.1 Rebuild an official Debian kernel #####
@@ -567,6 +530,42 @@ http://arpnet.pl/dnetmap/
 
 apt install --no-install-recommends xtables-addons-common xtables-addons-dkms libtext-csv-xs-perl
 modprobe xt_DNETMAP
+
+### IPT-NETFLOW ###
+
+git clone git://github.com/aabc/ipt-netflow.git ipt-netflow
+cd ipt-netflow
+
+./configure --disable-snmp-agent
+make all
+make install
+
+### flow-tools ###
+
+apt install flow-tools
+
+mkdir -p /var/flows
+install -c -m 644 ~/src/imslu/conf/debian/etc/flow-tools/flow-capture.conf /etc/flow-tools
+
+/etc/init.d/flow-capture start
+
+flow-print -f5 < /var/flows/2017-10-23/ft-v05.2017-10-23.204518+0300
+
+
+### quagga ###
+https://openmaniak.com/quagga_tutorial.php
+
+apt install quagga
+
+install -c -m 640 ~/src/imslu/conf/debian/etc/quagga/daemons /etc/quagga
+install -c -m 640 ~/src/imslu/conf/debian/etc/quagga/vtysh.conf /etc/quagga
+touch /etc/quagga/zebra.conf
+echo VTYSH_PAGER=more > /etc/environment
+
+Remove the "-c 'enable'" from functions-php.sh for compatibility with old quagga:
+sed -i -e "s/ -c 'enable' / /" /etc/imslu/scripts/functions-php.sh
+
+/etc/init.d/quagga start
 
 
 ####### 3.3 GRAPHICS #######

@@ -96,7 +96,7 @@ if (!empty($_GET['show']) && $search) {
 
     }
     elseif ($OS == 'Linux') {
-        $cmd = "ip -s neighbour show";
+        $cmd = "ip -s neighbour show | grep -v 'FAILED'";
         $result = shell_exec($cmd);
         foreach (explode("\n", $result) as $value) {
             if (!empty($value)) {
@@ -115,8 +115,9 @@ if (!empty($_GET['show']) && $search) {
         $cmd = "cat /tmp/ip_activity_pppoe";
         $result = shell_exec($cmd);
         foreach (explode("\n", $result) as $value) {
-
-            $activity_[$value] = $value;
+            if (!empty($value)) {
+                $activity_[$value] = $value;
+            }
         }
     }
 
