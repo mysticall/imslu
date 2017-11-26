@@ -47,9 +47,9 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
     if ($USE_VLANS) {
 
         if ($OS == 'FreeBSD') {
-            $cmd = "ifconfig -l";
+            $cmd = "ifconfig -g vlan";
             $result = shell_exec($cmd);
-            $str = explode(" ", $result);
+            $str = explode("\n", $result);
         }
         elseif ($OS == 'Linux') {
             $cmd = "ls /proc/net/vlan/";

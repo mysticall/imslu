@@ -16,11 +16,16 @@ IFCONFIG=/sbin/ifconfig
 ROUTE=/sbin/route
 IPFW=/sbin/ipfw
 ARP=/usr/sbin/arp
+ARP_ENTRIES=/tmp/arp_entries
+VTYSH=/usr/local/bin/vtysh
 
 ##### payments #####
 #see: https://www.freebsd.org/cgi/man.cgi?query=date
 # Monthly fee period
 FEE_PERIOD=1m
+
+##### Default routes for static IP addresses #####
+STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32"
 
 ##### VLAN settings #####
 # /bin/false; echo $? # 1

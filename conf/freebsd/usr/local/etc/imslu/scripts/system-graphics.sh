@@ -8,7 +8,7 @@
 
 . /usr/local/etc/imslu/config.sh
 
-create_bps () {
+create_bps() {
 
 # Bits per second (bps)
 $RRDTOOL create ${RRD_DIR}/bps.rrd \
@@ -27,7 +27,7 @@ RRA:AVERAGE:0.5:144:1460
 chmod 755 ${RRD_DIR}/bps.rrd 
 }
 
-create_pps () {
+create_pps() {
 # Packets per second (pps)
 $RRDTOOL create ${RRD_DIR}/pps.rrd \
 -s 300 \
@@ -41,73 +41,71 @@ RRA:AVERAGE:0.5:144:1460
 chmod 755 ${RRD_DIR}/pps.rrd 
 }
 
-update () {
+update() {
 
-while read -r rule_number packets bytes action matches protocol from any1 to any2 direction; do
-
-    if [ "${action}" == "pipe" ]; then
-
-        if [ "${any2}" == "table(3)" ]; then
-          # Incoming packets - download / International traffic
-            export in_int_bps in_int_pps
-            in_int_bps=${bytes}
-            in_int_pps=${packets}
-        elif [ "${any1}" == "table(4)" ]; then
-          # Outgoing packets - upload / International traffic
-            export out_int_bps out_int_pps
-            out_int_bps=${bytes}
-            out_int_pps=${packets}
-        elif [ "${any2}" == "table(1)" ]; then
-          # Incoming packets - download / BGP peer - national traffic
-            export in_peer_bps in_peer_pps
-            in_peer_bps=${bytes}
-            in_peer_pps=${packets}
-        elif [ "${any1}" == "table(2)" ]; then
-          # Outgoing packets - upload / BGP peer - national traffic
-            export out_peer_bps out_peer_pps
-            out_peer_bps=${bytes}
-            out_peer_pps=${packets}
+    while read -r rule_number packets bytes action matches protocol from any1 to any2 direction; do
+        if [ "${action}" == "pipe" ]; then
+            if [ "${any2}" == "table(3)" ]; then
+                # Incoming packets - download / International traffic
+                export in_int_bps in_int_pps
+                in_int_bps=${bytes}
+                in_int_pps=${packets}
+            elif [ "${any1}" == "table(4)" ]; then
+                # Outgoing packets - upload / International traffic
+                export out_int_bps out_int_pps
+                out_int_bps=${bytes}
+                out_int_pps=${packets}
+            elif [ "${any2}" == "table(1)" ]; then
+                # Incoming packets - download / BGP peer - national traffic
+                export in_peer_bps in_peer_pps
+                in_peer_bps=${bytes}
+                in_peer_pps=${packets}
+            elif [ "${any1}" == "table(2)" ]; then
+                # Outgoing packets - upload / BGP peer - national traffic
+                export out_peer_bps out_peer_pps
+                out_peer_bps=${bytes}
+                out_peer_pps=${packets}
+            fi
         fi
-    fi
-done <<EOF
+    done <<EOF
 $(${IPFW} -a list)
 EOF
 
-if [ ! -d ${RRD_DIR} ]; then
-    mkdir -p ${RRD_DIR}
-    chmod 755 ${RRD_DIR}
-fi
+    if [ ! -d ${RRD_DIR} ]; then
+        mkdir -p ${RRD_DIR}
+        chmod 755 ${RRD_DIR}
+    fi
 
-if [ ! -f ${RRD_DIR}/bps.rrd ]; then
-    create_bps
-elif [ ! -f ${RRD_DIR}/pps.rrd ]; then
-    create_pps
-fi
+    if [ ! -f ${RRD_DIR}/bps.rrd ]; then
+        create_bps
+    elif [ ! -f ${RRD_DIR}/pps.rrd ]; then
+        create_pps
+    fi
 
-in_total=`expr ${in_int_bps} + ${in_peer_bps}`
-out_total=`expr ${out_int_bps} + ${out_peer_bps}`
+    in_total=`expr ${in_int_bps} + ${in_peer_bps}`
+    out_total=`expr ${out_int_bps} + ${out_peer_bps}`
 
-${RRDTOOL} update ${RRD_DIR}/bps.rrd N:`expr ${in_total} \* 8`:`expr ${in_peer_bps} \* 8`:`expr ${in_int_bps} \* 8`:`expr ${out_total} \* 8`:`expr ${out_peer_bps} \* 8`:`expr ${out_int_bps} \* 8`
-${RRDTOOL} update ${RRD_DIR}/pps.rrd N:`expr ${in_int_pps} + ${in_peer_pps}`:`expr ${out_int_pps} + ${out_peer_pps}`
+    ${RRDTOOL} update ${RRD_DIR}/bps.rrd N:`expr ${in_total} \* 8`:`expr ${in_peer_bps} \* 8`:`expr ${in_int_bps} \* 8`:`expr ${out_total} \* 8`:`expr ${out_peer_bps} \* 8`:`expr ${out_int_bps} \* 8`
+    ${RRDTOOL} update ${RRD_DIR}/pps.rrd N:`expr ${in_int_pps} + ${in_peer_pps}`:`expr ${out_int_pps} + ${out_peer_pps}`
 }
 
-graph () {
-# $1: interval (ie, day, week, month, year)
+graph() {
+    # $1: interval (ie, day, week, month, year)
 
-if [ $1 == "day" ]; then
-    interval='172800'
-elif [ $1 == "week" ]; then
-    interval='604800'
-elif [ $1 == "month" ]; then
-    interval='2678400'
-elif [ $1 == "year" ]; then
-    interval='31536000'
-fi
+    if [ $1 == "day" ]; then
+        interval='172800'
+    elif [ $1 == "week" ]; then
+        interval='604800'
+    elif [ $1 == "month" ]; then
+        interval='2678400'
+    elif [ $1 == "year" ]; then
+        interval='31536000'
+    fi
 
-if [ ! -d ${RRD_IMG} ]; then
-    mkdir ${RRD_IMG}
-    chmod 777 ${RRD_IMG}
-fi
+    if [ ! -d ${RRD_IMG} ]; then
+        mkdir ${RRD_IMG}
+        chmod 777 ${RRD_IMG}
+    fi
 
 ${RRDTOOL} graph ${RRD_IMG}/bps-$1.png \
 -s -${interval} -e now \

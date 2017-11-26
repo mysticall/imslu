@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # PROVIDE: imslu_find
-# REQUIRE: LOGIN
+# REQUIRE: netif routing mysql-server
 # KEYWORD: shutdown
 
 # Auto find a MAC address or VLAN when you add a static IP address for the device.

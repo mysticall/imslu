@@ -57,19 +57,11 @@ ${IPFW} add 2400 pipe tablearg ip from table\(4\) to any in
 ${IPFW} add 2500 pipe tablearg ip from any to table\(1\)
 ${IPFW} add 2501 pipe tablearg ip from table\(2\) to any
 
-secondary()
-{
-    ### Load peer IP addresses ###
-    /usr/local/etc/imslu/scripts/peer.sh
-
-    ### Load Shaper ###
-    # This script must be run after the start of MySQL server
-    /usr/local/etc/imslu/scripts/shaper.sh
-
+secondary() {
     ### Expired Users ###
     ${IPFW} add 65499 fwd localhost,3000 tcp from any to any dst-port 80 recv ng*
     ${IPFW} add 65500 fwd localhost,3000 tcp from any to any dst-port 80 recv ${IFACE_INTERNAL}*
     ${IPFW} add 65501 allow ip from any to any src-port 80,3000 out
 }
 
-sleep 30 && secondary &
+sleep 60 && secondary &

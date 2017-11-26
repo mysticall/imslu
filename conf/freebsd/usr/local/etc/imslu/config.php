@@ -21,7 +21,7 @@ $KILL = '/bin/kill';
 # str ping patch
 $PING = '/sbin/ping';
 # str arping patch
-$ARPING = '/usr/sbin/arping';
+$ARPING = '/usr/local/sbin/arping';
 
 # Do you want to use PPPoE - Freeradius?
 # boolean FALSE or TRUE

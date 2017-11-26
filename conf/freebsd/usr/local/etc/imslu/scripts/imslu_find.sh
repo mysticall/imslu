@@ -11,19 +11,25 @@ ARP_EXPIRES=/tmp/arp_expires
 
 arp_expires() {
 
-  arp=""
-  while read -r tmp1 tmp_ip tmp2 mac tmp3 interface tmp4; do
+    arp=""
+    while read -r tmp1 tmp_ip tmp2 mac tmp3 interface tmp4; do
 
-    ip=$(expr "${tmp_ip}" : '[\(\)]*\([0-9a-f.:]*\)')
-    arp="${arp}${ip} ${mac} ${interface}\n"
-  done <<EOF
+        ip=$(expr "${tmp_ip}" : '[\(\)]*\([0-9a-f.:]*\)')
+        arp="${arp}${ip} ${mac} ${interface}\n"
+    done <<EOF
 $(${ARP} -a | grep expires)
 EOF
 
-  echo ${arp} > ${ARP_EXPIRES}
+    echo -e "${arp}" > ${ARP_EXPIRES}
 }
 
 ##### USE_VLANS=true #####
+
+set_arp_entries() {
+    # arp entries must be set after starting the zebra
+    ${ARP} -f ${ARP_ENTRIES}_find
+}
+
 check_status_vlan() {
 
     local status
@@ -40,150 +46,139 @@ check_status_vlan() {
 
 find_mac_vlan() {
 
-  local id
-  local ip
-  local vlan
-  local mac
-  local free_mac
+    local id
+    local ip
+    local vlan
+    local mac
+    local free_mac
+    local arp_entries=""
 
-  # Search for users who not have a VLAN and MAC
-  query="SELECT id, ip, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac LIKE ''"
+    # Search for users who not have a VLAN and MAC
+    query="SELECT id, ip, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac LIKE ''"
 
-  while read -r id ip free_mac; do
+    while read -r id ip free_mac; do
+        if [ -n "${id}" ]; then
 
-    if [ -n "${id}" ]; then
+            found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
+            if [ -n "${found}" ]; then
 
-      found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-      if [ -n "${found}" ]; then
-
-        read -r ip mac vlan <<EOF
+                read -r ip mac vlan <<EOF
 $(echo ${found})
 EOF
 
-#       route add 10.0.1.2 -iface igb1.0010
-        ${ROUTE} add ${ip}/32 -iface ${vlan}
+                ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${ip}/32 ${vlan}" -c 'exit' -c 'exit'
 
-        if [ "${free_mac}" == "n" ]; then
+                if [ "${free_mac}" = "n" ]; then
+                    arp_entries="${arp_entries}${ip} ${mac}\n"
+                fi
 
-#         arp -S 10.0.1.2 34:23:87:96:70:27
-          ${ARP} -S ${ip} ${mac}
+                ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}', mac='${mac}' WHERE id='${id}';"
+                unset found id
+            fi
         fi
-
-        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}', mac='${mac}' WHERE id='${id}';"
-        unset found id
-      fi
-    fi
-
-  done <<EOF
+    done <<EOF
 $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
 
 
-  # Search for users who have a MAC, but not have VLAN
-  query="SELECT id, ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac NOT LIKE ''"
+    # Search for users who have a MAC, but not have VLAN
+    query="SELECT id, ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac NOT LIKE ''"
 
-  while read -r id ip mac free_mac; do
+    while read -r id ip mac free_mac; do
+        if [ -n "${id}" ]; then
 
-    if [ -n "${id}" ]; then
+            found=$(cat ${ARP_EXPIRES} | grep "${ip} ${mac} ")
+            if [ -n "${found}" ]; then
 
-      found=$(cat ${ARP_EXPIRES} | grep "${ip} ${mac} ")
-      if [ -n "${found}" ]; then
-
-        read -r ip mac vlan <<EOF
+                read -r ip mac vlan <<EOF
 $(echo ${found})
 EOF
 
-#       route add 10.0.1.2 -iface igb1.0010
-        ${ROUTE} add ${ip}/32 -iface ${vlan}
+                ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${ip}/32 ${vlan}" -c 'exit' -c 'exit'
 
-        if [ "${free_mac}" == "n" ]; then
+                if [ "${free_mac}" = "n" ]; then
+                    arp_entries="${arp_entries}${ip} ${mac}\n"
+                fi
 
-#         arp -S 10.0.1.2 34:23:87:96:70:27
-          ${ARP} -S ${ip} ${mac}
+                ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}' WHERE id='${id}';"
+                unset found id
+            fi
         fi
-
-        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='${vlan}' WHERE id='${id}';"
-        unset found id
-      fi
-    fi
-
-  done <<EOF
+    done <<EOF
 $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
 
 
-  # Search for users who have a VLAN, but not have MAC
-  query="SELECT id, ip, vlan FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE '' AND mac LIKE '' AND free_mac='n'"
+    # Search for users who have a VLAN, but not have MAC
+    query="SELECT id, ip, vlan FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE '' AND mac LIKE '' AND free_mac='n'"
 
-  while read -r id ip vlan; do
+    while read -r id ip vlan; do
+        if [ -n "${id}" ]; then
 
-    if [ -n "${id}" ]; then
+            found=$(cat ${ARP_EXPIRES} | grep -oE "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
+            if [ -n "${found}" ]; then
 
-      found=$(cat ${ARP_EXPIRES} | grep -oE "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
-      if [ -n "${found}" ]; then
-
-        read -r ip mac vlan <<EOF
+                read -r ip mac vlan <<EOF
 $(echo ${found})
 EOF
 
-#       arp -S 10.0.1.2 34:23:87:96:70:27
-        ${ARP} -S ${ip} ${mac}
+                arp_entries="${arp_entries}${ip} ${mac}\n"
 
-        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
-        unset found id
-      fi
-    fi
-
-  done <<EOF
+                ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
+                unset found id
+            fi
+        fi
+    done <<EOF
 $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
+
+    echo -e "${arp_entries}" > ${ARP_ENTRIES}_find
+    sleep 10 && set_arp_entries &
 }
 
 ##### USE_VLANS=false #####
 check_status() {
 
-    local status
-    # Search for users who not have a MAC
-    query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n' LIMIT 1"
-    status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
+        local status
+        # Search for users who not have a MAC
+        query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n' LIMIT 1"
+        status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 
-    if [ -n "${status}" ]; then
-        return 0
-    else
-        return 1
-    fi
+        if [ -n "${status}" ]; then
+            return 0
+        else
+            return 1
+        fi
 }
 
 find_mac() {
 
-  local id
-  local ip
-  local mac
-  local interface
+    local id
+    local ip
+    local mac
+    local interface
 
-  # Search for users who not have MAC
-  query="SELECT id, ip FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n'"
+    # Search for users who not have MAC
+    query="SELECT id, ip FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n'"
 
-  while read -r id ip; do
+    while read -r id ip; do
+        if [ -n "${id}" ]; then
 
-    if [ -n "${id}" ]; then
+            found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
+            if [ -n "${found}" ]; then
 
-      found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-      if [ -n "${found}" ]; then
-
-        read -r ip mac interface <<EOF
+                read -r ip mac interface <<EOF
 $(echo ${found})
 EOF
 
-#       arp -S 10.0.1.2 34:23:87:96:70:27
-        ${ARP} -S ${ip} ${mac}
+                # arp -S 10.0.1.2 34:23:87:96:70:27
+                ${ARP} -S ${ip} ${mac}
 
-        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
-        unset found id
-      fi
-    fi
-
-  done <<EOF
+                ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET mac='${mac}' WHERE id='${id}';"
+                unset found id
+            fi
+        fi
+    done <<EOF
 $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
 }
@@ -191,23 +186,18 @@ EOF
 
 while true; do
 
-  . /usr/local/etc/imslu/config.sh
+    . /usr/local/etc/imslu/config.sh
 
-  if [ $USE_VLANS -eq 0 ]; then
-
-    if [ check_status_vlan ]; then
-      arp_expires
-      find_mac_vlan
+    if [ ${USE_VLANS} -eq 0 ]; then
+        if [ check_status_vlan ]; then
+            arp_expires
+            find_mac_vlan
+        fi
+    else
+        if [ check_status ]; then
+            arp_expires
+            find_mac
+        fi
     fi
-
-  else
-
-    if [ check_status ]; then
-      arp_expires
-      find_mac
-    fi
-
-  fi
-
-  sleep 300
+    sleep 300
 done

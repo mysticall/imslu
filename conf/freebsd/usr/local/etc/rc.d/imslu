@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# PROVIDE: imslu
+# REQUIRE: netif routing mysql-server
+# KEYWORD: shutdown
+
+#
+# IMSLU Services
+#
+#imslu_enable="YES"
+#
+: ${imslu_enable="NO"}
+
+. /etc/rc.subr
+
+name="imslu"
+desc="IMSLU Services"
+rcvar="imslu_enable"
+command="/usr/local/etc/imslu/scripts/imslu.sh"
+command_interpreter="/bin/sh"
+command_args="&"
+
+load_rc_config ${name}
+run_rc_command "$1"

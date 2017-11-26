@@ -210,7 +210,7 @@ function ip_add($db, $ip) {
   }
   else {
 
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$ip['ip']}' '{$ip['vlan']}' '{$ip['free_mac']}' '{$ip['mac']}'";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$ip['ip']}' '{$ip['vlan']}' '{$ip['free_mac']}' '{$ip['mac']}' > /dev/null &";
     shell_exec($cmd);
   }
 

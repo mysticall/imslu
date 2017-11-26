@@ -117,7 +117,7 @@ if (!empty($_POST['edit'])) {
 
         pppoe_remove($db, $old['ip'], $_POST['username']);
 
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
         shell_exec($cmd);
       }
     }
@@ -133,7 +133,7 @@ if (!empty($_POST['edit'])) {
         // added a new vlan
         if(empty($old['vlan']) && !empty($_POST['vlan'])) {
 
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
           shell_exec($cmd);
         }
         // vlan deleted
@@ -148,7 +148,7 @@ if (!empty($_POST['edit'])) {
           $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
           shell_exec($cmd);
 
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
+          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
           shell_exec($cmd);
         }
       }
