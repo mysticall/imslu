@@ -172,7 +172,7 @@ mkdir /etc/imslu/backup
 chown www-data:www-data /etc/imslu/backup
 
 mkdir /var/log/imslu
-cp ~/src/imslu/conf/cron/imslu /etc/cron.d/
+cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
 
 ### System settings ###
 
