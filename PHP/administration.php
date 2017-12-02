@@ -52,7 +52,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
             $str = explode("\n", $result);
         }
         elseif ($OS == 'Linux') {
-            $cmd = "ls /proc/net/vlan/";
+            $cmd = "ls /proc/net/vlan";
             $result = shell_exec($cmd);
             $str = str_replace("config", "", explode("\n", $result));
         }

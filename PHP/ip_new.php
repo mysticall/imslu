@@ -81,7 +81,6 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
         exit;
     }
 
-    ####### FreeRadius Groups #######
     //Check available Freeradius Groups if $USE_PPPoE == True
     if ($USE_PPPoE) {
 
@@ -109,6 +108,36 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
         }
     }
 
+    $validate_vlan = "";
+    if ($USE_VLANS) {
+
+        if ($OS == 'FreeBSD') {
+            $cmd = "ifconfig -g vlan";
+            $result = shell_exec($cmd);
+            $str = str_replace("\n", " ", $result);
+        }
+        elseif ($OS == 'Linux') {
+            $cmd = "ls /proc/net/vlan";
+            $result = shell_exec($cmd);
+            $str = str_replace("\n", " ", $result);
+        }
+
+        if ($str) {
+            $validate_vlan =
+"    else if (protocol == \"IP\") {
+        var vlans = \" {$str} \";
+        var vlan = document.getElementById(\"vlan\").value;
+
+        if (vlan !== \"\" && !vlans.includes(\" \" + vlan + \" \")) {
+
+            add_new_msg(\""._('Interface does not exist.')."\");
+            document.getElementById(\"vlan\").focus();
+            return false;
+        }
+    }";
+        }
+    }
+
     // Security key for comparison
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
@@ -117,18 +146,21 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
 <!--
 function validateForm() {
 
+    var protocol = document.getElementById(\"protocol\").value;
+
     if (document.getElementById(\"ip\").value == \"\") {
 
         add_new_msg(\""._s('Please fill the required field: %s', _('IP address'))."\");
         document.getElementById(\"ip\").focus();
         return false;
     }
-    if (document.getElementById(\"protocol\").value == \"PPPoE\" && document.getElementById(\"username\").value == \"\") {
+    if (protocol == \"PPPoE\" && document.getElementById(\"username\").value == \"\") {
 
         add_new_msg(\""._s('Please fill the required field: %s', _('username'))."\");
         document.getElementById(\"username\").focus();
         return false;
     }
+{$validate_vlan}
 }
 //-->
 </script>
@@ -155,7 +187,7 @@ function validateForm() {
               <label>"._('vlan')."</label>
             </td>
             <td class=\"dd\">
-              <input type=\"text\" name=\"vlan\" value=\"{$ip['vlan']}\">
+              <input id=\"vlan\" type=\"text\" name=\"vlan\" value=\"{$ip['vlan']}\">
             </td>
           </tr>
           <tr>
