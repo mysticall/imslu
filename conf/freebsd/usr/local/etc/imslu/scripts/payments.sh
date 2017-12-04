@@ -43,7 +43,7 @@ query="SELECT userid, ip, stopped FROM ip WHERE userid != 0"
 while read -r userid ip stopped; do
 
     found=$(eval echo \$users${userid})
-    if [ -n "${found}" ]; then
+    if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
         read -r serviceid pay free_access not_excluding expires expires2 name <<EOF
 $(echo ${found})

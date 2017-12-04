@@ -37,7 +37,7 @@ check_status_vlan() {
     query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND (vlan LIKE '' OR (mac LIKE '' AND free_mac='n')) LIMIT 1"
     status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 
-    if [ -n "${status}" ]; then
+    if [ $(expr "${status}" : ".*") -gt 0 ]; then
         return 0
     else
         return 1
@@ -57,10 +57,10 @@ find_mac_vlan() {
     query="SELECT id, ip, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac LIKE ''"
 
     while read -r id ip free_mac; do
-        if [ -n "${id}" ]; then
+        if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
             found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-            if [ -n "${found}" ]; then
+            if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
                 read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -85,10 +85,10 @@ EOF
     query="SELECT id, ip, mac, free_mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan LIKE '' AND mac NOT LIKE ''"
 
     while read -r id ip mac free_mac; do
-        if [ -n "${id}" ]; then
+        if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
             found=$(cat ${ARP_EXPIRES} | grep "${ip} ${mac} ")
-            if [ -n "${found}" ]; then
+            if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
                 read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -113,10 +113,10 @@ EOF
     query="SELECT id, ip, vlan FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE '' AND mac LIKE '' AND free_mac='n'"
 
     while read -r id ip vlan; do
-        if [ -n "${id}" ]; then
+        if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
             found=$(cat ${ARP_EXPIRES} | grep -oE "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
-            if [ -n "${found}" ]; then
+            if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
                 read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -144,7 +144,7 @@ check_status() {
         query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n' LIMIT 1"
         status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 
-        if [ -n "${status}" ]; then
+        if [ $(expr "${status}" : ".*") -gt 0 ]; then
             return 0
         else
             return 1
@@ -162,10 +162,10 @@ find_mac() {
     query="SELECT id, ip FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n'"
 
     while read -r id ip; do
-        if [ -n "${id}" ]; then
+        if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
             found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-            if [ -n "${found}" ]; then
+            if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
                 read -r ip mac interface <<EOF
 $(echo ${found})

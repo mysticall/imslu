@@ -18,7 +18,7 @@ if [ $USE_VLANS -eq 0 ]; then
     # Adding routing and static MAC for IP addresses who have vlan.
     query="SELECT ip, vlan, free_mac, mac FROM ip WHERE userid != 0 AND protocol = 'IP' AND vlan NOT LIKE ''"
     while read -r ip vlan free_mac mac; do
-        if [ -n ${ip} ]; then
+        if [ $(expr "${ip}" : ".*") -gt 0 ]; then
             zebra="${zebra}ip route ${ip}/32 ${vlan}\n"
 
             if [ "${free_mac}" = "n" ] && [ -n "${mac}" ]; then

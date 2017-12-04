@@ -26,7 +26,7 @@ check_status_vlan() {
     query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND (vlan LIKE '' OR (mac LIKE '' AND free_mac='n')) LIMIT 1"
     status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 
-    if [ -n "${status}" ]; then
+    if [ $(expr "${status}" : ".*") -gt 0 ]; then
         return 0
     else
         return 1
@@ -46,10 +46,10 @@ find_mac_vlan() {
 
   while read -r id ip free_mac; do
 
-    if [ -n "${id}" ]; then
+    if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
       found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-      if [ -n "${found}" ]; then
+      if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
         read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -78,10 +78,10 @@ EOF
 
   while read -r id ip mac free_mac; do
 
-    if [ -n "${id}" ]; then
+    if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
       found=$(cat ${ARP_EXPIRES} | grep "${ip} ${mac} ")
-      if [ -n "${found}" ]; then
+      if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
         read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -110,10 +110,10 @@ EOF
 
   while read -r id ip vlan; do
 
-    if [ -n "${id}" ]; then
+    if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
       found=$(cat ${ARP_EXPIRES} | grep -o -E "${ip} ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) ${vlan}")
-      if [ -n "${found}" ]; then
+      if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
         read -r ip mac vlan <<EOF
 $(echo ${found})
@@ -140,7 +140,7 @@ check_status() {
     query="SELECT id FROM ip WHERE userid != 0 AND protocol = 'IP' AND mac LIKE '' AND free_mac='n' LIMIT 1"
     status=$(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 
-    if [ -n "${status}" ]; then
+    if [ $(expr "${status}" : ".*") -gt 0 ]; then
         return 0
     else
         return 1
@@ -159,10 +159,10 @@ find_mac() {
 
   while read -r id ip; do
 
-    if [ -n "${id}" ]; then
+    if [ $(expr "${id}" : ".*") -gt 0 ]; then
 
       found=$(cat ${ARP_EXPIRES} | grep "${ip} ")
-      if [ -n "${found}" ]; then
+      if [ $(expr "${found}" : ".*") -gt 0 ]; then
 
         read -r ip mac interface <<EOF
 $(echo ${found})

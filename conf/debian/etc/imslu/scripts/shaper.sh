@@ -61,7 +61,7 @@ while read -r userid serviceid free_access expires; do
 
   service=$(eval echo \$services${serviceid})
 
-  if [ -n "${service}" ]; then
+  if [ $(expr "${service}" : ".*") -gt 0 ]; then
     read -r serviceid in_min0 in_max0 out_min0 out_max0 in_min1 in_max1 out_min1 out_max1 in_min2 in_max2 out_min2 out_max2 in_min3 in_max3 out_min3 out_max3 in_min4 in_max4 out_min4 out_max4 <<EOF
 $(echo ${service})
 EOF

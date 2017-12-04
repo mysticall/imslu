@@ -51,14 +51,14 @@ EOF
 query="SELECT userid, ip, stopped FROM ip WHERE userid != 0"
 
 while read -r userid ip stopped; do
-    # get user info
-    read -r serviceid free_access expires expires2 <<EOF
-$(eval echo \$users${userid})
-EOF
 
     # Prevent error: If mysql return empty result
-    if [ -n "${userid}" ]; then
+    if [ $(expr "${userid}" : ".*") -gt 0 ]; then
 
+        # get user info
+        read -r serviceid free_access expires expires2 <<EOF
+$(eval echo \$users${userid})
+EOF
         # Prevent error: Failed conversion of ``0000-00-00 00:00:00'' using format ``%Y-%m-%d %H:%M:%S''
         if [ "${expires}" != "0000-00-00" ]; then
             d=$(date -j -f "%Y-%m-%d %H:%M:%S" "${expires} ${expires2}" +"%Y%m%d%H%M%S")
