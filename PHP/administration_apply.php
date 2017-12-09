@@ -40,10 +40,8 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
     $db = new PDOinstance();
     if (!empty($_POST['clear']) && !empty($_POST['vlan'])) {
 
-        $sql = "UPDATE ip SET vlan='' WHERE vlan = :vlan";
-        $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':vlan', $_POST['vlan']);
-        $sth->execute();
+        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh iface_rem '{$_POST['vlan']}' > /dev/null &";
+        shell_exec($cmd);
 
         $_SESSION['msg'] = _('Changes are applied successfully.')."<br>";
         header("Location: administration.php");

@@ -42,6 +42,27 @@ mac_rem() {
     ${ARP} -d ${1}
 }
 
+iface_rem() {
+
+    if [ -n "${1}" ]; then
+        # arp -a -d -i vlan12
+        ${ARP} -a -d -i ${1}
+    fi
+
+    if [ $USE_VLANS -eq 0 ] && [ -n "${1}" ]; then
+        query="SELECT ip FROM ip WHERE vlan='${1}'"
+        while read -r ip; do
+            if [ $(expr "${ip}" : ".*") -gt 0 ]; then
+                ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "no ip route ${ip}/32 ${1}" -c 'exit' -c 'exit'
+            fi
+        done <<EOF
+$(echo ${query} | ${MYSQL} $database -u $user -p${password} -s)
+EOF
+
+        ${MYSQL} ${database} -u ${user} -p${password} -e "UPDATE ip SET vlan='' WHERE vlan='${1}';"
+    fi
+}
+
 ip_allow() {
 
     ${IPFW} -q table 1 add ${1}/32 ${2}1
@@ -109,6 +130,10 @@ mac_add)
 
 mac_rem)
     mac_rem "${2}" "${3}"
+    ;;
+
+iface_rem)
+    iface_rem "${2}"
     ;;
 
 ip_allow)
