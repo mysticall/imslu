@@ -46,6 +46,7 @@ $ticket_status = array(
 
 $protocol = array(
             'IP' => 'IP',
+            'DHCP' => 'DHCP',
             'PPPoE' => 'PPPoE'
             );
 ?>

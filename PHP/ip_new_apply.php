@@ -42,6 +42,12 @@ $db = new PDOinstance();
 ####### New ####### 
 if (!empty($_POST['new'])) {
 
+    if (!check_protocol($_POST['protocol'])) {
+
+        error_protocol($_POST['protocol'], $_POST['userid']);
+        exit;
+    }
+
     ip_add($db, $_POST);
     header("Location: user.php?userid={$_POST['userid']}");
 }

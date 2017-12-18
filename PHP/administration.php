@@ -83,48 +83,11 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
         }
     }
 
-    if (!empty($_POST['log'])) {
-
-        $cmd = "ls --reverse $LOG_DIR";
-        $data = shell_exec($cmd);
-        $values = explode("\n", $data);
-        $selected = $_POST['log'];
-
-        foreach ($values as $key => $value) {
-            
-            if ($value == $selected) {
-
-                unset($values[$key]);
-                array_unshift($values, $selected);
-            }
-        }
+    if (file_exists($LOG_FILE)) {
+        $log = file_get_contents("$LOG_FILE");
     }
     else {
-
-        $cmd = "ls --reverse $LOG_DIR";
-        $data = shell_exec($cmd);
-        $values = explode("\n", $data);
-    }
-
-    if (!empty($values[0])) {
-
-        $log = file_get_contents("$LOG_DIR/{$values[0]}");
-        $log_name = $values[0];
-        $combobox =
-"              <select class=\"input select\" name=\"log\" OnChange=\"this.form.submit()\">\n";
-        foreach ($values as $value) {
-
-                $combobox .=
-"              <option value=\"$value\">$value</option>\n";
-        }
-
-        $combobox .= 
-"              </select>";
-    }
-    else {
-        $log_name = '';
-        $combobox = '';
-        $log = '';
+        $log = "";
     }
 
     $form .=
@@ -133,8 +96,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <label>$log_name</label>
-              <label class=\"info_right\">"._('logs')."$combobox</label>
+              <label>$LOG_FILE</label>
             </th>
           </tr>
           <tr>

@@ -124,16 +124,14 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
 
         if ($str) {
             $validate_vlan =
-"    else if (protocol == \"IP\") {
-        var vlans = \" {$str} \";
-        var vlan = document.getElementById(\"vlan\").value;
+"    var vlans = \" {$str} \";
+    var vlan = document.getElementById(\"vlan\").value;
 
-        if (vlan !== \"\" && !vlans.includes(\" \" + vlan + \" \")) {
+    if (vlan !== \"\" && !vlans.includes(\" \" + vlan + \" \")) {
 
-            add_new_msg(\""._('Interface does not exist.')."\");
-            document.getElementById(\"vlan\").focus();
-            return false;
-        }
+        add_new_msg(\""._('Interface does not exist.')."\");
+        document.getElementById(\"vlan\").focus();
+        return false;
     }";
         }
     }
@@ -147,6 +145,7 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
 function validateForm() {
 
     var protocol = document.getElementById(\"protocol\").value;
+{$validate_vlan}
 
     if (document.getElementById(\"ip\").value == \"\") {
 
@@ -154,13 +153,19 @@ function validateForm() {
         document.getElementById(\"ip\").focus();
         return false;
     }
-    if (protocol == \"PPPoE\" && document.getElementById(\"username\").value == \"\") {
+
+    if (protocol == \"DHCP\" && document.getElementById(\"mac\").value == \"\") {
+
+        add_new_msg(\""._s('Please fill the required field: %s', _('mac'))."\");
+        document.getElementById(\"mac\").focus();
+        return false;
+    }
+    else if (protocol == \"PPPoE\" && document.getElementById(\"username\").value == \"\") {
 
         add_new_msg(\""._s('Please fill the required field: %s', _('username'))."\");
         document.getElementById(\"username\").focus();
         return false;
     }
-{$validate_vlan}
 }
 //-->
 </script>
@@ -195,7 +200,7 @@ function validateForm() {
               <label>"._('mac')."</label>
             </td>
             <td class=\"dd\">
-              <input type=\"text\" name=\"mac\" value=\"{$ip['mac']}\">
+              <input id=\"mac\" type=\"text\" name=\"mac\" value=\"{$ip['mac']}\" onkeyup=\"value_exists('mac', 'ip_mac', '{$ip['id']}', '"._('MAC address is already being used!')."')\">
             </td>
           </tr>
           <tr>

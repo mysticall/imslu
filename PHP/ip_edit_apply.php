@@ -1,19 +1,19 @@
 <?php
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 
 // enable debug mode
 error_reporting(E_ALL); ini_set('display_errors', 'On');
@@ -23,17 +23,18 @@ require_once dirname(__FILE__).'/include/common.php';
 // Check for active session
 if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
-  header('Location: index.php');
-  exit;
+    header('Location: index.php');
+    exit;
 }
 
 if ($_SESSION['form_key'] !== $_POST['form_key']) {
 
-  header('Location: index.php');
-  exit;
+    header('Location: index.php');
+    exit;
 }
+unset($_POST['form_key']);
 
-# Must be included after session check
+// Must be included after session check
 require_once dirname(__FILE__).'/include/config.php';
 require_once dirname(__FILE__).'/include/network.php';
 
@@ -43,287 +44,185 @@ $cashier_permissions = (OPERATOR_TYPE_CASHIER == $_SESSION['data']['type']);
 $technician_permissions = (OPERATOR_TYPE_TECHNICIAN == $_SESSION['data']['type']);
 
 $old = json_decode($_POST['old'], true);
+unset($_POST['old']);
 $id = $old['id'];
 
 ####### Delete ####### 
 // Onli System Admin or Admin can delete IP
 if (!empty($_POST['delete']) && !empty($_POST['del_ip']) && $admin_permissions) {
 
-  // Add audit
-  add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} is deleted.", json_encode($old));
+    // Add audit
+    add_audit($db, AUDIT_ACTION_DELETE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} is deleted.", json_encode($old));
 
-  $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
 
-  ip_remove($db, $old);
+    ip_remove($db, $old);
 
-  header("Location: user.php?userid={$old['userid']}");
-  exit;
+    header("Location: user.php?userid={$old['userid']}");
+    exit;
 }
 
 ####### Edit ####### 
 if (!empty($_POST['edit'])) {
 
-  // Validate IP Address
-  if (!filter_var($_POST['ip'], FILTER_VALIDATE_IP)) {
+    if (!check_protocol($old['protocol']) || !check_protocol($_POST['protocol'])) {
 
-    $_SESSION['msg'] .= _('Invalid IP Address!')."<br>";
-    header("Location: user.php?userid={$ip['userid']}");
-    exit;
-  }
-  // Validate MAC
-  if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
+        error_protocol($_POST['protocol'], $old['userid']);
+        exit;
+    }
 
-    $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
-    header("Location: user.php?userid={$old['userid']}");
-    exit;
-  }
+    // Validate IP Address
+    if (!filter_var($_POST['ip'], FILTER_VALIDATE_IP)) {
 
-  // The IP address is changed.
-  if ($old['ip'] != $_POST['ip']) {
+        $_SESSION['msg'] .= _('Invalid IP Address!')."<br>";
+        header("Location: user.php?userid={$old['userid']}");
+        exit;
+    }
+    // Validate MAC
+    if (!empty($_POST['mac']) && !IsValidMAC($_POST['mac'])) {
 
-    // Add audit
-    add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} changed with {$_POST['ip']}.", json_encode($old));
+        $_SESSION['msg'] .= _('Invalid MAC Address!')."<br>";
+        header("Location: user.php?userid={$old['userid']}");
+        exit;
+    }
 
-    ip_remove($db, $old);
     $_POST['userid'] = $old['userid'];
-    ip_add($db, $_POST);
 
-    header("Location: user.php?userid={$_POST['userid']}");
-    exit;
-  }
-  else {
-
-    $update = array();
-
-    // The protocol is changed.
-    if ($old['protocol'] != $_POST['protocol']) {
-
-      $update['vlan'] = $_POST['vlan'];
-      $update['mac'] = $_POST['mac'];
-      $update['free_mac'] = $_POST['free_mac'];
-      $update['protocol'] = $_POST['protocol'];
-
-      // Point-to-Point Protocol over Ethernet (PPPoE)
-      if ($old['protocol'] != 'PPPoE' && $_POST['protocol'] == 'PPPoE') {
-
-        $_POST['userid'] = $old['userid'];
-        pppoe_add($db, $_POST);
-
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
-        shell_exec($cmd);
-      }
-      // Internet Protocol with static address
-      if ($old['protocol'] == 'PPPoE' && $_POST['protocol'] != 'PPPoE') {
-
-        pppoe_remove($db, $old['ip'], $_POST['username']);
-
-        $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
-        shell_exec($cmd);
-      }
-    }
-
-    // Internet Protocol with static address
-    if (empty($update['protocol']) && $old['protocol'] == 'IP') {
-
-      // VLANs
-      if ($USE_VLANS && $old['vlan'] != $_POST['vlan']) {
-
-        $update['vlan'] = $_POST['vlan'];
-
-        // added a new vlan
-        if(empty($old['vlan']) && !empty($_POST['vlan'])) {
-
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
-          shell_exec($cmd);
-        }
-        // vlan deleted
-        elseif(!empty($old['vlan']) && empty($_POST['vlan'])) {
-
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
-          shell_exec($cmd);
-        }
-        // vlan changed
-        elseif(!empty($old['vlan']) && !empty($_POST['vlan'])) {
-
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$old['ip']}' '{$old['vlan']}'";
-          shell_exec($cmd);
-
-          $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}' > /dev/null &";
-          shell_exec($cmd);
-        }
-      }
-
-      if ($old['mac'] != $_POST['mac']) {
-
-        $update['mac'] = $_POST['mac'];
-
-        // if VLAN is not empty, the following rules are applied above
-        if (empty($update['vlan'])) {
-
-          // added a new mac
-          if(empty($old['mac']) && !empty($_POST['mac'])) {
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
-            shell_exec($cmd);
-          }
-          // mac deleted
-          elseif(!empty($old['mac']) && empty($_POST['mac'])) {
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
-            shell_exec($cmd);
-          }
-          // mac changed
-          elseif(!empty($old['mac']) && !empty($_POST['mac'])) {
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
-            shell_exec($cmd);
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
-            shell_exec($cmd);
-          }
-        }
-      }
-
-      if ($old['free_mac'] != $_POST['free_mac']) {
-
-        $update['free_mac'] = $_POST['free_mac'];
-
-        if (empty($update['vlan']) && empty($update['mac'])) {
-
-          // free_mac = y
-          if($_POST['free_mac'] == 'y') {
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$old['ip']}' '{$old['vlan']}'";
-            shell_exec($cmd);  
-          }
-          // free_mac = n
-          elseif($_POST['free_mac'] == 'n') {
-
-            $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$old['ip']}' '{$_POST['vlan']}' '{$_POST['free_mac']}' '{$_POST['mac']}'";
-            shell_exec($cmd);
-          }
-        }
-      }
-
-      // Update username and password information in DB
-      if ($old['username'] != $_POST['username']) {
-        $update['username'] = $_POST['username'];
-      }
-      if ($old['pass'] != $_POST['pass']) {
-        $update['pass'] = $_POST['pass'];
-      }
-    }
-
-    // Point-to-Point Protocol over Ethernet (PPPoE)
-    if ($USE_PPPoE && empty($update['protocol']) && $old['protocol'] == 'PPPoE') {
-
-      $pppoe_old = array();
-      $pppoe_new = array();
-
-      // Update only VLAN information in DB
-      if ($old['vlan'] != $_POST['vlan']) {
-
-        $update['vlan'] = $_POST['vlan'];
-      }
-      if ($old['mac'] != $_POST['mac']) {
-
-        $update['mac'] = $_POST['mac'];
-        $pppoe_old['mac'] = $old['mac'];
-        $pppoe_new['mac'] = $_POST['mac'];
-      }
-      if ($old['free_mac'] != $_POST['free_mac']) {
-
-        $update['free_mac'] = $_POST['free_mac'];
-      }
-      if ($old['groupname'] != $_POST['groupname']) {
-
-        $pppoe_old['groupname'] = $old['groupname'];
-        $pppoe_new['groupname'] = $_POST['groupname'];
-      }
-      if ($old['username'] != $_POST['username']) {
-
-        $update['username'] = $_POST['username'];
-        $pppoe_old['username'] = $old['username'];
-        $pppoe_new['username'] = $_POST['username'];
-      }
-      if ($old['pass'] != $_POST['pass']) {
-
-        $update['pass'] = $_POST['pass'];
-        $pppoe_old['pass'] = $old['pass'];
-        $pppoe_new['pass'] = $_POST['pass'];
-      }
-
-      if(!empty($pppoe_old)) {
-
-        $pppoe_old['username'] = $old['username'];
-        $pppoe_new['username'] = $_POST['username'];
-        $pppoe_old['ip'] = $old['ip'];
-        pppoe_update($db, $pppoe_old, $pppoe_new);
-      }
-    }
-
-    // Stop or allow internet access for IP address.
-    if ($old['stopped'] != $_POST['stopped']) {
-
-      $update['stopped'] = $_POST['stopped'];
-
-      // Stop
-      if ($old['stopped'] == 'n' && $_POST['stopped'] == 'y') {
+    // The IP address is changed.
+    if ($old['ip'] != $_POST['ip']) {
 
         // Add audit
-        add_audit($db, AUDIT_ACTION_DISABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} stopped.");
+        add_audit($db, AUDIT_ACTION_UPDATE, AUDIT_RESOURCE_IP, "IP address {$old['ip']} changed with {$_POST['ip']}.", json_encode($old));
 
-        // Stop internet access for IP address
-        ip_stop($old['ip']);
-      }
-      // Allow
-      if ($old['stopped'] == 'y' && $_POST['stopped'] == 'n') {
+        ip_remove($db, $old);
+        ip_add($db, $_POST);
 
-        $sql = 'SELECT free_access, serviceid, expires FROM users WHERE userid = :userid LIMIT 1';
-        $sth = $db->dbh->prepare($sql);
-        $sth->bindValue(':userid', $old['userid'], PDO::PARAM_INT);
-        $sth->execute();
-        $user = $sth->fetch(PDO::FETCH_ASSOC);
+        header("Location: user.php?userid={$_POST['userid']}");
+        exit;
+    }
+    else {
 
-        $now = date ("YmdHis");
-        $expire = date("YmdHis", strtotime("{$user['expires']}"));
+        $update = array();
 
-        if ($user['free_access'] == 'y' || $expire > $now) {
+        // The protocol is changed.
+        if ($old['protocol'] != $_POST['protocol']) {
 
-          // Add audit
-          add_audit($db, AUDIT_ACTION_ENABLE, AUDIT_RESOURCE_IP, "The internet access for IP address {$old['ip']} allowed.");
+            $update['protocol'] = $_POST['protocol'];
 
-          // Allow internet access for IP address
-          ip_allow($old['ip'], $user['serviceid']);
+            // Old protocol
+            switch ($old['protocol']) {
+                case "IP":
+                    // The new protocol is DHCP
+                    if ($_POST['protocol'] == 'DHCP') {
+
+                        dhcp_add($_POST);
+                        check_vlan($old, $_POST);
+                        check_mac($old, $_POST);
+                    }
+                    // The new protocol is PPPoE
+                    elseif ($_POST['protocol'] == 'PPPoE') {
+
+                        pppoe_add($db, $_POST);
+                        ip_rem_static($old);
+                    }
+                    else {
+
+                        error_protocol($_POST['protocol'], $old['userid']);
+                    }
+
+                    check_changes($old, $_POST);
+                    break;
+                case "DHCP":
+                    // The new protocol is IP
+                    if ($_POST['protocol'] == 'IP') {
+
+                        check_vlan($old, $_POST);
+                        check_mac($old, $_POST);
+                        dhcp_rem($old['ip']);
+                    }
+                    // The new protocol is PPPoE
+                    elseif ($_POST['protocol'] == 'PPPoE') {
+
+                        pppoe_add($db, $_POST);
+                        ip_rem_static($old);
+                        dhcp_rem($old['ip']);
+                    }
+                    else {
+
+                        error_protocol($_POST['protocol'], $old['userid']);
+                    }
+
+                    check_changes($old, $_POST);
+                    break;
+                case "PPPoE":
+                    pppoe_remove($db, $old['ip'], $_POST['username']);
+
+                    // The new protocol is IP
+                    if ($_POST['protocol'] == 'IP') {
+
+                        ip_add_static($_POST);
+                    }
+                    // The new protocol is DHCP
+                    if ($_POST['protocol'] == 'DHCP') {
+
+                        dhcp_add($_POST);
+                        ip_add_static($_POST);
+                    }
+
+                    check_changes($old, $_POST);
+                    break;
+                default:
+                    error_protocol($_POST['protocol'], $old['userid']);
+                    break;
+            }
         }
-      }
+        else {
+            switch ($old['protocol']) {
+                case "IP":
+                    check_vlan($old, $_POST);
+                    check_mac($old, $_POST);
+                    break;
+                case "DHCP":
+                    check_vlan($old, $_POST);
+                    check_mac($old, $_POST);
+                    check_dhcp($old, $_POST);
+                    break;
+                case "PPPoE":
+                    pppoe_update($db, $old, $_POST);
+                    break;
+                default:
+                    error_protocol($_POST['protocol'], $old['userid']);
+                    break;
+            }
+        }
+
+        check_stopped($db, $old, $_POST);
+        check_changes($old, $_POST);
+
+        if (!empty($update)) {
+
+            $i = 1;
+            foreach($update as $key => $value) {
+                $keys[$i] = $key;
+                $values[$i] = $value;
+
+                $i++;
+            }
+
+            $sql = 'UPDATE ip SET '.implode(' = ?, ', $keys).' = ? WHERE ip = ?';
+
+            array_push($values, $old['ip']);
+            $db->prepare_array($sql, $values);
+        }
     }
-
-    // Update notes for IP address.
-    if ($old['notes'] != $_POST['notes']) {
-
-      $update['notes'] = $_POST['notes'];
-    }
-
-    if (!empty($update)) {
-
-      $i = 1;
-      foreach($update as $key => $value) {
-        $keys[$i] = $key;
-        $values[$i] = $value;
-  
-      $i++;
-      }
-
-      $sql = 'UPDATE ip SET '.implode(' = ?, ', $keys).' = ? WHERE ip = ?';
-
-      array_push($values, $old['ip']);
-      $db->prepare_array($sql, $values);
-    }
-  }
-
-  $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
-
-  header("Location: user.php?userid={$old['userid']}");
+echo '<pre>';
+print_r($_POST);
+print_r($update);
+exit;
+    $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
+    header("Location: user.php?userid={$old['userid']}");
 }
+
+$_SESSION['msg'] .= _('No changes have been made.')."<br>";
+header("Location: user.php?userid={$old['userid']}");
 ?>
