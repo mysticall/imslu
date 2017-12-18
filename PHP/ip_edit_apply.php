@@ -215,10 +215,7 @@ if (!empty($_POST['edit'])) {
             $db->prepare_array($sql, $values);
         }
     }
-echo '<pre>';
-print_r($_POST);
-print_r($update);
-exit;
+
     $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
     header("Location: user.php?userid={$old['userid']}");
 }
