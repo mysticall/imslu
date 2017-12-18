@@ -94,6 +94,22 @@ if (!empty($_GET['userid'])) {
         exit;
     }
 
+    $pool = array();
+
+    // Select pool
+    $sql = 'SELECT pool FROM ip GROUP BY pool';
+    $sth = $db->dbh->prepare($sql);
+    $sth->execute();
+    $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($rows) {
+        foreach ($rows as $value) {
+
+            $pool[$value['pool']] = $value['pool'];
+        }
+    }
+    unset($rows);
+
     // Select user IP Addresses
     $sql = 'SELECT * FROM ip WHERE userid = :userid';
     $sth = $db->dbh->prepare($sql);
@@ -102,20 +118,6 @@ if (!empty($_GET['userid'])) {
     $ip = $sth->fetchAll(PDO::FETCH_ASSOC);
 
     if (!empty($ip)) {
-
-        // Select pool
-        $sql = 'SELECT pool FROM ip GROUP BY pool';
-        $sth = $db->dbh->prepare($sql);
-        $sth->execute();
-        $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($rows) {
-            foreach ($rows as $value) {
-
-                $pool[$value['pool']] = $value['pool'];
-            }
-        }
-        unset($rows);
 
         // Static IP activity
         if ($OS == 'FreeBSD') {
