@@ -6,16 +6,11 @@ kind_traffic=$(echo "SELECT COUNT(id) FROM kind_traffic" | ${MYSQL} $database -u
 
 ip_add() {
 
-    if [ $USE_VLANS -eq 0 ]; then
+    if [ ${USE_VLANS} -eq 0 ] && [ ${#1} -gt 0 ] && [ ${#2} -gt 0 ]; then
         if [ -n $(ifconfig -g vlan | grep ${2}) ]; then
             ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${1}/32 ${2}" -c 'exit' -c 'exit'
         fi
-    else
-        if [ -n "${3}" ] && [ "${4}" == "n" ]; then
-            # arp -S 10.0.1.2 34:23:87:96:70:27
-            ${ARP} -S ${1} ${3}
-        fi
-  fi
+    fi
 }
 
 ip_rem() {
@@ -32,8 +27,10 @@ ip_rem() {
 
 mac_add() {
 
-    # arp -S 10.0.1.2 34:23:87:96:70:27
-    ${ARP} -S ${1} ${4}
+    if [ ${#4} -gt 0 ] && [ "${3}" == "n" ]; then
+        # arp -S 10.0.1.2 34:23:87:96:70:27
+        ${ARP} -S ${1} ${4}
+    fi
 }
 
 mac_rem() {
@@ -109,6 +106,36 @@ ip_stop() {
     fi
 }
 
+# DHCP
+dhcpd_subnets=""
+if [ $(expr "${1}" : "dhcp_.*") -gt 0 ] && [ -f ${DHCPD_CONF} ]; then
+    # Reading subnets
+    while read -r a b c d; do
+        if [ "${a}" == "subnet" ]; then
+            dhcpd_subnets="${dhcpd_subnets} ${b}"
+        fi
+    done <"${DHCPD_CONF}"
+fi
+
+dhcp_add() {
+
+    if [ ${#1} -gt 0  ] && [ ${#2} -gt 0 ]; then
+
+        if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*}") -gt 0 ]; then
+            echo -e "host ${1} {\n  hardware ethernet ${2};\n  fixed-address ${1};\n}\n" >> ${DHCPD_CONF}
+        else
+            logger -p local7.notice -t imslu-scripts "Missing subnet for ${1} in ${DHCPD_CONF}"
+            echo 1
+        fi
+    fi
+}
+
+dhcp_rem() {
+
+    if [ ${#1} -gt 0 ]; then
+        sed -i '' -e "/^host ${1} {/,/^}$/d" ${DHCPD_CONF}
+    fi
+}
 
 case "${1}" in
 pppd_kill)
@@ -116,7 +143,7 @@ pppd_kill)
     ;;
 
 ip_add)
-    ip_add "${2}" "${3}" "${4}" "${5}"
+    ip_add "${2}" "${3}"
     sleep 10 && mac_add "${2}" "${3}" "${4}" "${5}"
     ;;
 
@@ -146,6 +173,16 @@ ip_stop)
 
 show_freeradius_log)
     awk '{ if ($7 == "Auth:") print $0}' ${FR_LOG_FILE} 2>&1
+    ;;
+
+dhcp_add)
+    dhcp_add "${2}" "${3}"
+    service isc-dhcpd restart >/dev/null
+    ;;
+
+dhcp_rem)
+    dhcp_rem "${2}"
+    service isc-dhcpd restart >/dev/null
     ;;
 
 *)

@@ -9,8 +9,6 @@ IFACE_INTERNAL=re1
 STEP=4000
 
 IMSLU_SCRIPTS=/usr/local/etc/imslu/scripts
-# Log files location
-LOG_DIR=/var/log/imslu/
 
 IFCONFIG=/sbin/ifconfig
 ROUTE=/sbin/route
@@ -33,6 +31,10 @@ STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32"
 # false=1
 # true=0
 USE_VLANS=0
+
+##### DHCPD settings #####
+USE_DHCPD=0
+DHCPD_CONF=/usr/local/etc/dhcpd.conf
 
 ##### MYSQL Settings #####
 MYSQL=/usr/local/bin/mysql

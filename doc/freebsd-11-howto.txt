@@ -128,10 +128,26 @@ mkdir /usr/local/etc/imslu
 cp -r ~/src/imslu/conf/freebsd/usr/local/etc/imslu/* /usr/local/etc/imslu
 chmod +x /usr/local/etc/imslu/scripts/*
 
-mkdir /var/log/imslu
-
 cp ~/src/imslu/conf/freebsd/var/cron/tabs/root /var/cron/tabs/
 /etc/rc.d/cron restart
+
+### log ###
+Edit the syslog.conf and add the following lines to the end of the file:
+vi /etc/syslog.conf
+-----------
+!imslu-scripts
+*.*                                             /var/log/imslu.log
+!*
+-----------
+
+Set the log rotation parameters:
+vi /etc/newsyslog.conf
+-----------
+/var/log/imslu.log                      600  7     *    $W0D0 JC
+-----------
+
+touch /var/log/imslu.log
+service syslogd reload
 
 ### Using the Ports Collection ###
 https://www.freebsd.org/doc/handbook/ports-using.html
@@ -179,7 +195,7 @@ pkg install apache24 mod_php71 php71 php71-pdo php71-pdo_mysql php71-gettext php
 
 ### php ###
 cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini
-sed -i -e 's/;date.timezone =/date.timezone = "Europe\/Sofia"/' /usr/local/etc/php.ini
+sed -i '' -e 's/;date.timezone =/date.timezone = "Europe\/Sofia"/' /usr/local/etc/php.ini
 
 echo -e '
 <FilesMatch "\.php$">
@@ -219,9 +235,9 @@ Common Name (e.g. server FQDN or YOUR name) []:192.168.1.254
 Email Address []:webmaster@localhost
 -----------
 
-sed -i -e 's/^\#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/etc/apache24/httpd.conf
-sed -i -e 's/^\#LoadModule rewrite_module/LoadModule rewrite_module/' /usr/local/etc/apache24/httpd.conf
-sed -i -e 's/index.html/index.php/' /usr/local/etc/apache24/httpd.conf
+sed -i '' -e 's/^\#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/etc/apache24/httpd.conf
+sed -i '' -e 's/^\#LoadModule rewrite_module/LoadModule rewrite_module/' /usr/local/etc/apache24/httpd.conf
+sed -i '' -e 's/index.html/index.php/' /usr/local/etc/apache24/httpd.conf
 
 ### imslu ###
 
@@ -446,6 +462,32 @@ touch /usr/local/etc/quagga/zebra.conf
 chown quagga:quagga /usr/local/etc/quagga/zebra.conf
 chmod 755 /usr/local/etc/quagga/zebra.conf
 service quagga start
+
+
+### isc-dhcp ###
+
+pkg install isc-dhcp43-server
+
+NB: Edit the dhcpd.conf
+install -c -m 644 ~/src/imslu/conf/freebsd/usr/local/etc/dhcpd.conf /usr/local/etc/
+
+Edit the syslog.conf and add the following lines to the end of the file:
+vi /etc/syslog.conf
+-----------
+!dhcpd
+*.*                                             /var/log/dhcpd.log
+!*
+-----------
+
+Set the log rotation parameters:
+vi /etc/newsyslog.conf
+-----------
+/var/log/dhcpd.log                      600  7     *    @T00  JC
+-----------
+
+touch /var/log/dhcpd.log
+service syslogd reload
+service isc-dhcpd restart
 
 
 ### imslu ###

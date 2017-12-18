@@ -4,8 +4,8 @@ $IFACE_INTERNAL = "igb1";
 # WAN Interface
 $IFACE_EXTERNAL = "igb0";
 
-# Log directory
-$LOG_DIR = "/var/log/imslu";
+# Log file
+$LOG_FILE = "/var/log/imslu.log";
 
 # FreeRadius log file
 $FR_LOG_FILE = "/var/log/radius.log";
