@@ -188,12 +188,12 @@ function value_exists(id, table, valueid, msg) {
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 
-            if (xmlhttp.responseText == 0) {
+            if (xmlhttp.responseText == 1) {
 
                 add_new_msg(msg);
                 document.getElementById("save").disabled = true;
             }
-            if (xmlhttp.responseText == 1) {
+            else if (xmlhttp.responseText == 0) {
 
                 document.getElementById("save").disabled = false;
                 if (document.getElementById("msg")) {

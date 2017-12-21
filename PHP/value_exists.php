@@ -15,19 +15,19 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-if (!empty($_GET['table']) && !empty($_GET['value'])) {
-    
-    //enable debug mode
-    //error_reporting(E_ALL); ini_set('display_errors', 'On');
+//enable debug mode
+//error_reporting(E_ALL); ini_set('display_errors', 'On');
 
-    require_once dirname(__FILE__).'/include/common.php';
+require_once dirname(__FILE__).'/include/common.php';
 
-    // Check for active session
-    if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
+// Check for active session
+if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['imslu_sessionid'])) {
 
-        header('Location: index.php');
-        exit;
-    }
+    header('Location: index.php');
+    exit;
+}
+
+if (!empty($_GET['table']) && !empty($_GET['value']) && !empty($_GET['valueid'])) {
 
     $db = new PDOinstance();
 
@@ -64,19 +64,15 @@ if (!empty($_GET['table']) && !empty($_GET['value'])) {
 
         if ($sth->rowCount() == 1) {
 
-            echo 0;
+            echo 1;
         }
         else {
 
-            echo 1;
+            echo 0;
         }
     }
-    else {
-
-        echo 1;
-    }
 }
-else {
-    header('Location: index.php');
+elseif (empty($_GET['value'])) {
+    echo 0;
 }
 ?>
