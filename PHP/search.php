@@ -61,12 +61,19 @@ $more_ = array(
     );
 
 $form =
-"    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
+"<script type=\"text/javascript\">
+<!--
+window.onload = function() {
+    document.getElementById(\"search\").focus();
+};
+//-->
+</script>
+    <form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
       <table class=\"tableinfo\">
         <tbody id=\"tbody\">
           <tr class=\"header_top\">
             <th>
-              <input type=\"text\" name=\"search\" value=\"{$search}\">
+              <input id=\"search\" type=\"text\" name=\"search\" value=\"{$search}\">
               <label>".combobox('', 'more', $more, $more_)." </label>
               <input class=\"button\" type=\"submit\" name=\"show\" value=\""._('search')."\">
             </th>

@@ -10,14 +10,12 @@ IFACE_IMQ1=imq1
 
 STEP=4000
 
-# Log files location
-LOG_DIR=/var/log/imslu/
-
 IPTABLES=/sbin/iptables
 IP=/sbin/ip
 TC=/sbin/tc
 IPSET=/sbin/ipset
 ARP=/usr/sbin/arp
+ARP_ENTRIES=/tmp/arp_entries
 VTYSH=/usr/bin/vtysh
 
 ##### payments #####
@@ -60,6 +58,9 @@ USE_VLANS=0
 # VLAN ID range
 VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
 
+##### DHCPD settings #####
+USE_DHCPD=0
+DHCPD_CONF=/etc/dhcp/dhcpd.conf
 
 ##### MYSQL Settings #####
 MYSQL=/usr/bin/mysql

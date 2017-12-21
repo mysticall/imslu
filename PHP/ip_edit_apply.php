@@ -218,6 +218,7 @@ if (!empty($_POST['edit'])) {
 
     $_SESSION['msg'] .= _('Changes are applied successfully.')."<br>";
     header("Location: user.php?userid={$old['userid']}");
+    exit;
 }
 
 $_SESSION['msg'] .= _('No changes have been made.')."<br>";

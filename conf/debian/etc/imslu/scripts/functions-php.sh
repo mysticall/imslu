@@ -4,22 +4,11 @@
 
 ip_add () {
 
-  if [ $USE_VLANS -eq 0 ]; then
-    if [ -f /proc/net/vlan/${2} ]; then
-
-      ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${1}/32 ${2}" -c 'exit' -c 'exit'
-
-      if [ "${3}" = "n" ] && [ -n "${4}" ]; then
-#       arp -i vlan10 -s 10.0.1.2 34:23:87:96:70:27
-        ${ARP} -i ${2} -s ${1} ${4}
-      fi
+    if [ ${USE_VLANS} -eq 0 ] && [ ${#1} -gt 0 ] && [ ${#2} -gt 0 ]; then
+        if [ -f /proc/net/vlan/${2} ]; then
+            ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${1}/32 ${2}" -c 'exit' -c 'exit'
+        fi
     fi
-  else
-    if [ "${3}" = "n" ] && [ -n "${4}" ]; then
-#     arp -s 10.0.1.2 34:23:87:96:70:27
-      ${ARP} -s ${1} ${4}
-    fi
-  fi
 }
 
 ip_rem () {
@@ -37,19 +26,17 @@ ip_rem () {
 
 mac_add () {
 
-  if [ $USE_VLANS -eq 0 ]; then
-    if [ -f /proc/net/vlan/${2} ] && [ -n "${4}" ]; then
-
-#     arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
-      ${ARP} -i ${2} -s ${1} ${4}
+    if [ ${USE_VLANS} -eq 0 ]; then
+        if [ ${#1} -gt 0 ] && [ -f /proc/net/vlan/${2} ] && [ ${#4} -gt 0 ] && [ "${3}" = "n" ]; then
+            # arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
+            ${ARP} -i ${2} -s ${1} ${4}
+        fi
+    else
+        if [ ${#1} -gt 0 ] && [ ${#4} -gt 0 ] && [ "${3}" = "n" ]; then
+            # arp -i eth1 -s 10.0.1.2 34:23:87:96:70:27
+            ${ARP} -i ${IFACE_INTERNAL} -s ${1} ${4}
+        fi
     fi
-  else
-    if [ -n "${1}" ] && [ "${3}" = "n" ] && [ -n "${4}" ]; then
-
-#     arp -i eth1 -s 10.0.1.2 34:23:87:96:70:27
-      ${ARP} -i ${IFACE_INTERNAL} -s ${1} ${4}
-    fi
-  fi
 }
 
 mac_rem () {
@@ -232,6 +219,37 @@ EOF
   done
 }
 
+# DHCP
+dhcpd_subnets=""
+if [ $(expr "${1}" : "dhcp_.*") -gt 0 ] && [ -f ${DHCPD_CONF} ]; then
+    # Reading subnets
+    while read -r a b c d; do
+        if [ "${a}" = "subnet" ]; then
+            dhcpd_subnets="${dhcpd_subnets} ${b}"
+        fi
+    done <"${DHCPD_CONF}"
+fi
+
+dhcp_add() {
+
+    if [ ${#1} -gt 0  ] && [ ${#2} -gt 0 ]; then
+
+        if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*}") -gt 0 ]; then
+            echo "host ${1} {\n  hardware ethernet ${2};\n  fixed-address ${1};\n}\n" >> ${DHCPD_CONF}
+        else
+            logger -p local7.notice -t imslu-scripts "Missing subnet for ${1} in ${DHCPD_CONF}"
+            echo 1
+        fi
+    fi
+}
+
+dhcp_rem() {
+
+    if [ ${#1} -gt 0 ]; then
+        sed -i "/^host ${1} {/,/^}$/d" ${DHCPD_CONF}
+    fi
+}
+
 case "${1}" in
 pppd_kill)
   ip=${2}
@@ -244,7 +262,8 @@ pppd_kill)
 	;;
 
 ip_add)
-	ip_add "${2}" "${3}" "${4}" "${5}"
+	ip_add "${2}" "${3}"
+    sleep 10 && mac_add "${2}" "${3}" "${4}" "${5}"
 	;;
 
 ip_rem)
@@ -290,6 +309,16 @@ tc_filter_delete)
 show_freeradius_log)
   awk '{ if ($7 == "Auth:") print $0}' ${FR_LOG_FILE} 2>&1
   ;;
+
+dhcp_add)
+    dhcp_add "${2}" "${3}"
+    systemctl restart isc-dhcp-server 2>/dev/null
+    ;;
+
+dhcp_rem)
+    dhcp_rem "${2}"
+    systemctl restart isc-dhcp-server 2>/dev/null
+    ;;
 
 *)
 	echo "Usage: /etc/imslu/scripts/functions-php.sh {pppd_kill|ip_add|ip_rem}"
