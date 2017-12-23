@@ -167,6 +167,9 @@ cp -r ~/src/imslu/PHP/* /usr/share/imslu
 mkdir /etc/imslu
 cp -r ~/src/imslu/conf/debian/etc/imslu/* /etc/imslu/
 chmod +x /etc/imslu/scripts/*
+chmod +x /etc/imslu/rc.firewall
+
+cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
 
 mkdir /etc/imslu/backup
 chown www-data:www-data /etc/imslu/backup
@@ -174,7 +177,7 @@ chown www-data:www-data /etc/imslu/backup
 ### log ###
 echo -e "\$FileCreateMode 0644\n\$FileOwner root\n\$FileGroup adm\n\nlocal7.*; if \$programname == 'imslu-scripts' then /var/log/imslu.log\n& ~" > /etc/rsyslog.d/imslu.conf
 
-nano /etc/logrotate.d/rsyslog 
+nano /etc/logrotate.d/rsyslog
 -----------
 /var/log/messages
 /var/log/imslu.log

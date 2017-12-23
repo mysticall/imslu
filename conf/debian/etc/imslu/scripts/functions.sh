@@ -1,9 +1,32 @@
 #!/bin/sh
 
+. /etc/imslu/config.sh
+
+PPPoE_STATUS=""
+if [ ${USE_PPPoE} -eq 0 ]; then
+
+    while read -r PID TTY STAT TIME COMMAND OPT1 OPT2 OPT_TMP; do
+
+        if [ ${#OPT2} -gt 0 ]; then
+
+            PPPoE_STATUS="${PPPoE_STATUS}${OPT2} "
+        fi
+    done <<EOF
+$(ps ax | grep pppoe-server)
+EOF
+
+fi
+
 # Start PPPoE server
 pppoe_start () {
 
-    ${PPPOE_SERVER} -I $1 -C ${PPPOE_SERVER_NAME} -S ${PPPOE_SERVER_NAME} -L ${PPPOE_DEFAULT_IP} -N 1000 -k -r
+    if [ $(expr "${PPPoE_STATUS}" : ".*${1} ") -eq 0 ]; then
+
+        ${PPPOE_SERVER} -I ${1} -C ${PPPOE_SERVER_NAME} -S ${PPPOE_SERVER_NAME} -L ${PPPOE_DEFAULT_IP} -N 1000 -k -r
+    else
+
+        echo "PPPoE server on ${1} is running."
+    fi
 }
 
 # Stop PPPoE sessions and PPPoE servers
@@ -33,10 +56,16 @@ vconfig_add () {
 
         for VLAN_ID in ${VLAN_SEQ}; do
 
-            vconfig add ${IFACE_INTERNAL} ${VLAN_ID}
-            echo 1 > /proc/sys/net/ipv4/conf/vlan${VLAN_ID}/proxy_arp
-            echo 1 > /proc/sys/net/ipv4/conf/vlan${VLAN_ID}/arp_accept
-            $IP link set dev vlan${VLAN_ID} up
+            if [ ! -f /proc/net/vlan/vlan${VLAN_ID} ]; then
+
+                vconfig add ${IFACE_INTERNAL} ${VLAN_ID}
+                echo 1 > /proc/sys/net/ipv4/conf/vlan${VLAN_ID}/proxy_arp
+                echo 1 > /proc/sys/net/ipv4/conf/vlan${VLAN_ID}/arp_accept
+                $IP link set dev vlan${VLAN_ID} up
+            else
+
+                echo "vlan${VLAN_ID} exists"
+            fi
 
             # Start PPPoE server
             if [ $USE_PPPoE -eq 0 ]; then

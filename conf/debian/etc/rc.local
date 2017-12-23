@@ -1,97 +1,18 @@
 #!/bin/sh
 
-. /etc/imslu/config.sh
-. /etc/imslu/scripts/functions.sh
+pid=$(ps -C imslu.sh -o pid=)
+if [ ${#pid} -eq 0 ]; then
 
-####### IMQ #######
-# https://github.com/imq/linuximq/wiki
-# modprobe imq
-$IP link set dev imq0 up
-$IP link set dev imq1 up
+    unset pid
+    /etc/imslu/scripts/imslu.sh &
+else
 
-##### ADD VLANS #####
-vconfig_add
-
-####### ipset #######
-# https://wiki.archlinux.org/index.php/Ipset
-# http://blog.ls20.com/securing-your-server-using-ipset-and-dynamic-blocklists/
-
-$IPSET create -exist allowed hash:ip
-$IPSET create -exist lan hash:net --hashsize 64
-$IPSET create -exist peers hash:net
-/etc/imslu/scripts/peer.sh
-
-####### iptables #######
-# iptables raw table is disabled in the minimal kernel config
-$IPTABLES -F
-$IPTABLES -F -t mangle
-$IPTABLES -F -t nat
-# $IPTABLES -F -t raw
-
-$IPTABLES -X
-$IPTABLES -X -t mangle
-$IPTABLES -X -t nat
-# $IPTABLES -X -t raw
-
-$IPTABLES -Z
-$IPTABLES -Z -t mangle
-$IPTABLES -Z -t nat
-# $IPTABLES -Z -t raw
-
-### kinds of traffic ###
-# Incoming packets - download
-$IPTABLES -t mangle -A PREROUTING -i ${IFACE_EXTERNAL}+ -m set ! --match-set peers src -j TOS --set-tos 0x2
-# Outgoing packets - upload
-$IPTABLES -t mangle -A PREROUTING -i ppp+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
-$IPTABLES -t mangle -A PREROUTING -i vlan+ -m set ! --match-set peers dst -j TOS --set-tos 0x2
-
-### Shaper ###
-# Incoming packets - download
-$IPTABLES -t mangle -A FORWARD -i ${IFACE_EXTERNAL}+ -j IMQ --todev $(expr "${IFACE_IMQ0}" : "imq\([0-9]\)")
-# Outgoing packets - upload
-$IPTABLES -t mangle -A FORWARD -i ppp+ -j IMQ --todev $(expr "${IFACE_IMQ1}" : "imq\([0-9]\)")
-$IPTABLES -t mangle -A FORWARD -i vlan+ -j IMQ --todev $(expr "${IFACE_IMQ1}" : "imq\([0-9]\)")
-
-# Dynamic NAT
-# http://arpnet.pl/dnetmap/
-# Required: xtables-addons - xt_DNETMAP
-#$IPTABLES -t nat -I PREROUTING -i ${IFACE_EXTERNAL}+ -j DNETMAP
-#$IPTABLES -t nat -A PREROUTING -p tcp --dport 80 ! --dst 192.168.1.254 --match set ! --match-set allowed src -j REDIRECT --to-port 3000
-#$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 10.0.0.0/8 -j DNETMAP --prefix 192.168.1.0/24
-#$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 172.16.0.0/12 -j DNETMAP --prefix 192.168.1.0/24
-#$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j DNETMAP --prefix 192.168.1.0/24
-
-# Redirect expiret users to warning page
-$IPTABLES -t nat -A PREROUTING ! -i ${IFACE_EXTERNAL}+ -p tcp --dport 80 ! --dst 192.168.1.254 --match set ! --match-set allowed src -j REDIRECT --to-port 3000
-# NAT
-$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 10.0.0.0/8 -j SNAT --to 192.168.1.254
-$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 172.16.0.0/12 -j SNAT --to 192.168.1.254
-$IPTABLES -t nat -A POSTROUTING -o ${IFACE_EXTERNAL}+ -s 192.168.0.0/16 -j SNAT --to 192.168.1.254
-
-# Set default policy for chain FORWARD to DROP
-$IPTABLES -t filter -P FORWARD DROP
-# High performance NetFlow v5, v9, IPFIX flow data export module for Linux kernel.
-$IPTABLES -t filter -A FORWARD -j NETFLOW
-# Incoming packets - download
-$IPTABLES -t filter -A FORWARD -i ${IFACE_EXTERNAL}+ -m set --match-set allowed dst -j ACCEPT
-# Outgoing packets - upload
-$IPTABLES -t filter -A FORWARD -m set --match-set allowed src -j ACCEPT
+    logger -p local7.notice -t imslu-scripts "Please wait until the imslu.sh is finished."
+    echo "\nPlease wait until the imslu.sh is finished."
+fi
 
 # change hashsize on the fly
 # https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
 echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
-
-# ipt-netflow
-sysctl -w net.netflow.active_timeout=300
-sysctl -w net.netflow.destination="127.0.0.1:9996"
-
-/etc/imslu/scripts/shaper.sh &
-
-### Static IP addresses only ###
-/etc/imslu/scripts/static_routing.sh &
-
-echo 1 > /proc/sys/net/ipv4/conf/${IFACE_INTERNAL}/arp_accept
-killall -q -s 9 imslu_find.sh
-/etc/imslu/scripts/imslu_find.sh &
 
 exit 0

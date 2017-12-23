@@ -16,7 +16,7 @@ __________________________________________________________________
 
 		1.1 About IMSLU
 		1.2 IMSLU Developers
-			1.2.1 Others
+		1.2.1 Others
 		1.3 Legal Notice
 		1.4 Other Information
 
@@ -167,12 +167,24 @@ cp -r ~/src/imslu/PHP/* /usr/share/imslu
 mkdir /etc/imslu
 cp -r ~/src/imslu/conf/debian/etc/imslu/* /etc/imslu/
 chmod +x /etc/imslu/scripts/*
+chmod +x /etc/imslu/rc.firewall
+
+cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
 
 mkdir /etc/imslu/backup
 chown www-data:www-data /etc/imslu/backup
 
-mkdir /var/log/imslu
-cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
+### log ###
+echo -e "\$FileCreateMode 0644\n\$FileOwner root\n\$FileGroup adm\n\nlocal7.*; if \$programname == 'imslu-scripts' then /var/log/imslu.log\n& ~" > /etc/rsyslog.d/imslu.conf
+
+nano /etc/logrotate.d/rsyslog
+-----------
+/var/log/messages
+/var/log/imslu.log
+-----------
+
+/etc/init.d/rsyslog restart
+
 
 ### System settings ###
 
@@ -566,6 +578,32 @@ Remove the "-c 'enable'" from functions-php.sh for compatibility with old quagga
 sed -i -e "s/ -c 'enable' / /" /etc/imslu/scripts/functions-php.sh
 
 /etc/init.d/quagga start
+
+
+### isc-dhcp ###
+
+apt install isc-dhcp-server
+
+NB: Edit the dhcpd.conf
+install -c -m 644 ~/src/imslu/conf/debian/etc/dhcp/dhcpd.conf /etc/dhcp
+
+NB: Edit the isc-dhcp-server and add the VLANs
+nano /etc/default/isc-dhcp-server
+-----------
+INTERFACESv4="vlan12 vlan10 vlan11 vlan12 vlan13 vlan14 vlan15 vlan16"
+-----------
+
+Configure log and logrotate:
+echo -e "local7.*; if \$programname == 'dhcpd' then /var/log/dhcpd.log\n& ~" > /etc/rsyslog.d/dhcpd.conf
+
+nano /etc/logrotate.d/rsyslog 
+-----------
+/var/log/syslog
+/var/log/dhcpd.log
+-----------
+
+/etc/init.d/isc-dhcp-server restart
+/etc/init.d/rsyslog restart
 
 
 ####### 3.3 GRAPHICS #######

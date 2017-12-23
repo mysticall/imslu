@@ -1,6 +1,6 @@
 <?php
-$OS = 'FreeBSD';
-//$OS = 'Linux';
+//$OS = 'FreeBSD';
+$OS = 'Linux';
 
 if ($OS == 'FreeBSD') {
   $CONFIG_FILE = '/usr/local/etc/imslu/config.php';

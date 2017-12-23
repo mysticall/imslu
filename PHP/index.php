@@ -73,13 +73,20 @@ $css = (!empty($_COOKIE['theme']) && ($_COOKIE['theme'] != 'originalgreen')) ? "
 
 $form .= 
 "   $css
-	<script type=\"text/javascript\" src=\"js/func.js\"></script>
+<script type=\"text/javascript\" src=\"js/func.js\"></script>
+<script type=\"text/javascript\">
+<!--
+window.onload = function() {
+    document.getElementById(\"alias\").focus();
+};
+//-->
+</script>
 </head>
   <body>
     <form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\" class=\"login_container\">
       <div  style=\"margin-top: 17px;\">
         <label class=\"login_label\">"._('name').":</label>
-        <input class=\"login_input\" type=\"text\" name=\"alias\">
+        <input id=\"alias\" class=\"login_input\" type=\"text\" name=\"alias\">
         <label class=\"login_label\">"._('password').":</label>
         <input class=\"login_input\" type=\"password\" name=\"password\">
         <input type=\"submit\" class=\"login_submit\" name=\"login\" value=\""._('login')."\">
