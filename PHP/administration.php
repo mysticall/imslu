@@ -44,6 +44,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
     // Security key for comparison
     $_SESSION['form_key'] = md5(uniqid(mt_rand(), true));
 
+    $form = "";
     if ($USE_VLANS) {
 
         if ($OS == 'FreeBSD') {
@@ -65,7 +66,7 @@ if((OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type']) || (OPERATOR_TYPE_AD
                 $vlan[$value] = $value;
             }
 
-        $form =
+        $form .=
 "    <form action=\"administration_apply.php\" method=\"post\">
       <table>
         <tbody>
