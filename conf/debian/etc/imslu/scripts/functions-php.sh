@@ -247,6 +247,7 @@ dhcp_rem() {
 
     if [ ${#1} -gt 0 ]; then
         sed -i "/^host ${1} {/,/^}$/d" ${DHCPD_CONF}
+        sed -i "/^$/d" ${DHCPD_CONF}
     fi
 }
 

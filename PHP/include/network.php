@@ -20,7 +20,7 @@ require_once dirname(__FILE__).'/config.php';
 
 function error_protocol($protocol, $userid) {
 
-    $_SESSION['msg'] .= _s("Unsupported protocol: %s", $protocol)."<br>";
+    $_SESSION['msg'] .= _s("Unsupported protocol %s", $protocol)."<br>";
     header("Location: user.php?userid={$userid}");
     exit;
 }

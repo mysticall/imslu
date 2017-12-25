@@ -134,6 +134,7 @@ dhcp_rem() {
 
     if [ ${#1} -gt 0 ]; then
         sed -i '' -e "/^host ${1} {/,/^}$/d" ${DHCPD_CONF}
+        sed -i '' -e '/^$/d' ${DHCPD_CONF}
     fi
 }
 

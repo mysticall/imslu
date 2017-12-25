@@ -108,6 +108,7 @@ ${ARP} -f ${ARP_ENTRIES}
 if [ ${USE_DHCPD} -eq 0 ]; then
     # Delete Fixed IP addresses
     sed -i '' -e '/^host /,/^}$/d' ${DHCPD_CONF}
+    sed -i '' -e '/^$/d' ${DHCPD_CONF}
 
     echo -e "${dhcpd}" >> ${DHCPD_CONF}
     service isc-dhcpd restart

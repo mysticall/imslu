@@ -27,7 +27,7 @@ if (empty($_COOKIE['imslu_sessionid']) || !$Operator->authentication($_COOKIE['i
     exit;
 }
 
-if (!empty($_GET['table']) && !empty($_GET['value']) && !empty($_GET['valueid'])) {
+if (!empty($_GET['table']) && !empty($_GET['value'])) {
 
     $db = new PDOinstance();
 
@@ -41,6 +41,9 @@ if (!empty($_GET['table']) && !empty($_GET['value']) && !empty($_GET['valueid'])
             break;
         case "ip_ip":
             $sql = 'SELECT ip FROM ip WHERE id != ? AND userid != 0 AND ip = ? LIMIT 1';
+            break;
+        case "ip_exists":
+            $sql = 'SELECT ip FROM ip WHERE id != ? AND ip = ? LIMIT 1';
             break;
         case "ip_mac":
             $sql = 'SELECT mac FROM ip WHERE id != ? AND mac = ? LIMIT 1';
@@ -62,7 +65,11 @@ if (!empty($_GET['table']) && !empty($_GET['value']) && !empty($_GET['valueid'])
         $sth->bindParam(2, $value, PDO::PARAM_STR);
         $sth->execute();
 
-        if ($sth->rowCount() == 1) {
+        if ($table == "ip_exists" && $sth->rowCount() == 0) {
+
+            echo 1;
+        }
+        elseif ($table != "ip_exists" && $sth->rowCount() == 1) {
 
             echo 1;
         }

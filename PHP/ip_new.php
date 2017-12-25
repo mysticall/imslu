@@ -142,6 +142,10 @@ if (!empty($_GET['userid']) && !empty($_GET['pool'])) {
     $form =
 "<script type=\"text/javascript\">
 <!--
+window.onload = function() {
+    document.getElementById('save').disabled = false;
+};
+
 function validateForm() {
 
     var protocol = document.getElementById(\"protocol\").value;
@@ -167,6 +171,44 @@ function validateForm() {
         return false;
     }
 }
+
+function CheckIP() {
+
+	var value = document.getElementById('ip').value;
+    var msg = '"._('The IP address does not exist!')."';
+	var xmlhttp;
+
+	if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+	}
+	else {
+		// code for IE6, IE5
+		xmlhttp = new ActiveXObject(\"Microsoft.XMLHTTP\");
+	}
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+
+            if (xmlhttp.responseText == 1) {
+
+                add_new_msg(msg);
+                document.getElementById('save').disabled = true;
+            }
+            else if (xmlhttp.responseText == 0) {
+
+                document.getElementById('save').disabled = false;
+                if (document.getElementById('msg')) {
+                    document.getElementById('msg').remove();
+                }
+                value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."');
+            }
+        }
+    };
+
+    xmlhttp.open(\"GET\", \"value_exists.php?table=ip_exists&value=\"+value+\"&valueid=\", true);
+    xmlhttp.send();
+}
 //-->
 </script>
     <form id=\"edit\" action=\"ip_new_apply.php\" onsubmit=\"return validateForm();\" method=\"post\">
@@ -184,7 +226,7 @@ function validateForm() {
               <label>"._('IP address')."</label>
             </td>
             <td class=\"dd\">
-              <input id=\"ip\" type=\"text\" name=\"ip\" value=\"{$ip['ip']}\" onkeyup=\"value_exists('ip', 'ip_ip', '{$ip['id']}', '"._('The IP address is already being used!')."')\">
+              <input id=\"ip\" type=\"text\" name=\"ip\" value=\"{$ip['ip']}\" onkeyup=\"CheckIP()\">
             </td>
           </tr>
           <tr>
@@ -288,9 +330,12 @@ function validateForm() {
           </tr>
         <tr class=\"odd_row\">
             <td class=\"dt right\" style=\"border-right-color:transparent;\">
+              <noscript>
+                <label style=\"color: red;\">"._('Please enable JavaScript')."</label>
+              </noscript>
             </td>
             <td class=\"dd\">
-              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\">
+              <input id=\"save\" class=\"button\" type=\"submit\" name=\"new\" value=\""._('save')."\" disabled>
               <input type=\"hidden\" name=\"form_key\" value=\"{$_SESSION['form_key']}\">
               <input type=\"hidden\" name=\"userid\" value=\"{$_GET['userid']}\">
             </td>

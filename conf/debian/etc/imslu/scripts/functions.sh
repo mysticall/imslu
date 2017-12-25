@@ -95,6 +95,6 @@ vconfig_rem () {
             vconfig rem vlan${VLAN_ID}
         done
     else
-        echo "USE_VLANS=false in /etc/imslu/config.sh"
+        echo "vconfig_add: USE_VLANS=false in /etc/imslu/config.sh"
     fi
 }
