@@ -21,6 +21,7 @@
 ./include/gettextwrapper.php
 ./include/menu.php
 ./include/network.php
+./include/os.php
 ./include/page_footer.php
 ./include/page_header.php
 ./index.php
