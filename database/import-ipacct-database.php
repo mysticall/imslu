@@ -38,9 +38,13 @@ catch (PDOException $e) {
 
 
 echo "Import IP Addresses - STEP 1\n";
-$NETWORKS = "";
+$txt = "";
+$NETWORKS = array();
+$SUBNETS = "";
+$STATIC_ROUTES = "";
+$DHCPD = "";
 
-$sql = "SELECT id, name, data FROM addrpool";
+$sql = "SELECT id, name, data, macprot FROM addrpool";
 $sth = $ipacct->prepare($sql);
 $sth->execute();
 $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -58,7 +62,14 @@ foreach ($rows as $value) {
       //print_r($str2);
       $ipaddress_start = "{$str2[0]}.{$str2[1]}.{$str2[2]}.{$str2[3]}";
       $ipaddress_end = "{$str2[0]}.{$str2[1]}.{$str2[2]}.{$str2[4]}";
-      $NETWORKS .= "{$str2[0]}.{$str2[1]}.{$str2[2]}.0/24 ";
+
+      $NETWORKS["{$str2[0]}{$str2[1]}"] = "{$str2[0]}.{$str2[1]}.0.0/16 ";
+      $SUBNETS .= "{$str2[0]}.{$str2[1]}.{$str2[2]}.0/24 ";
+
+      if ($value['macprot'] == "lmac") {
+
+          $STATIC_ROUTES .= "{$str2[0]}.{$str2[1]}.{$str2[2]}.1/32 ";
+      }
 
       if (filter_var($ipaddress_start, FILTER_VALIDATE_IP)) {
 
@@ -85,7 +96,6 @@ foreach ($rows as $value) {
     }
   }
 }
-
 
 echo "Import Operators\n";
 $sql = "SELECT * FROM users";
@@ -319,11 +329,25 @@ foreach ($rows as $value) {
   $xmacs[$value['iid']] = $value['mac'];
 }
 
-$sql = "SELECT id, cid, name, ip, stopped, pass, pppoeif, autosavemac FROM ips";
+$sql = "SELECT net FROM dhcp";
 $sth = $ipacct->prepare($sql);
 $sth->execute();
 $rows = $sth->fetchAll(PDO::FETCH_ASSOC);
-//print_r($ip);
+
+$dhcp = array();
+if (!empty($rows)) {
+    foreach ($rows as $value) {
+        $str = preg_split("/[\.]/", $value['net']);
+        $dhcp["{$str[0]}{$str[1]}{$str[2]}"] = $value['net'];
+        $DHCPD .= "subnet {$str[0]}.{$str[1]}.{$str[2]}.0 netmask 255.255.255.0 {\n  option routers {$str[0]}.{$str[1]}.{$str[2]}.1;\n}\n";
+    }
+}
+
+$sql = "SELECT id, cid, name, ip, stopped, pass, macprot, autosavemac FROM ips";
+$sth = $ipacct->prepare($sql);
+$sth->execute();
+$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
+//print_r($rows);
 
 $imslu->beginTransaction();
 foreach ($rows as $value) {
@@ -332,7 +356,7 @@ foreach ($rows as $value) {
   $free_mac = ($value['autosavemac'] == 'y') ? 'n' : 'y';
 
 
-  if (!empty($value['name'])) {
+  if ($value['macprot'] == "lpmac" && !empty($value['name'])) {
 
     $str = strip_tags($value['name']);
     $username = preg_replace('/\s+/', '_', $str);
@@ -377,25 +401,55 @@ foreach ($rows as $value) {
     $sth->execute();
     
   }
-  else {
+  elseif ($value['macprot'] == "lmac") {
 
+    $str = preg_split("/[\.]/", $value['ip']);
+    $protocol = !empty($dhcp["{$str[0]}{$str[1]}{$str[2]}"]) ? "DHCP" : "IP";
     $mac = !empty($xmacs[$value['id']]) ? $xmacs[$value['id']] : '';
-    $sql = 'UPDATE ip SET userid = :userid, vlan = :vlan, mac = :mac, free_mac = :free_mac, stopped = :stopped WHERE ip = :ip';
+    $sql = 'UPDATE ip SET userid = :userid, mac = :mac, free_mac = :free_mac, protocol = :protocol, stopped = :stopped WHERE ip = :ip';
     $sth = $imslu->prepare($sql);
     $sth->bindValue(':userid', $uid);
-    $sth->bindValue(':vlan', $value['pppoeif']);
     $sth->bindValue(':mac', $mac);
     $sth->bindValue(':free_mac', $free_mac);
+    $sth->bindValue(':protocol', $protocol);
     $sth->bindValue(':stopped', $value['stopped']);
     $sth->bindValue(':ip', $value['ip']);
     $sth->execute();
     
   }
+  else {
+      echo "Unsupported protocol {$value['macprot']} for IP {$value['ip']}\n";
+  }
 }
 $imslu->commit();
 
-echo "IMSLU database ready for use!\nYou can export the database.\n";
-echo "Add the following subnets in '/etc/imslu/config.sh':\n";
-echo $NETWORKS ."\n";
-echo "Do not forget to add vlans!\n";
+
+$log_file = "/tmp/import-ipacct.log";
+$file = fopen("$log_file", "w") or die("Unable to open file!");
+
+$txt .= "IMSLU database ready for use!\nYou can export the database.\n";
+$txt .= "Add the following configurations in 'config.sh':\n\n";
+if (!empty($NETWORKS)) {
+
+    $NET = "";
+    foreach ($NETWORKS as $value) {
+
+        $NET .= "{$value} ";
+    }
+    $txt .= "NETWORKS=\"{$NET}\"\n";
+}
+
+$txt .= "SUBNETS=\"{$SUBNETS}\"\n";
+$txt .= "STATIC_ROUTES=\"{$STATIC_ROUTES}\"\n";
+$txt .= "Do not forget to add vlans!\n\n";
+
+if (!empty($DHCPD)) {
+    $txt .= "Add the following configurations in 'dhcpd.conf':\n\n";
+    $txt .= "{$DHCPD} \n";
+}
+
+fwrite($file, $txt);
+fclose($file);
+echo $txt;
+echo "See the {$log_file} file for the above message.\n";
 ?>
