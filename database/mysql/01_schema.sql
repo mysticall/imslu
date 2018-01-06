@@ -141,7 +141,7 @@ CREATE TABLE `users` (
   `address`       varchar(128)  NOT NULL DEFAULT '',
   `phone_number`  varchar(32)   NOT NULL DEFAULT '',
   `notes`         text          NOT NULL DEFAULT '',
-  `created`       datetime      NOT NULL,
+  `created`       datetime      NULL,
   `serviceid`     int(11)       NOT NULL DEFAULT '0',
   `pay`           double(10,2)  NOT NULL DEFAULT '0.00',
   `free_access`   enum('n','y') NOT NULL DEFAULT 'n',

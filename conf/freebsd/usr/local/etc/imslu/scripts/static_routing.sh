@@ -100,6 +100,9 @@ EOF
 fi
 
 # ARP
+# Clearing arp cache
+${ARP} -a -d
+
 # arp entries must be set after starting the zebra
 echo -e "${arp_entries}" > ${ARP_ENTRIES}
 ${ARP} -f ${ARP_ENTRIES}

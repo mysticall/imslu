@@ -124,9 +124,20 @@ Password:
 AS ROOT in user ~/src:
 root@imslu:/home/mystical/src # ln -s `pwd` ~/src
 
+NB: Make sure that RAID kernel modules are loaded at the boot time. Add the driver in loader.conf
+NB: Edit the following files:
+
+vi ~/src/imslu/conf/freebsd/boot/loader.conf
+vi ~/src/imslu/conf/freebsd/etc/sysctl.conf
+vi ~/src/imslu/conf/freebsd/etc/rc.conf
+
+install -c -m 644 ~/src/imslu/conf/freebsd/boot/loader.conf /boot
+install -c -m 644 ~/src/imslu/conf/freebsd/etc/sysctl.conf /etc
+install -c -m 644 ~/src/imslu/conf/freebsd/etc/rc.conf /etc
+
 mkdir /usr/local/etc/imslu
 cp -r ~/src/imslu/conf/freebsd/usr/local/etc/imslu/* /usr/local/etc/imslu
-chmod +x /usr/local/etc/imslu/scripts/*
+chmod a+x /usr/local/etc/imslu/scripts/*
 
 cp ~/src/imslu/conf/freebsd/var/cron/tabs/root /var/cron/tabs/
 /etc/rc.d/cron restart
@@ -156,6 +167,8 @@ portsnap fetch
 portsnap extract
 portsnap update
 
+pkg install openssl
+
 
 ####### 2.3 System upgrade #######
 
@@ -164,7 +177,7 @@ portsnap update
 ####### 2.4 MariaDB #######
 https://www.cyberciti.biz/faq/how-to-install-mariadb-databases-on-a-freebsd-v10-unix-server/
 
-pkg version | grep mariadb
+pkg search mariadb
 pkg install mariadb102-server mariadb102-client
 
 cp /usr/local/openssl/openssl.cnf.sample /usr/local/openssl/openssl.cnf
@@ -191,7 +204,7 @@ mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
 
 ####### 2.5 Apache 2.4 and PHP 7 #######
 
-pkg install apache24 mod_php71 php71 php71-pdo php71-pdo_mysql php71-gettext php71-session php71-json php71-filter
+pkg install apache24 mod_php72 php72 php72-pdo php72-pdo_mysql php72-gettext php72-session php72-json php72-filter
 
 ### php ###
 cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini
@@ -243,10 +256,13 @@ sed -i '' -e 's/index.html/index.php/' /usr/local/etc/apache24/httpd.conf
 
 mkdir /usr/local/etc/imslu/backup
 chown www:www /usr/local/etc/imslu/backup
+chmod 775 /usr/local/etc/imslu/backup
 
 mkdir /usr/local/www/imslu
-chown www:www /usr/local/www/imslu
 cp -r ~/src/imslu/PHP/* /usr/local/www/imslu
+mkdir /usr/local/www/imslu/rrd
+chown -R www:www /usr/local/www/imslu
+chmod -R 775 /usr/local/www/imslu
 
 rm /usr/local/www/apache24/data/index.html
 cp ~/src/imslu/conf/freebsd/usr/local/www/apache24/data/index.php /usr/local/www/apache24/data
@@ -334,7 +350,7 @@ service syslogd reload
 ####### 2.8 bind9 #######
 http://www.site-motor.ru/docs/freebsd/dns_bind910.shtml
 
-pkg install bind911
+pkg install bind912
 
 Bind Chroot
 
@@ -358,17 +374,6 @@ http://www.andrewblog.ru/freebsd-10-3-ustanovka-shlyuza-na-staryj-server-hp-prol
 https://habrahabr.ru/post/111580/ - Обзор и сравнение способов настройки NAT на FreeBSD
 http://nuclight.livejournal.com/124348.html - ipfw: порядок прохождения пакетов, сложные случаи
 
-
-NB: Make sure that RAID kernel modules are loaded at the boot time. Add the driver in loader.conf
-NB: Edit the following files:
-
-vi ~/src/imslu/conf/freebsd/boot/loader.conf
-vi ~/src/imslu/conf/freebsd/etc/sysctl.conf
-vi ~/src/imslu/conf/freebsd/etc/rc.conf
-
-install -c -m 644 ~/src/imslu/conf/freebsd/boot/loader.conf /boot
-install -c -m 644 ~/src/imslu/conf/freebsd/etc/sysctl.conf /etc
-install -c -m 644 ~/src/imslu/conf/freebsd/etc/rc.conf /etc
 
 ### Rebuild FreeBSD kernel ###
 https://blog.zespre.com/2014/12/08/freebsd-kernel-and-world-rebuilding.html
@@ -400,6 +405,8 @@ echo -e "net.link.ether.arp_accept=1\n\n" >> /etc/sysctl.conf
 make -j4 buildkernel KERNCONF=IMSLU 2>&1 | tee buildkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
 mv /boot/kernel /boot/kernel_old
 make installkernel KERNCONF=IMSLU 2>&1 | tee installkernel_$(date +"%Y-%m-%d-%H:%M:%S").log
+
+NB: Make sure that RAID kernel modules are loaded at the boot time. Add the driver in loader.conf
 
 
 ### netmap-ipfw ###
@@ -501,7 +508,7 @@ service imslu start
 
 pkg install rrdtool
 
-mkdir /var/lib/rrd
+mkdir -p /var/lib/rrd
 
 
 ####### User Interface #######

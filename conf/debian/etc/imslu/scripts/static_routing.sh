@@ -98,6 +98,15 @@ EOF
 fi
 
 # ARP
+# Clearing arp cache
+while read -r tmp1 tmp_ip tmp2 mac tmp3 tmp4 interface; do
+
+    ip=$(expr "${tmp_ip}" : '[\(\)]*\([0-9a-f.:]*\)')
+    ${ARP} -d ${ip}
+done <<EOF
+$(${ARP} -a | grep -v "incomplete")
+EOF
+
 # arp entries must be set after starting the zebra
 echo ${arp_entries} > ${ARP_ENTRIES}
 ${ARP} -f ${ARP_ENTRIES}
