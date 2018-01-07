@@ -204,7 +204,7 @@ mysql $database -u $user -p${password} < 05_freeradius_example_ip-pool.sql
 
 ####### 2.5 Apache 2.4 and PHP 7 #######
 
-pkg install apache24 mod_php72 php72 php72-pdo php72-pdo_mysql php72-gettext php72-session php72-json php72-filter
+pkg install apache24 mod_php70 php70 php70-pdo php70-pdo_mysql php70-gettext php70-session php70-json php70-filter
 
 ### php ###
 cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini

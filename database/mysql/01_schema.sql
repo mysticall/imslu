@@ -12,7 +12,6 @@ CREATE TABLE `opergrp` (
   `name`      varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (opergrpid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO opergrp VALUES (1,'Cashiers'), (2,'Network Technicians'), (3,'Administrators'), (4,'LINUX Administrators');
 
 CREATE TABLE `operators` (
   `operid`  int(4)       UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -26,7 +25,6 @@ CREATE TABLE `operators` (
   PRIMARY KEY (operid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `operators_1` ON `operators` (`alias`,`type`);
-INSERT INTO operators (operid, alias, name, passwd, lang, theme, type) VALUES (1, 'sadmin', 'System Administrator', MD5('sadmin'), 'en_US', 'originalgreen', 4), (2, 'admin', 'Administrator', MD5('admin'), 'en_US', 'originalgreen', 3);
 
 CREATE TABLE `operators_groups` (
   `id`        int(4) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -35,7 +33,6 @@ CREATE TABLE `operators_groups` (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `operators_groups_1` ON `operators_groups` (`opergrpid`,`operid`);
-INSERT INTO operators_groups (id, opergrpid, operid) VALUES ('1','4','1'), ('2','3','2');
 
 CREATE TABLE `login_attempts` (
   `attempt_failed` int(11)     NOT NULL DEFAULT '1',
@@ -51,7 +48,7 @@ CREATE TABLE `auditlog` (
   `resourceid` int(4)       UNSIGNED NOT NULL,
   `operid`     int(4)       UNSIGNED NOT NULL,
   `oper_alias` varchar(50)  NOT NULL,
-  `date_time`  datetime     NOT NULL,
+  `date_time`  datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ip`         varchar(39)  NOT NULL,
   `details`    varchar(255) NOT NULL,
   `oldvalue`   text         NOT NULL,
@@ -68,7 +65,6 @@ CREATE TABLE kind_traffic (
   `notes`          text        NOT NULL DEFAULT '',
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'int','International traffic');
 
 --
 -- Table structure for table 'Services'
@@ -99,14 +95,13 @@ CREATE TABLE `services` (
   `out_max4`  varchar(32)  NULL,
   PRIMARY KEY (serviceid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO `services` (`serviceid`, `name`, `price`, `in_max0`, `out_max0`, `in_max1`, `out_max1`) VALUES (1, 'LOW', 15, '30mbit', '15mbit', '15mbit', '10mbit'), (2, 'HIGH', 20, '50mbit', '35mbit', '25mbit', '20mbit');
 
 --
 -- Table structure for table 'ip'
 --
 CREATE TABLE `ip` (
   `id`       int(11)       UNSIGNED NOT NULL AUTO_INCREMENT,
-  `userid`   int(11)       NOT NULL,
+  `userid`   int(11)       NOT NULL DEFAULT '0',
   `ip`       varchar(39)   NOT NULL DEFAULT '',
   `vlan`     varchar(17)   NOT NULL DEFAULT '',
   `mac`      varchar(17)   NOT NULL DEFAULT '',
@@ -141,18 +136,17 @@ CREATE TABLE `users` (
   `address`       varchar(128)  NOT NULL DEFAULT '',
   `phone_number`  varchar(32)   NOT NULL DEFAULT '',
   `notes`         text          NOT NULL DEFAULT '',
-  `created`       datetime      NULL,
+  `created`       datetime      NOT NULL DEFAULT '0000-00-00 00:00:00',
   `serviceid`     int(11)       NOT NULL DEFAULT '0',
   `pay`           double(10,2)  NOT NULL DEFAULT '0.00',
   `free_access`   enum('n','y') NOT NULL DEFAULT 'n',
   `not_excluding` enum('n','y') NOT NULL DEFAULT 'n',
-  `expires`       datetime     NOT NULL,
+  `expires`       datetime      NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (userid),
   INDEX (name(32)),
   INDEX (address(32)),
   INDEX (phone_number(15))
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
-INSERT INTO `users` (`userid`,`name`, `serviceid`) VALUES ('10','test', '1');
 
 --
 -- Table structure for table 'payments'
@@ -166,9 +160,9 @@ CREATE TABLE `payments` (
   `reported`      TINYINT(1)   NOT NULL DEFAULT '0',
   `operator1`     varchar(128) NOT NULL DEFAULT '',
   `operator2`     varchar(128) NOT NULL DEFAULT '',
-  `date_payment1` datetime     NULL,
-  `date_payment2` datetime     NULL,
-  `expires`       datetime     NOT NULL,
+  `date_payment1` datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `date_payment2` datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `expires`       datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
   `sum`           double(10,2) NOT NULL DEFAULT '0.00',
   `notes`         text         NOT NULL DEFAULT '',
   PRIMARY KEY (id),
@@ -183,9 +177,9 @@ CREATE TABLE `requests` (
   `requestid`    int(11)      UNSIGNED NOT NULL AUTO_INCREMENT,
   `operid`       int(4)       UNSIGNED NOT NULL,
   `status`       TINYINT(1)   UNSIGNED NOT NULL,
-  `add`          datetime     NOT NULL,
-  `assign`       datetime     NOT NULL,
-  `end`          datetime     NOT NULL,
+  `add`          datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `assign`       datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `end`          datetime     NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created`      varchar(64)  NOT NULL DEFAULT '',
   `changed`      varchar(64)  NOT NULL DEFAULT '',
   `closed`       varchar(64)  NOT NULL DEFAULT '',
@@ -204,9 +198,9 @@ CREATE TABLE `tickets` (
   `userid`   int(11)     UNSIGNED NOT NULL,
   `operid`   int(4)      UNSIGNED NOT NULL,
   `status`   TINYINT(1)  UNSIGNED NOT NULL,
-  `add`      datetime    NOT NULL,
-  `assign`   datetime    NOT NULL,
-  `end`      datetime    NOT NULL,
+  `add`      datetime    NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `assign`   datetime    NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `end`      datetime    NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created`  varchar(64) NOT NULL DEFAULT '',
   `changed`  varchar(64) NOT NULL DEFAULT '',
   `closed`   varchar(64) NOT NULL DEFAULT '',
@@ -218,3 +212,9 @@ ALTER TABLE `operators` ADD CONSTRAINT `c_operators_1` FOREIGN KEY (`type`) REFE
 ALTER TABLE `operators_groups` ADD CONSTRAINT `c_operators_groups_1` FOREIGN KEY (`opergrpid`) REFERENCES `opergrp` (`opergrpid`) ON DELETE CASCADE;
 ALTER TABLE `operators_groups` ADD CONSTRAINT `c_operators_groups_2` FOREIGN KEY (`operid`) REFERENCES `operators` (`operid`) ON DELETE CASCADE;
 
+INSERT INTO opergrp VALUES (1,'Cashiers'), (2,'Network Technicians'), (3,'Administrators'), (4,'LINUX Administrators');
+INSERT INTO operators (operid, alias, name, passwd, lang, theme, type) VALUES (1, 'sadmin', 'System Administrator', MD5('sadmin'), 'en_US', 'originalgreen', 4), (2, 'admin', 'Administrator', MD5('admin'), 'en_US', 'originalgreen', 3);
+INSERT INTO operators_groups (id, opergrpid, operid) VALUES ('1','4','1'), ('2','3','2');
+INSERT INTO `kind_traffic` VALUES (1,'peer','BGP peer - national traffic'), (2,'int','International traffic');
+INSERT INTO `services` (`serviceid`, `name`, `price`, `in_max0`, `out_max0`, `in_max1`, `out_max1`) VALUES (1, 'LOW', 15, '30mbit', '15mbit', '15mbit', '10mbit'), (2, 'HIGH', 20, '50mbit', '35mbit', '25mbit', '20mbit');
+INSERT INTO `users` (`userid`,`name`, `serviceid`) VALUES ('10','test', '1');

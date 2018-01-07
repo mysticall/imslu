@@ -166,8 +166,8 @@ cp -r ~/src/imslu/PHP/* /usr/share/imslu
 
 mkdir /etc/imslu
 cp -r ~/src/imslu/conf/debian/etc/imslu/* /etc/imslu/
-chmod +x /etc/imslu/scripts/*
-chmod +x /etc/imslu/rc.firewall
+chmod a+x /etc/imslu/scripts/*
+chmod a+x /etc/imslu/rc.firewall
 
 cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
 
