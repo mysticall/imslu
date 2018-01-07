@@ -5,6 +5,10 @@ logger -p local7.notice -t imslu-scripts "Starting imslu."
 # IMSLU Services
 . /usr/local/etc/imslu/config.sh
 
+# ipfw
+logger -p local7.notice -t imslu-scripts "Starting rc.firewall"
+/usr/local/etc/imslu/rc.firewall
+
 # Load peer IP addresses
 logger -p local7.notice -t imslu-scripts "Starting peer.sh"
 /usr/local/etc/imslu/scripts/peer.sh

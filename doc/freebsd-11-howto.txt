@@ -135,6 +135,10 @@ install -c -m 644 ~/src/imslu/conf/freebsd/boot/loader.conf /boot
 install -c -m 644 ~/src/imslu/conf/freebsd/etc/sysctl.conf /etc
 install -c -m 644 ~/src/imslu/conf/freebsd/etc/rc.conf /etc
 
+mv /etc/rc.firewall /etc/rc.firewall.orig
+echo -e "echo The default rc.firewall is stopped. Please check /usr/local/etc/imslu/rc.firewall\nexit 1\n" > /etc/rc.firewall
+chmod a+x /etc/rc.firewall
+
 mkdir /usr/local/etc/imslu
 cp -r ~/src/imslu/conf/freebsd/usr/local/etc/imslu/* /usr/local/etc/imslu
 chmod a+x /usr/local/etc/imslu/scripts/*
@@ -154,10 +158,11 @@ vi /etc/syslog.conf
 Set the log rotation parameters:
 vi /etc/newsyslog.conf
 -----------
-/var/log/imslu.log                      600  7     *    $W0D0 JC
+/var/log/imslu.log                      644  7     *    $W0D0 JC
 -----------
 
 touch /var/log/imslu.log
+chmod 644 /var/log/imslu.log
 service syslogd reload
 
 ### Using the Ports Collection ###
@@ -467,7 +472,7 @@ service imslu_find start
 pkg install quagga
 touch /usr/local/etc/quagga/zebra.conf
 chown quagga:quagga /usr/local/etc/quagga/zebra.conf
-chmod 755 /usr/local/etc/quagga/zebra.conf
+chmod 644 /usr/local/etc/quagga/zebra.conf
 service quagga start
 
 
