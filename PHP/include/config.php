@@ -7,7 +7,7 @@ require_once dirname(__FILE__).'/audit.php';
 require_once dirname(__FILE__).'/combobox.php';
 require_once dirname(__FILE__).'/classes/table.php';
 
-$VERSION = 'IMSLU v0.2';
+$VERSION = 'IMSLU v0.3';
 
 // array - Available languages in the system.
 $LOCALES = array(      
