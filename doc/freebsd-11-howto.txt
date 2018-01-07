@@ -136,7 +136,7 @@ install -c -m 644 ~/src/imslu/conf/freebsd/etc/sysctl.conf /etc
 install -c -m 644 ~/src/imslu/conf/freebsd/etc/rc.conf /etc
 
 mv /etc/rc.firewall /etc/rc.firewall.orig
-echo -e "echo The default rc.firewall is stopped. Please check /usr/local/etc/imslu/rc.firewall\nexit 1\n" > /etc/rc.firewall
+echo -e "#!/bin/sh\necho The default rc.firewall is stopped. Please check /usr/local/etc/imslu/rc.firewall\nexit 1\n" > /etc/rc.firewall
 chmod a+x /etc/rc.firewall
 
 mkdir /usr/local/etc/imslu
@@ -265,7 +265,8 @@ chmod 775 /usr/local/etc/imslu/backup
 
 mkdir /usr/local/www/imslu
 cp -r ~/src/imslu/PHP/* /usr/local/www/imslu
-mkdir /usr/local/www/imslu/rrd
+mkdir /tmp/rrd
+ln -s /tmp/rrd /usr/local/www/imslu/rrd
 chown -R www:www /usr/local/www/imslu
 chmod -R 775 /usr/local/www/imslu
 
