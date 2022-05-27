@@ -1,54 +1,7 @@
 #!/bin/sh
 
 . /etc/imslu/config.sh
-
-ip_add () {
-
-    if [ ${USE_VLANS} -eq 0 ] && [ ${#1} -gt 0 ] && [ ${#2} -gt 0 ]; then
-        if [ -f /proc/net/vlan/${2} ]; then
-            ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "ip route ${1}/32 ${2}" -c 'exit' -c 'exit'
-        fi
-    fi
-}
-
-ip_rem () {
-
-  if [ $USE_VLANS -eq 0 ] && [ -n "${1}" ]; then
-
-    ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "no ip route ${1}/32 ${2}" -c 'exit' -c 'exit'
-#   arp -i eth1.0011 -d 10.0.1.2
-    ${ARP} -i ${2} -d ${1}
-  else
-#   arp -i eth1 -d 10.0.1.2
-    ${ARP} -i ${IFACE_INTERNAL} -d ${1}
-  fi
-}
-
-mac_add () {
-
-    if [ ${USE_VLANS} -eq 0 ]; then
-        if [ ${#1} -gt 0 ] && [ -f /proc/net/vlan/${2} ] && [ ${#4} -gt 0 ] && [ "${3}" = "n" ]; then
-            # arp -i eth1.0010 -s 10.0.1.2 34:23:87:96:70:27
-            ${ARP} -i ${2} -s ${1} ${4}
-        fi
-    else
-        if [ ${#1} -gt 0 ] && [ ${#4} -gt 0 ] && [ "${3}" = "n" ]; then
-            # arp -i eth1 -s 10.0.1.2 34:23:87:96:70:27
-            ${ARP} -i ${IFACE_INTERNAL} -s ${1} ${4}
-        fi
-    fi
-}
-
-mac_rem () {
-
-  if [ $USE_VLANS -eq 0 ] && [ -n "${1}" ]; then
-#   arp -i eth1.0011 -d 10.0.1.2
-    ${ARP} -i ${2} -d ${1}
-  else
-#   arp -i eth1 -d 10.0.1.2
-    ${ARP} -i ${IFACE_INTERNAL} -d ${1}
-  fi
-}
+. /etc/imslu/scripts/functions.sh
 
 iface_rem() {
 
@@ -57,7 +10,7 @@ iface_rem() {
         while read -r ip; do
             if [ $(expr "${ip}" : ".*") -gt 0 ]; then
                 ${ARP} -i ${1} -d ${ip}
-                ${VTYSH} -d zebra -c 'enable' -c 'configure terminal' -c "no ip route ${ip}/32 ${1}" -c 'exit' -c 'exit'
+                ${VTYSH} -d staticd -c 'enable' -c 'configure terminal' -c "no ip route ${ip}/32 ${1}" -c 'exit' -c 'exit'
             fi
         done <<EOF
 $(echo ${query} | ${MYSQL} $database -u $user -p${password} -s)
@@ -98,7 +51,7 @@ tc_class_replace () {
   serviceid=${2}
   service=$(eval echo \$services${serviceid})
 
-  if [ -n "${service}" ]; then
+  if [ -n "${userid}" ] && [ -n "${service}" ]; then
     read -r serviceid in_min0 in_max0 out_min0 out_max0 in_min1 in_max1 out_min1 out_max1 in_min2 in_max2 out_min2 out_max2 in_min3 in_max3 out_min3 out_max3 in_min4 in_max4 out_min4 out_max4 <<EOF
 $(echo ${service})
 EOF
@@ -131,7 +84,7 @@ tc_class_delete () {
   serviceid=${2}
   service=$(eval echo \$services${serviceid})
 
-  if [ -n "${service}" ]; then
+  if [ -n "${userid}" ] && [ -n "${service}" ]; then
     read -r serviceid in_min0 in_max0 out_min0 out_max0 in_min1 in_max1 out_min1 out_max1 in_min2 in_max2 out_min2 out_max2 in_min3 in_max3 out_min3 out_max3 in_min4 in_max4 out_min4 out_max4 <<EOF
 $(echo ${service})
 EOF
@@ -219,37 +172,6 @@ EOF
   done
 }
 
-# DHCP
-dhcpd_subnets=""
-if [ $(expr "${1}" : "dhcp_.*") -gt 0 ] && [ -f ${DHCPD_CONF} ]; then
-    # Reading subnets
-    while read -r a b c d; do
-        if [ "${a}" = "subnet" ]; then
-            dhcpd_subnets="${dhcpd_subnets} ${b}"
-        fi
-    done <"${DHCPD_CONF}"
-fi
-
-dhcp_add() {
-
-    if [ ${#1} -gt 0  ] && [ ${#2} -gt 0 ]; then
-
-        if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*}") -gt 0 ]; then
-            echo "host ${1} {\n  hardware ethernet ${2};\n  fixed-address ${1};\n}\n" >> ${DHCPD_CONF}
-        else
-            logger -p local7.notice -t imslu-scripts "Missing subnet for ${1} in ${DHCPD_CONF}"
-            echo 1
-        fi
-    fi
-}
-
-dhcp_rem() {
-
-    if [ ${#1} -gt 0 ]; then
-        sed -i "/^host ${1} {/,/^}$/d" ${DHCPD_CONF}
-        sed -i "/^$/d" ${DHCPD_CONF}
-    fi
-}
 
 case "${1}" in
 pppd_kill)
@@ -268,7 +190,7 @@ ip_add)
 	;;
 
 ip_rem)
-	ip_rem "${2}" "${3}"
+	ip_rem "${2}" "${3}" "${4}"
 	;;
 
 mac_add)
@@ -276,7 +198,7 @@ mac_add)
 	;;
 
 mac_rem)
-	mac_rem "${2}" "${3}"
+	mac_rem "${2}" "${3}" "${4}"
 	;;
 
 iface_rem)
@@ -312,7 +234,7 @@ show_freeradius_log)
   ;;
 
 dhcp_add)
-    dhcp_add "${2}" "${3}"
+    dhcp_subnets && dhcp_add "${2}" "${3}"
     systemctl restart isc-dhcp-server 2>/dev/null
     ;;
 

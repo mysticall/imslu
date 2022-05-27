@@ -13,6 +13,6 @@ fi
 
 # change hashsize on the fly
 # https://github.com/jeffmurphy/NetPass/blob/master/doc/netfilter_conntrack_perf.txt
-echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize
+sleep 60 && echo 1048576 > /sys/module/nf_conntrack/parameters/hashsize && sysctl -p /etc/sysctl.conf
 
 exit 0

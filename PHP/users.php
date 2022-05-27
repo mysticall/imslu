@@ -201,24 +201,27 @@ if ($OS == 'FreeBSD') {
 
 }
 elseif ($OS == 'Linux') {
-    $cmd = "ip -s neighbour show | grep -v 'FAILED'";
-    $result = shell_exec($cmd);
-    foreach (explode("\n", $result) as $value) {
-        if (!empty($value)) {
-            $tmp = explode(" ", $value);
-            $used = ($tmp[5] == "ref") ? explode("/", $tmp[8]) : explode("/", $tmp[6]);
+	$cmd = "ip -stats neighbour show";
+	$result = shell_exec($cmd);
+	foreach (explode("\n", $result) as $value) {
+		if (!empty($value)) {
+			//10.0.0.2 dev vlan4 lladdr 34:23:87:96:70:27 used 46745/46745/46745 probes 0 PERMANENT
+			//192.168.1.1 dev eth0 lladdr 14:cc:20:92:70:27 ref 1 used 47/9/46 probes 1 REACHABLE
+			$tmp = explode(" ", $value);
+			if (filter_var($tmp[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+				$used = ($tmp[5] == "ref") ? explode("/", $tmp[8]) : explode("/", $tmp[6]);
 
-            if ($used[1] < 31 || $used[2] < 31) {
-                $activity_[$tmp[0]] = $tmp[0];
-            }
-        }
-    }
+				if ($used[0] < 60 || $used[1] < 60 || $used[2] < 60) {
+					$activity_[$tmp[0]] = $tmp[0];
+				}
+			}
+		}
+	}
 }
 
 // PPPoE activity
 if ($USE_PPPoE) {
-    $cmd = "cat /tmp/ip_activity_pppoe";
-    $result = shell_exec($cmd);
+    $result = file_get_contents("/etc/ppp/ip_activity_pppoe");
     foreach (explode("\n", $result) as $value) {
         if (!empty($value)) {
             $activity_[$value] = $value;

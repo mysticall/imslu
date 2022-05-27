@@ -46,7 +46,7 @@ NETWORKS="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 SUBNETS="10.0.0.0/24 10.0.1.0/24 10.0.2.0/24 172.16.0.0/24 172.16.1.0/24 172.16.2.0/24 192.168.3.0/24 192.168.4.0/24 192.168.5.0/24"
 
 ##### Default routes for static IP addresses #####
-STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32"
+STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32 10.0.254.1/32"
 
 ##### VLAN settings #####
 # /bin/false; echo $? # 1
@@ -56,7 +56,7 @@ STATIC_ROUTES="10.0.0.1/32 10.0.1.1/32"
 USE_VLANS=0
 
 # VLAN ID range
-VLAN_SEQ="2 10 11 $(seq 12 16) $(seq 17 20)"
+VLAN_SEQ="2 $(seq 3 9) 10 11 $(seq 12 16) $(seq 17 20)"
 
 ##### DHCPD settings #####
 USE_DHCPD=0

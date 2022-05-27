@@ -51,12 +51,36 @@ class Session  implements SessionHandlerInterface {
 		$sth->execute();
 	return true;
 	}
-	
+
 	public function open($save_path , $session_name) {
-	
+
+		$id = session_id();
+		$sql = 'SELECT COUNT(sessionid) FROM sessions WHERE sessionid = ? LIMIT 1';
+
+	   	$sth = $this->dbh->prepare($sql);
+		$sth->bindParam(1, $id);
+		$sth->execute();
+		$rows = $sth->fetch(PDO::FETCH_ASSOC);
+
+		if($rows["COUNT(sessionid)"] == 0) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+			$browser = $_SERVER['HTTP_USER_AGENT'];
+			$login_string = md5($ip.$browser);
+			$time = time(); 
+
+			$sql = 'INSERT INTO sessions (sessionid, set_time, data, login_string)
+					VALUES (?, ?, ?, ?)';
+			$sth = $this->dbh->prepare($sql);
+			$sth->bindParam(1, $id);
+			$sth->bindParam(2, $time);
+			$sth->bindParam(3, $session_name);
+			$sth->bindParam(4, $login_string);
+			$sth->execute();
+		}
+
 	return true;
 	}
-	
+
 	public function read($id) {
 
 		$sql = 'SELECT data FROM sessions WHERE sessionid = ? LIMIT 1';

@@ -40,7 +40,7 @@ $db = new PDOinstance();
 ####### New #######
 if (!empty($_POST['new'])) {
 
-    $operid = $_POST['operid'];
+    $operid = (!empty($_POST['operid'])) ? $_POST['operid'] : $_SESSION['data']['operid'];
     $add = date('Y-m-d H:i:s');
     $status = $_POST['status'];
     $created = date('Y-m-d H:i:s').' '.$_SESSION['data']['name'];
@@ -75,7 +75,7 @@ if (!empty($_POST['edit'])) {
     // see $request_status in /include/common.php
     if (($_POST['status']) == '3') {
 
-        $operid = $_POST['operid'];
+        $operid = (!empty($_POST['operid'])) ? $_POST['operid'] : $_SESSION['data']['operid'];
         $status = $_POST['status'];
         $changed = date('Y-m-d H:i:s').' '.$_SESSION['data']['name'];
         $name = strip_tags($_POST['name']);
@@ -103,7 +103,7 @@ if (!empty($_POST['edit'])) {
         exit;
     }
 
-    $operid = $_POST['operid'];
+    $operid = (!empty($_POST['operid'])) ? $_POST['operid'] : $_SESSION['data']['operid'];
     $status = $_POST['status'];
     $changed = date('Y-m-d H:i:s').' '.$_SESSION['data']['name'];
     $name = strip_tags($_POST['name']);

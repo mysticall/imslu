@@ -16,6 +16,7 @@ IMSLU is a small billing system for ISPs. You can manage your clients, payments,
 * Automatic suspension of unpaid customers
 * High performance traffic shaping
 * Static IP addresses
+* DHCP
 * Dialup/VPN (PPPoE)
 * VLANs
 * FreeRadius
@@ -29,7 +30,7 @@ IMSLU is a small billing system for ISPs. You can manage your clients, payments,
 
 ### LICENSE
 
-> Copyright © 2013-2017 Fahri Hasan fahri_hasan@hotmail.com
+> Copyright © 2013-2022 Fahri Hasan fahri_hasan@hotmail.com
 
 - - -
 This program is free software; you can redistribute it and/or modify

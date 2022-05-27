@@ -51,7 +51,3 @@ logger -p local7.notice -t imslu-scripts "Starting imslu_find.sh"
 if [ ${USE_VLANS} -gt 0 ]; then
     echo 1 > /proc/sys/net/ipv4/conf/${IFACE_INTERNAL}/arp_accept
 fi
-
-# ipt-netflow
-sysctl -w net.netflow.active_timeout=300
-sysctl -w net.netflow.destination="127.0.0.1:9996"

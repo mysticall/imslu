@@ -279,6 +279,8 @@ NB: Edit the following files:
 vi /usr/local/www/imslu/include/os.php
 vi /usr/local/etc/apache24/Includes/expired.conf
 
+NB: Edit "/usr/local/etc/imslu/os.php" and uncomment "//$OS = 'FreeBSD';"
+
 service apache24 restart
 
 

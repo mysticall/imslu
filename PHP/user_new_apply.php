@@ -42,14 +42,27 @@ $admin_permissions = (OPERATOR_TYPE_LINUX_ADMIN == $_SESSION['data']['type'] || 
 ####### New #######
 if (!empty($_POST['new'])) {
 
-    $name = strip_tags($_POST['name']);
+	$name = strip_tags($_POST['name']);
+	$address = strip_tags($_POST['address']);
+	$locationid = (!empty($_POST['locationid'])) ? $_POST['locationid'] : '0';
+	$today = date("Y-m-d 23:59:00"); 
+
+    if (empty($_POST['pay'])) {
+
+        $sql = 'SELECT price FROM services WHERE serviceid = :serviceid';
+        $sth = $db->dbh->prepare($sql);
+        $sth->bindValue(':serviceid', $_POST['serviceid'], PDO::PARAM_INT);
+        $sth->execute();
+        $services = $sth->fetch(PDO::FETCH_ASSOC);
+        $_POST['pay'] = $services['price'];
+    }
 
     $sql = 'INSERT INTO users (name, locationid, address, phone_number, notes, created, serviceid, pay, free_access, not_excluding, expires)
             VALUES (:name, :locationid, :address, :phone_number, :notes, :created, :serviceid, :pay, :free_access, :not_excluding, :expires)';
     $sth = $db->dbh->prepare($sql);
-    $sth->bindValue(':name', $name, PDO::PARAM_STR);
-    $sth->bindValue(':locationid', $_POST['locationid'], PDO::PARAM_INT);
-    $sth->bindValue(':address', strip_tags($_POST['address']), PDO::PARAM_STR);
+    $sth->bindValue(':name', 	$name, PDO::PARAM_STR);
+    $sth->bindValue(':locationid', $locationid, PDO::PARAM_INT);
+    $sth->bindValue(':address', $address, PDO::PARAM_STR);
     $sth->bindValue(':phone_number', strip_tags($_POST['phone_number']), PDO::PARAM_INT);
     $sth->bindValue(':notes', $_POST['notes'], PDO::PARAM_STR);
     $sth->bindValue(':created', date('Y-m-d H:i:s'));
@@ -61,17 +74,18 @@ if (!empty($_POST['new'])) {
         $sth->bindValue(':not_excluding', $_POST['not_excluding'], PDO::PARAM_STR);
     }
     else {
-        $sth->bindValue(':pay', '0.00');
+        $sth->bindValue(':pay', $services['price'], PDO::PARAM_INT);
         $sth->bindValue(':free_access', 'n', PDO::PARAM_STR);
         $sth->bindValue(':not_excluding', 'n', PDO::PARAM_STR);
     }
-    $sth->bindValue(':expires', '0000-00-00 23:59:00');
+    $sth->bindValue(':expires', $today);
     $sth->execute();
 
     // Return info for new user
-    $sql = 'SELECT userid FROM users WHERE name = :name ORDER BY userid DESC LIMIT 1';
+    $sql = 'SELECT userid FROM users WHERE name = :name AND address = :address ORDER BY userid DESC LIMIT 1';
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':name', $name, PDO::PARAM_STR);
+    $sth->bindValue(':address', $address, PDO::PARAM_STR);
     $sth->execute();
     $user = $sth->fetch(PDO::FETCH_ASSOC);
 

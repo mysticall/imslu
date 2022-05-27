@@ -1,0 +1,732 @@
+Mini HOWTO for IMSLU (Internet Management System for LAN Users) on Debian/GNU Linux
+
+    Copyright © 2016 IMSLU Developers
+    
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.3
+    or any later version published by the Free Software Foundation;
+    with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+    A copy of the license is included in the section entitled "GNU
+    Free Documentation License".
+___________________________________________________
+
+   Table of Contents
+   
+   1 Intro
+
+        1.1 About IMSLU
+        1.2 IMSLU Developers
+        1.2.1 Others
+        1.3 Legal Notice
+        1.4 Other Information
+
+    2 Installation and configuration
+
+        2.1 Requirements
+        2.2 Download and install
+        2.3 System upgrade
+        2.4 Database server
+        2.5 Apache2 and PHP
+        2.6 bind9
+        2.7 Roaring Penguin PPPoE server
+        2.8 FreeRadius client
+        2.9 FreeRadius server
+        
+    3 Scripts
+
+    4 User Interface
+
+___________________________________________________
+
+
+Chapter 1. Intro
+
+1.1 About IMSLU
+
+
+1.2 IMSLU Developers
+
+    * PHP Code:
+    Fahri Hasan - fahri_hasan@hotmail.com
+
+    * Bash Code:
+    Fahri Hasan
+             
+    * Design:
+     Fahri Hasan
+     
+    * HTML, JavaScript, CSS:
+     Fahri Hasan
+     
+    * Images:
+     
+    * Documentation:
+     Fahri Hasan
+     
+    * Beta testing:
+     Veselin Alexandrov
+     Fahri Hasan
+
+    * http://www.linux-bg.org/forum/index.php?topic=45276:
+     Naka
+     gat3way
+     edmon
+
+    * https://www.mikrotik-bg.net/topic/6674-imslu-%E2%80%9C%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0-%D0%B7%D0%B0-%D1%83%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BD%D0%B0-%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82%D0%B0-%D0%B7%D0%B0-%D0%BF%D0%BE%D1%82%D1%80%D0%B5%D0%B1%D0%B8%D1%82%D0%B5%D0%BB%D0%B8-%D0%B2-%D0%BB%D0%BE%D0%BA%D0%B0%D0%BB%D0%BD%D0%B0-%D0%BC%D1%80%D0%B5%D0%B6%D0%B0%E2%80%9D/
+     Networker
+     kokaracha
+
+1.2.1 Others
+
+    IMSLU uses elements of other software:
+        - http://www.zabbix.com/rn2.0.4.php
+        - http://www.wikihow.com/Create-a-Secure-Login-Script-in-PHP-and-MySQL
+        - http://www.wikihow.com/Create-a-Secure-Session-Managment-System-in-PHP-and-MySQL
+       
+    Used selected content or guides:
+        - (russian) http://habrahabr.ru/post/111399/
+        - (en) Linux Advanced Routing & Traffic Control HOWTO - http://www.lartc.org/lartc.html
+        - (bugarian) http://myfreesoft.net/phpBB2/viewtopic.php?t=751
+        - (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=364103812
+        - (bugarian) http://www.linux-bg.org/cgi-bin/y/index.pl?page=article&id=advices&key=386924398
+        - Debian advanced router for ISP firewall, traffic shaping, smp_affinity, taskset, sysctl and more http://itservice-bg.net/?p=1122
+        - (russian) http://linuxsnippets.net/ru/node/268
+        - https://www.digitalocean.com/community/tutorials/how-to-create-a-ssl-certificate-on-apache-for-debian-7
+        - http://www.zytrax.com/books/dns/ch7/logging.html
+        
+        
+1.3 Legal Notice
+
+    Copyright © 2016 IMSLU Developers
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+___________________________________________________
+
+Chapter 2 Installation and configuration
+
+####### 2.1 Requirements #######
+
+    * OS - Linux, yet is fully compatible with Debian Jessie
+        - http://www.debian.org/
+
+    * Apache2
+        - http://www.apache.org/
+
+    * PHP >= 5.4
+        - http://php.net/
+
+    * Database Server - during the development was used MariaDB
+        - https://mariadb.org/
+
+    * xtables-addons
+        - http://xtables-addons.sourceforge.net/
+
+    * Freeradius
+        - http://freeradius.org/
+
+    * Roaring Penguin PPPoE server
+        - http://www.roaringpenguin.com/products/pppoe
+
+    * Point-to-Point Protocol (PPP) - daemon
+        - http://ppp.samba.org/
+
+    * Recommended    
+
+    * Debian minimal install of a base system
+
+        - http://www.debian.org/doc/books
+
+
+####### 2.2 Download and install #######
+
+mkdir ~/src
+cd ~/src
+
+Download from:
+git clone https://github.com/mysticall/imslu.git
+
+AS ROOT in user ~/src:
+su -
+ln -s $(pwd -P) ~/src
+
+mkdir /usr/share/imslu
+cp -r ~/src/imslu/PHP/* /usr/share/imslu
+
+mkdir /etc/imslu
+cp -r ~/src/imslu/conf/debian/etc/imslu/* /etc/imslu/
+chmod a+x /etc/imslu/scripts/*
+chmod a+x /etc/imslu/rc.firewall
+
+cp ~/src/imslu/conf/debian/etc/cron.d/imslu /etc/cron.d
+
+mkdir /etc/imslu/backup
+chown www-data:www-data /etc/imslu/backup
+
+### log ###
+echo -e "\$FileCreateMode 0644\n\$FileOwner root\n\$FileGroup adm\n\nlocal7.*; if \$programname == 'imslu-scripts' then /var/log/imslu.log\n& ~" > /etc/rsyslog.d/imslu.conf
+
+nano /etc/logrotate.d/rsyslog
+-----------
+/var/log/messages
+/var/log/imslu.log
+-----------
+
+systemctl restart rsyslog
+
+
+### System settings ###
+https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
+
+install -c -m 755 ~/src/imslu/conf/debian/etc/rc.local /etc
+install -c -m 644 ~/src/imslu/conf/debian/etc/sysctl.conf /etc
+install -c -m 644 ~/src/imslu/conf/debian/etc/network/interfaces /etc/network
+
+
+####### 2.3 System upgrade #######
+
+Info:
+-----------
+First back up the database!
+Follow strictly these steps to upgrade:
+-----------
+
+. /etc/imslu/config.sh
+mkdir $SQL_BACKUP_DIR
+cd $SQL_BACKUP_DIR; ${MYSQLDUMP} ${database} -u ${user} -p${password} > $(date +"%Y-%m-%d-%H:%M:%S")_${database}_full-dump.sql
+
+### FROM 0.3 TO Debian 11 ###
+mysql ${database} -u ${user} -p${password} < ~/src/imslu/database/upgrades/mysql/03_patch_from_0.3_to_debian-11.sql
+
+
+####### 2.4 MariaDB #######
+
+apt update
+apt install mariadb-server
+
+-----------
+CREATE IMSLU Database
+-----------
+mysql -u root -p
+CREATE DATABASE imslu DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON imslu.* TO imslu@localhost IDENTIFIED BY 'imslu_password';
+quit;
+
+-----------
+CREATE Tables and inser data
+-----------
+. /etc/imslu/config.sh
+cd ~/src/imslu/database/mysql
+
+mysql ${database} -u ${user} -p${password} < 01_schema.sql
+mysql ${database} -u ${user} -p${password} < 03_example_static_dhcp_ip-addresses.sql
+mysql ${database} -u ${user} -p${password} < 04_freeradius_schema.sql
+mysql ${database} -u ${user} -p${password} < 05_freeradius_example_ip-pool.sql
+
+
+####### 2.5 Apache2 and PHP #######
+
+apt install libapache2-mod-php php-mysql php-mbstring
+
+Uncomment and set default timezone
+nano /etc/php/7.4/apache2/php.ini
+-----------
+date.timezone = "Europe/Sofia"
+-----------
+
+mkdir /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+
+The most important line is "Common Name". Enter your official domain name here or, if you don't have one yet, your site's IP address.
+
+example:
+-----------
+Generating a 2048 bit RSA private key
+............................................................+++
+...........................................................+++
+writing new private key to '/etc/apache2/ssl/apache.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:BG
+State or Province Name (full name) [Some-State]:Sofia
+Locality Name (eg, city) []:Sofia
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:imslu
+Organizational Unit Name (eg, section) []:imslu
+Common Name (e.g. server FQDN or YOUR name) []:192.168.1.254
+Email Address []:webmaster@localhost
+-----------
+
+a2enmod ssl
+a2enmod rewrite
+
+rm /var/www/html/index.html
+cp /etc/imslu/index.php /var/www/html
+ln -s /etc/imslu/apache-ssl.conf /etc/apache2/sites-enabled/imslu-ssl.conf
+
+NB: Edit "/etc/imslu/expired.conf" and change IP address.
+ln -s /etc/imslu/expired.conf /etc/apache2/sites-enabled/expired.conf
+cp /etc/imslu/000-default.conf /etc/apache2/sites-available
+
+NB: Edit "/usr/share/imslu/expired/index.php" and replace "header('Location: https://github.com/mysticall/imslu');" with your web page.
+
+sed -i 's/PrivateTmp=true/PrivateTmp=false/' /lib/systemd/system/apache2.service
+sed -i 's/PrivateTmp=true/PrivateTmp=false/' /etc/systemd/system/multi-user.target.wants/apache2.service
+
+rm /etc/systemd/system/multi-user.target.wants/apache2.service
+systemctl enable apache2.service
+
+systemctl daemon-reload
+systemctl restart apache2
+
+
+####### 2.6 bind9 #######
+https://wiki.debian.org/Bind9
+
+apt install bind9 dns-root-data
+systemctl stop bind9
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/bind/named.conf /etc/bind
+install -c -m 644 ~/src/imslu/conf/debian/etc/bind/named.conf.options /etc/bind
+
+Bind Chroot
+
+nano /etc/default/named
+-----------
+OPTIONS="-u bind -t /var/bind9/chroot"
+-----------
+
+mkdir -p /var/bind9/chroot/{etc,dev,var/cache/bind,var/run/named,run/named,/usr/share/dns}
+mknod /var/bind9/chroot/dev/null c 1 3
+mknod /var/bind9/chroot/dev/random c 1 8
+chmod 660 /var/bind9/chroot/dev/{null,random}
+mv /etc/bind /var/bind9/chroot/etc
+ln -s /var/bind9/chroot/etc/bind /etc/bind
+cp /etc/localtime /var/bind9/chroot/etc/
+cp /usr/share/dns/* /var/bind9/chroot/usr/share/dns/
+chown -R bind:bind /var/bind9/chroot/etc/bind
+chmod 775 /var/bind9/chroot/{var/cache/bind,var/run/named,run/named,/usr/share/dns}
+chgrp bind /var/bind9/chroot/{var/cache/bind,var/run/named,run/named,/usr/share/dns}
+
+Edit the PIDFILE variable to the correct path:
+nano /etc/init.d/named
+-----------
+PIDFILE=/var/bind9/chroot/var/run/named/named.pid
+-----------
+
+echo "\$AddUnixListenSocket /var/bind9/chroot/dev/log" > /etc/rsyslog.d/bind-chroot.conf
+echo -e "local7.*; if \$programname == 'named' then /var/log/named.log\n& ~" > /etc/rsyslog.d/named.conf
+
+nano /etc/logrotate.d/rsyslog 
+-----------
+/var/log/syslog
+/var/log/named.log
+-----------
+
+
+echo "/var/bind9/chroot/etc/bind/** rwm," >> /etc/apparmor.d/local/usr.sbin.named
+echo "/var/bind9/chroot/usr/share/dns/** rwm," >> /etc/apparmor.d/local/usr.sbin.named
+sed -i 's/\#include <local\/usr.sbin.named>/include <local\/usr.sbin.named>/' /etc/apparmor.d/usr.sbin.named
+
+systemctl restart apparmor
+systemctl disable apparmor.service
+
+systemctl restart rsyslog
+systemctl start bind9
+
+
+####### 2.7 Roaring Penguin PPPoE server #######
+
+apt install build-essential fakeroot libncurses5-dev
+apt install ppp
+apt build-dep pppoe
+
+cd ~/src
+apt source pppoe
+cd rp-pppoe-3.12/src
+./configure
+
+Add kernel pppoe support:
+sed -i 's/\/\* \#undef HAVE_LINUX_KERNEL_PPPOE \*\//\#define HAVE_LINUX_KERNEL_PPPOE 1/' config.h
+
+cd ..
+fakeroot debian/rules PLUGIN_PATH=/usr/lib/pppd/2.4.9/rp-pppoe.so
+fakeroot debian/rules binary
+cd ..
+dpkg -i pppoe_3.12-1.2_amd64.deb
+
+
+Hold PPPoE Server version on current:
+echo pppoe hold | dpkg --set-selections
+
+If need to recompile and reinstall PPPoE Server:
+echo pppoe install | dpkg --set-selections
+
+
+Copy PPPoE server configuration files:
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/options /etc/ppp
+install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/pppoe-server-options /etc/ppp
+install -c -m 644 ~/src/imslu/conf/debian/etc/ppp/ip_activity_pppoe /etc/ppp
+
+install -c -m 644 ~/src/imslu/conf/debian/etc/imslu/scripts/0001_up_imslu /etc/ppp/ip-up.d/
+install -c -m 644 ~/src/imslu/conf/debian/etc/imslu/scripts/0001_down_imslu /etc/ppp/ip-down.d/
+chmod a+x /etc/ppp/ip-up.d/0001_up_imslu
+chmod a+x /etc/ppp/ip-down.d/0001_down_imslu
+
+
+####### 2.8 FreeRadius client #######
+
+apt install libradcli-dev libradcli4
+
+echo "localhost my_isp_radius_secret" > /etc/radcli/servers
+mv /etc/radcli/dictionary /etc/radcli/dictionary.orig
+install -c -m 644 ~/src/imslu/conf/debian/etc/radcli/dictionary /etc/radcli
+install -c -m 644 ~/src/imslu/conf/debian/etc/radcli/port-id-map /etc/radcli
+install -c -m 644 ~/src/imslu/conf/debian/etc/radcli/radiusclient.conf /etc/radcli
+ln -s /etc/radcli /etc/radiusclient
+
+
+####### 2.9 FreeRadius server #######
+
+apt install freeradius freeradius-common freeradius-config freeradius-mysql freeradius-utils libfreeradius3
+
+Setting up a FreeRadius server:
+
+rm /etc/freeradius/3.0/sites-enabled/inner-tunnel
+echo '' > /etc/freeradius/3.0/mods-config/preprocess/huntgroups
+echo 'ATTRIBUTE	Acct-Interim-Interval	85	integer' >> /etc/freeradius/3.0/dictionary
+
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/radiusd.conf /etc/freeradius/3.0
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-available
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/mods-available/sqlippool /etc/freeradius/3.0/mods-available
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/mods-config/sql/main/mysql/queries.conf /etc/freeradius/3.0/mods-config/sql/main/mysql
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/mods-config/sql/ippool/mysql/queries.conf /etc/freeradius/3.0/mods-config/sql/ippool/mysql
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/sites-available/default /etc/freeradius/3.0/sites-available
+install -c -m 640 ~/src/imslu/conf/debian/etc/freeradius/3.0/policy.d/canonicalization /etc/freeradius/3.0/policy.d
+
+chown freerad:freerad /etc/freeradius/3.0/radiusd.conf
+chown freerad:freerad /etc/freeradius/3.0/mods-available/*
+chown freerad:freerad /etc/freeradius/3.0/sites-available/*
+chown freerad:freerad /etc/freeradius/3.0/policy.d/*
+chown freerad:freerad  /etc/freeradius/3.0/mods-config/sql/{main/mysql/*,ippool/mysql/*}
+
+systemctl daemon-reload
+systemctl enable freeradius.service
+systemctl start freeradius
+chmod 755 /var/log/freeradius
+
+
+####### 3 Scripts #######
+
+Install system tools:
+
+apt install net-tools ipset arp-scan arping ethtool sudo minicom htop
+
+
+PHP use sudo to start scripts, that need root access
+Add to /etc/sudoers as exsample:
+
+chmod 644 /etc/sudoers
+nano /etc/sudoers
+-----------
+# Cmnd alias specification
+Cmnd_Alias      FUNCTIONS_PHP = /etc/imslu/scripts/functions-php.sh
+Cmnd_Alias      ARPING = /usr/sbin/arping
+
+# Allow members of group www-data to execute commands
+%www-data ALL=NOPASSWD: FUNCTIONS_PHP, ARPING
+-----------
+/etc/init.d/sudo restat
+
+
+### Disable predictable interface names ###
+
+nano /etc/default/grub
+-----------
+GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"
+GRUB_TERMINAL=console
+-----------
+update-grub2
+
+
+### Stop Clearing Console ###
+sed -i 's/TTYVTDisallocate=yes/TTYVTDisallocate=no/' /lib/systemd/system/getty@.service
+
+
+##### 3.1 Rebuild official Debian kernel - amd64 #####
+https://tracker.debian.org/pkg/linux
+
+apt build-dep linux
+:~# exit
+cd ~/src
+apt source linux
+
+cd linux-5.10.113
+dpkg-buildpackage -us -uc -T setup  2>&1 | tee setup.log
+
+
+### Apply imslu patch ###
+patch -Np 1 < ~/src/imslu/conf/kernel/update-timestamp-permanent-entry.diff
+
+
+### Apply IMQ patch ###
+https://github.com/imq/linuximq
+
+cd ..
+wget https://raw.githubusercontent.com/imq/linuximq/master/kernel/v5.x/linux-5.10-imq.patch
+sed -i -e 's/+	goto err_unlock;/+	\/\* goto err_unlock; \*\//' linux-5.10-imq.patch
+cd linux-5.10.113
+patch -Np 1 < ../linux-5.10-imq.patch
+
+
+### disable kernel documentation ###
+cp debian/rules debian/rules.orig
+sed -i -e 's/build: build-arch build-indep/build: build-arch/' debian/rules
+sed -i -e 's/binary:	binary-indep binary-arch/binary: binary-arch/' debian/rules
+sed -i -e 's/binary-indep: build-indep/binary-indep:/' debian/rules
+sed -i -e 's/debian\/rules.gen binary-indep/debian\/rules.gen binary-indep_none/' debian/rules
+
+### disable cloud and rt kernel build ###
+cp debian/rules.gen debian/rules.gen.orig
+sed -i -e 's/setup_amd64_real setup_amd64_rt/setup_amd64_real/' debian/rules.gen
+sed -i -e 's/setup_amd64_none_amd64 setup_amd64_none_cloud-amd64/setup_amd64_none_amd64/' debian/rules.gen
+sed -i -e 's/build-arch_amd64_real build-arch_amd64_rt/build-arch_amd64_real/' debian/rules.gen
+sed -i -e 's/build-arch_amd64_none_cloud-amd64 build-arch_amd64_none_real/build-arch_amd64_none_real/' debian/rules.gen
+sed -i -e 's/binary-arch_amd64_real binary-arch_amd64_rt/binary-arch_amd64_real/' debian/rules.gen
+sed -i -e 's/binary-arch_amd64_none_cloud-amd64 binary-arch_amd64_none_real/binary-arch_amd64_none_real/' debian/rules.gen
+sed -i -e 's/binary-indep_none binary-indep_rt/binary-indep_none/' debian/rules.gen
+sed -i -e 's/source_none source_rt/source_none/' debian/rules.gen
+sed -i -e '/binary-arch_amd64_real:: setup_amd64/d' debian/rules.gen
+
+
+### Example config file ###
+
+cp ~/src/imslu/conf/kernel/config-5.10.0-14 debian/build/build_amd64_none_amd64/.config
+
+
+### OR ###
+
+### Debian config file ###
+cp /boot/config-`uname -r` debian/build/build_amd64_none_amd64/.config
+
+make -C debian/build/build_amd64_none_amd64 menuconfig
+-----------
+    Security options  --->
+    [ ] NSA SELinux Support
+    [ ] AppArmor support
+
+    General setup  --->
+    [ ] Auditing support
+        Preemption Model (No Forced Preemption (Server))  --->
+
+[*] Networking support  --->
+      Networking options  --->
+        [ ] Security Marking
+        [*] Network packet filtering framework (Netfilter)  --->
+            Core Netfilter Configuration  --->
+              <M>   "IMQ" target support
+
+        <M> IP set support  --->
+              (256) Maximum number of IP sets (NEW)
+              <M>   hash:ip set support
+              <M>   hash:ip,mark set support
+              <M>   hash:ip,port,ip set support
+              <M>   hash:ip,port,net set support
+              <M>   hash:mac set support
+              <M>   hash:net,port,net set support
+              <M>   hash:net set support
+              <M>   hash:net,net set support
+              <M>   hash:net,port set support
+              <M>   hash:net,iface set support
+
+    Device Drivers  --->
+      -*- Network device support  --->
+        {*} IMQ (intermediate queueing device) support 
+            IMQ behavior (PRE/POSTROUTING) (IMQ AB)  --->
+        (2) Number of IMQ devices
+
+        --- IMQ behavior (PRE/POSTROUTING) (IMQ AB)  --->
+            ( ) IMQ AA
+            (X) IMQ AB
+            ( ) IMQ BA
+            ( ) IMQ BB
+-----------
+
+
+### build kernel ###
+dpkg-buildpackage -j4 -d -us -uc -T build 2>&1 | tee build.log
+
+
+dpkg-buildpackage -j4 -d -us -uc -T binary-indep 2>&1 | tee binary-indep.log
+dpkg-buildpackage -j4 -d -us -uc -T binary 2>&1 | tee binary.log
+
+
+cd ..
+dpkg -i linux-kbuild-5.10_5.10.113-1_amd64.deb linux-compiler-gcc-10-x86_5.10.113-1_amd64.deb linux-headers-5.10.0-14-common_5.10.113-1_all.deb linux-headers-5.10.0-14-amd64_5.10.113-1_amd64.deb
+dpkg -i linux-image-5.10.0-14-amd64-unsigned_5.10.113-1_amd64.deb
+
+Keep the Linux (kernel) at the current version:
+echo "linux-image-5.10.0-14-amd64 hold" | dpkg --set-selections
+
+
+##### 3.2 Rebuild iptables #####
+
+apt build-dep iptables
+cd ~/src
+apt source iptables
+
+### Apply IMQ patch ###
+https://github.com/imq/linuximq
+
+wget https://raw.githubusercontent.com/imq/linuximq/master/iptables/iptables-1.6.0-imq.diff
+
+cd iptables-1.8.7
+patch -p 1 < ../iptables-1.6.0-imq.diff
+
+
+dpkg-buildpackage -j4 -d -us -uc -T build 2>&1 | tee build.log
+dpkg-buildpackage -j4 -d -us -uc -T binary 2>&1 | tee binary.log
+
+cd ..
+dpkg -i libip4tc2_1.8.7-1_amd64.deb libip6tc2_1.8.7-1_amd64.deb libiptc0_1.8.7-1_amd64.deb libxtables12_1.8.7-1_amd64.deb iptables_1.8.7-1_amd64.deb
+dpkg -i libip4tc-dev_1.8.7-1_amd64.deb libip6tc-dev_1.8.7-1_amd64.deb libiptc-dev_1.8.7-1_amd64.deb libxtables-dev_1.8.7-1_amd64.deb
+
+
+### DNETMAP ###
+http://arpnet.pl/dnetmap/
+
+cd ~/src
+apt install module-assistant xtables-addons-source xtables-addons-common
+m-a prepare
+m-a auto-install xtables-addons-source
+depmod -a
+
+OR
+
+dpkg -i xtables-addons-modules-5.10.0-14-amd64_3.13-1_amd64.deb
+
+
+### IPT-NETFLOW ###
+cd ~/src
+git clone https://github.com/aabc/ipt-netflow.git
+cd ipt-netflow
+
+IPTSRC=~/src/iptables-1.8.7
+export IPTSRC
+
+sed -i -e 's/error "Source/\#error "Source/' configure
+./configure --disable-snmp-agent
+make all
+make install; depmod -a
+
+install -c -m 644 ~/src/ipt-netflow/libipt_NETFLOW.so /usr/lib/x86_64-linux-gnu/xtables
+install -c -m 644 ~/src/ipt-netflow/libip6t_NETFLOW.so /usr/lib/x86_64-linux-gnu/xtables
+
+
+### flow-tools ###
+
+apt install default-libmysqlclient-dev docbook-to-man dpatch libfl-dev libpq-dev python2
+
+cd ~/src
+wget http://deb.debian.org/debian/pool/main/f/flow-tools/flow-tools_0.68-12.5.dsc
+wget http://deb.debian.org/debian/pool/main/f/flow-tools/flow-tools_0.68.orig.tar.gz
+wget http://deb.debian.org/debian/pool/main/f/flow-tools/flow-tools_0.68-12.5.diff.gz
+
+dpkg-source --extract flow-tools_0.68-12.5.dsc
+cd flow-tools-0.68
+
+sed -i -e 's/Depends: python,/Depends: python2,/' debian/control
+sed -i -e 's/struct acl_list acl_list;/extern struct acl_list acl_list;/' src/flow-filter.c
+
+dpkg-buildpackage -us -uc  2>&1 | tee build.log
+
+cd ~/src
+dpkg -i libcflow-perl_0.68-12.5_amd64.deb flow-tools_0.68-12.5_amd64.deb
+
+mkdir -p /var/flows
+mv /etc/flow-tools/flow-capture.conf /etc/flow-tools/flow-capture.conf.orig
+install -c -m 644 ~/src/imslu/conf/debian/etc/flow-tools/flow-capture.conf /etc/flow-tools
+
+systemctl restart flow-capture
+
+flow-print -f5 < /var/flows/2022-05-14/tmp-v05.2022-05-14.172650+0300
+
+
+### FRRouting ###
+http://docs.frrouting.org/en/stable-7.5/
+
+apt install frr
+
+install -c -m 640 ~/src/imslu/conf/debian/etc/frr/* /etc/frr
+chown frr:frr /etc/frr/*
+
+systemctl restart frr
+
+
+### isc-dhcp ###
+
+apt install isc-dhcp-server
+
+NB: Edit the dhcpd.conf
+install -c -m 644 ~/src/imslu/conf/debian/etc/dhcp/dhcpd.conf /etc/dhcp
+
+NB: Edit the isc-dhcp-server and add the VLANs
+nano /etc/default/isc-dhcp-server
+-----------
+INTERFACESv4="vlan3 vlan4 vlan5 vlan6 vlan7 vlan8 vlan9 vlan10 vlan11 vlan12 vlan13 vlan14 vlan15 vlan16"
+-----------
+
+Configure log and logrotate:
+echo -e "local7.*; if \$programname == 'dhcpd' then /var/log/dhcpd.log\n& ~" > /etc/rsyslog.d/dhcpd.conf
+
+nano /etc/logrotate.d/rsyslog 
+-----------
+/var/log/syslog
+/var/log/dhcpd.log
+-----------
+
+systemctl start isc-dhcp-server
+systemctl restart rsyslog
+
+
+####### 3.3 GRAPHICS #######
+
+apt install rrdtool
+
+
+
+####### 3.4 CONFIG #######
+
+Edit config files:
+- /etc/imslu/config.sh
+- /etc/imslu/config.php
+- /etc/imslu/database_config.php
+
+
+####### User Interface #######
+
+Group:    System administrators
+User:     sadmin
+Password: sadmin
+
+Group:    Administrators
+User:     admin
+Password: admin

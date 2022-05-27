@@ -43,18 +43,16 @@ update () {
 
 while read -r Interface RXbytes RXpackets RXerrs RXdrop RXfifo RXframe RXcompressed RXmulticast TXbytes TXpackets TXerrs TXdrop TXfifo TXcolls TXcarrier TXcompressed; do
 
-    iface=$(expr "${Interface}" : "\(imq[0-9]\)")
-
-    if [ ${iface} = ${IFACE_IMQ0} ]; then
+    if [ ${Interface} = "${IFACE_EXTERNAL}:" ]; then
         export in_total_bps=${RXbytes}
         export in_total_pps=${RXpackets}
-    elif [ ${iface} = ${IFACE_IMQ1} ]; then
+    elif [ ${Interface} = "${IFACE_INTERNAL}:" ]; then
         export out_total_bps=${TXbytes}
         export out_total_pps=${TXpackets}
     fi
 
 done <<EOF
-$(cat /proc/net/dev | grep "${IFACE_IMQ0}:\|${IFACE_IMQ1}:")
+$(cat /proc/net/dev | grep "${IFACE_EXTERNAL}:\|${IFACE_INTERNAL}:")
 EOF
 
 local previous=''
@@ -248,7 +246,7 @@ graph)
     ;;
 
 *)
-    echo "Usage: /etc/imslu/scripts/system-graphics.sh {update}"
+    echo "Usage: /etc/imslu/scripts/system-graphics.sh {update} {graph}"
     exit 1
     ;;
 esac

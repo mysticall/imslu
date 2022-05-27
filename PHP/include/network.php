@@ -35,7 +35,7 @@ function ip_add_static($var) {
     global $SUDO;
     global $IMSLU_SCRIPTS;
 
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$var['ip']}' '{$var['vlan']}' '{$var['free_mac']}' '{$var['mac']}' > /dev/null &";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_add '{$var['ip']}' '{$var['vlan']}' '{$var['mac']}' '{$var['free_mac']}' > /dev/null &";
     shell_exec($cmd);
 }
 
@@ -49,7 +49,7 @@ function ip_rem_static($var) {
     global $SUDO;
     global $IMSLU_SCRIPTS;
 
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$var['ip']}' '{$var['vlan']}' > /dev/null &";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh ip_rem '{$var['ip']}' '{$var['vlan']}' '{$var['mac']}' > /dev/null &";
     shell_exec($cmd);
 }
 
@@ -91,7 +91,7 @@ function mac_add($var) {
     global $SUDO;
     global $IMSLU_SCRIPTS;
 
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$var['ip']}' '{$var['vlan']}' '{$var['free_mac']}' '{$var['mac']}'";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_add '{$var['ip']}' '{$var['vlan']}' '{$var['mac']}' '{$var['free_mac']}'";
     shell_exec($cmd);
 }
 
@@ -105,7 +105,7 @@ function mac_rem($var) {
     global $SUDO;
     global $IMSLU_SCRIPTS;
 
-    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$var['ip']}' '{$var['vlan']}'";
+    $cmd = "$SUDO $IMSLU_SCRIPTS/functions-php.sh mac_rem '{$var['ip']}' '{$var['vlan']}' '{$var['mac']}'";
     shell_exec($cmd);
 }
 

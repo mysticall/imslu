@@ -1,5 +1,5 @@
 #!/bin/sh
 
 ip=${5}
-sed -i "/${ip}/d" /tmp/ip_activity_pppoe
+sed -i "/${ip}/d" /etc/ppp/ip_activity_pppoe
 exit 0

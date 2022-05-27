@@ -2,18 +2,22 @@
 
 . /etc/imslu/config.sh
 
-arp_entries=""
+# ARP
+ip_neighbour="#!/bin/sh\n\n"
 
 # DHCP
 dhcpd=""
 dhcpd_subnets=""
+
 if [ ${USE_DHCPD} -eq 0 ] && [ -f ${DHCPD_CONF} ]; then
     # Reading subnets
     while read -r a b c d; do
         if [ "${a}" = "subnet" ]; then
             dhcpd_subnets="${dhcpd_subnets} ${b}"
         fi
-    done <"${DHCPD_CONF}"
+    done <<EOF
+$(cat ${DHCPD_CONF} | grep 'subnet')
+EOF
 fi
 
 if [ ${USE_VLANS} -eq 0 ]; then
@@ -27,22 +31,24 @@ if [ ${USE_VLANS} -eq 0 ]; then
             zebra="${zebra} ip address ${ip}\n"
         done
     done
-    zebra="${zebra}!\n"
+    zebra="${zebra}!\n\n!\nline vty\n!"
+    echo ${zebra} > /etc/frr/zebra.conf
 
+    staticd="!\n! Staticd configuration saved from /etc/imslu/scripts/static_routing.sh\n!\n!\n"
     # Adding routing and static MAC for IP addresses who have vlan.
-    query="SELECT ip, vlan, protocol, free_mac, mac FROM ip WHERE userid != 0 AND (protocol = 'IP' OR protocol = 'DHCP') AND vlan NOT LIKE ''"
-    while read -r ip vlan protocol free_mac mac; do
+    query="SELECT ip, vlan, free_mac, protocol, mac FROM ip WHERE userid != 0 AND (protocol = 'IP' OR protocol = 'DHCP') AND vlan NOT LIKE ''"
+    while read -r ip vlan free_mac protocol mac; do
         if [ ${#ip} -gt 0 ]; then
-            zebra="${zebra}ip route ${ip}/32 ${vlan}\n"
+            staticd="${staticd}ip route ${ip}/32 ${vlan}\n"
 
-            if [ "${free_mac}" = "n" ] && [ ${#mac} -gt 0 ]; then
-                arp_entries="${arp_entries}${ip} ${mac}\n"
+            if [ "${free_mac}" = "n" ] && [ ${#mac} -gt 16 ] && [ ${#vlan} -gt 0 ]; then
+                ip_neighbour="${ip_neighbour}${IP} neighbor replace ${ip} lladdr ${mac} dev ${vlan} nud permanent\n"
             fi
 
             # DHCP
-            if [ "${protocol}" = "DHCP" ] && [ ${#mac} -gt 0 ] && [ ${USE_DHCPD} -eq 0 ]; then
+            if [ "${protocol}" = "DHCP" ] && [ ${#mac} -gt 16 ] && [ ${USE_DHCPD} -eq 0 ]; then
 
-                if [ $(expr "${dhcpd_subnets}" : ".*${ip%[.:]*}") -gt 0 ]; then
+                if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*[.:]*}") -gt 0 ]; then
                     dhcpd="${dhcpd}host ${ip} {\n  hardware ethernet ${mac};\n  fixed-address ${ip};\n}\n"
                 else
                     logger -p local7.notice -t imslu-scripts "Missing subnet for ${ip} in ${DHCPD_CONF}"
@@ -54,16 +60,16 @@ $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
 
     # Static Routing
-    zebra="${zebra}!\nip forwarding\n!\n!\nline vty\n!"
-    echo ${zebra} > /etc/quagga/zebra.conf
-    systemctl restart zebra
+    staticd="${staticd}!\nip forwarding\n!\n!\nline vty\n!"
+    echo ${staticd} > /etc/frr/staticd.conf
+    systemctl restart frr
 
     # DHCP
     if [ ${USE_DHCPD} -eq 0 ]; then
-        query="SELECT ip, mac FROM ip WHERE userid != 0 AND protocol = 'DHCP' AND vlan LIKE ''"
+        query="SELECT ip, mac FROM ip WHERE userid != 0 AND protocol = 'DHCP' AND vlan LIKE '' AND mac NOT LIKE ''"
         while read -r ip mac; do
-            if [ ${#ip} -gt 0 ] && [ ${#mac} -gt 0 ]; then
-                if [ $(expr "${dhcpd_subnets}" : ".*${ip%[.:]*}") -gt 0 ]; then
+            if [ ${#ip} -gt 0 ] && [ ${#mac} -gt 16 ]; then
+                if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*[.:]*}") -gt 0 ]; then
                     dhcpd="${dhcpd}host ${ip} {\n  hardware ethernet ${mac};\n  fixed-address ${ip};\n}\n"
                 else
                     logger -p local7.notice -t imslu-scripts "Missing subnet for ${ip} in ${DHCPD_CONF}"
@@ -73,20 +79,21 @@ EOF
 $(echo ${query} | ${MYSQL} ${database} -u ${user} -p${password} -s)
 EOF
     fi
-    sleep 10
+
 else
+    # No VLANs
 
     # Adding static MAC for IP addresses.
-    query="SELECT ip, protocol, free_mac, mac FROM ip WHERE userid != 0 AND (protocol = 'IP' OR protocol = 'DHCP') AND mac NOT LIKE ''"
-    while read -r ip protocol free_mac mac ; do
+    query="SELECT ip, free_mac, protocol, mac FROM ip WHERE userid != 0 AND (protocol = 'IP' OR protocol = 'DHCP') AND mac NOT LIKE ''"
+    while read -r ip free_mac protocol mac; do
 
         if [ "${free_mac}" = "n" ]; then
-            arp_entries="${arp_entries}${ip} ${mac}\n"
+            ip_neighbour="${ip_neighbour}${IP} neighbor replace ${ip} lladdr ${mac} dev ${IFACE_INTERNAL} nud permanent\n"
         fi
 
         # DHCP
-        if [ "${protocol}" = "DHCP" ] && [ ${USE_DHCPD} -eq 0 ]; then
-            if [ $(expr "${dhcpd_subnets}" : ".*${ip%[.:]*}") -gt 0 ]; then
+        if [ "${protocol}" = "DHCP" ] && [ ${#mac} -gt 16 ] && [ ${USE_DHCPD} -eq 0 ]; then
+            if [ $(expr "${dhcpd_subnets}" : ".*${1%[.:]*[.:]*}") -gt 0 ]; then
                 dhcpd="${dhcpd}host ${ip} {\n  hardware ethernet ${mac};\n  fixed-address ${ip};\n}\n"
             else
                 logger -p local7.notice -t imslu-scripts "Missing subnet for ${ip} in ${DHCPD_CONF}"
@@ -99,17 +106,22 @@ fi
 
 # ARP
 # Clearing arp cache
-while read -r tmp1 tmp_ip tmp2 mac tmp3 tmp4 interface; do
+${IP} neighbour flush all
 
-    ip=$(expr "${tmp_ip}" : '[\(\)]*\([0-9a-f.:]*\)')
-    ${ARP} -d ${ip}
+while read -r ip dev iface lladdr mac state; do
+
+    ${IP} neighbor del ${ip} lladdr ${mac} dev ${iface}
 done <<EOF
-$(${ARP} -a | grep -v "incomplete")
+$(${IP} neighbour show)
 EOF
 
-# arp entries must be set after starting the zebra
-echo ${arp_entries} > ${ARP_ENTRIES}
-${ARP} -f ${ARP_ENTRIES}
+sleep 10
+
+# ip monitor all
+# arp entries must be set after starting the Zebra, Staticd
+echo ${ip_neighbour} > ${ARP_ENTRIES}.sh
+chmod a+x ${ARP_ENTRIES}.sh
+${ARP_ENTRIES}.sh &
 
 # DHCP
 if [ ${USE_DHCPD} -eq 0 ]; then

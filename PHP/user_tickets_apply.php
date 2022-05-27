@@ -44,29 +44,24 @@ $db = new PDOinstance();
 
 if (!empty($_POST['new'])) {
 
-    $userid = $_POST['userid'];
-    $operid = $_POST['operid'];
+	$operid = (!empty($_POST['operid'])) ? $_POST['operid'] : $_SESSION['data']['operid'];
     $add = date('Y-m-d H:i:s');
     $created = date('Y-m-d H:i:s').' '.$_SESSION['data']['name'];
-    $name = strip_tags($_POST['name']);
-    $address = strip_tags($_POST['address']);
-    $phone_number = strip_tags($_POST['phone_number']);
-    $notes = $_POST['notes'];
 
     $sql = 'INSERT INTO `tickets` (`userid`, `operid`, `status`, `add`, `assign`, `end`, `created`, `notes`)
             VALUES (:userid, :operid, :status, :add, :assign, :end, :created, :notes)';
     $sth = $db->dbh->prepare($sql);
-    $sth->bindValue(':userid', $userid, PDO::PARAM_INT);
+    $sth->bindValue(':userid', $_POST['userid'], PDO::PARAM_INT);
     $sth->bindValue(':operid', $operid, PDO::PARAM_INT);
     $sth->bindValue(':status', '1', PDO::PARAM_INT);
     $sth->bindValue(':add', $add);
     $sth->bindValue(':assign', $_POST['assign']);
     $sth->bindValue(':end', $_POST['end']);
     $sth->bindValue(':created', $created);
-    $sth->bindValue(':notes', $notes, PDO::PARAM_STR);
+    $sth->bindValue(':notes', $_POST['notes'], PDO::PARAM_STR);
     $sth->execute();
     
-    header("Location: user_tickets.php?userid={$userid}");
+//    header("Location: user_tickets.php?userid={$userid}");
     exit;
 }
 
@@ -76,26 +71,19 @@ if (!empty($_POST['new'])) {
 
 if (!empty($_POST['edit'])) {
 
-    $ticketid = $_POST['ticketid'];
-    $operid = $_POST['operid'];
-    $status = $_POST['status'];
+	$operid = (!empty($_POST['operid'])) ? $_POST['operid'] : $_SESSION['data']['operid'];
     $changed = date('Y-m-d H:i:s').' '.$_SESSION['data']['name'];
-    $name = strip_tags($_POST['name']);
-    $address = strip_tags($_POST['address']);
-    $phone_number = strip_tags($_POST['phone_number']);
-    $notes = $_POST['notes'];
-
     $check_status = ($_POST['status'] == '0') ? '`closed`' : '`changed`';
 
     $sql = "UPDATE `tickets` SET `operid` = :operid, `status` = :status, `assign` = :assign, `end` = :end, $check_status = :changed, `notes` = :notes
             WHERE `ticketid` = :ticketid";
     $sth = $db->dbh->prepare($sql);
     $sth->bindValue(':operid', $operid, PDO::PARAM_INT);
-    $sth->bindValue(':status', $status, PDO::PARAM_INT);
+    $sth->bindValue(':status', $_POST['status'], PDO::PARAM_INT);
     $sth->bindValue(':assign', $_POST['assign']);
     $sth->bindValue(':end', $_POST['end']);
     $sth->bindValue(':changed', $changed);
-    $sth->bindValue(':notes', $notes, PDO::PARAM_STR);
+    $sth->bindValue(':notes', $_POST['notes'], PDO::PARAM_STR);
     $sth->bindValue(':ticketid', $_POST['ticketid'], PDO::PARAM_INT);
     $sth->execute();
 

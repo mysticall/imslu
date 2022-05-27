@@ -1,0 +1,17 @@
+diff --git a/net/core/neighbour.c b/net/core/neighbour.c
+index f64ebd050f6c..d3c5b5c49cd0 100644
+--- a/net/core/neighbour.c
++++ b/net/core/neighbour.c
+@@ -1255,8 +1255,11 @@ static int __neigh_update(struct neighbour *neigh, const u8 *lladdr,
+ 		goto out;
+ 	}
+ 	if (!(flags & NEIGH_UPDATE_F_ADMIN) &&
+-	    (old & (NUD_NOARP | NUD_PERMANENT)))
++	    (old & (NUD_NOARP | NUD_PERMANENT))) {
++		/* Update confirmed timestamp for PERMANENT neighbour entry */
++		neigh->confirmed = jiffies;
+ 		goto out;
++	}
+ 
+ 	ext_learn_change = neigh_update_ext_learned(neigh, flags, &notify);
+ 	if (flags & NEIGH_UPDATE_F_USE) {

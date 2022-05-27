@@ -44,7 +44,7 @@ $html .=
     </div>
     <div class=\"right_container\">
 ".$menu->right_menu('right_menu')."
-      <ul>{$VERSION}</ul>
+      <ul><a href='https://github.com/mysticall/imslu' target=\"_blank\">{$VERSION}</a></ul>
     </div>
     <div id=\"middle_container\" class=\"middle_container\">\n";
 

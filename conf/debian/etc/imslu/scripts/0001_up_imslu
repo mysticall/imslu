@@ -1,4 +1,4 @@
 #!/bin/sh
 
-echo ${5} >> /tmp/ip_activity_pppoe
+echo ${5} >> /etc/ppp/ip_activity_pppoe
 exit 0

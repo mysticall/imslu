@@ -39,7 +39,7 @@ settype($_GET['packetsize'], "integer");
 $packetsize = ($_GET['packetsize'] > 0 && $_GET['packetsize'] < 11025) ? $_GET['packetsize'] : 1024;
 
 settype($_GET['count'], "integer");
-$count = ($_GET['count'] > 0 && $_GET['count'] < 26) ? $_GET['count'] : 15;
+$count = ($_GET['count'] > 0 && $_GET['count'] < 60) ? $_GET['count'] : 15;
 
 $ipaddress = (!empty($_GET['ipaddress'])) ? $_GET['ipaddress'] : '';
 $_GET['resource'] = (!empty($_GET['resource'])) ? $_GET['resource'] : '';
@@ -57,7 +57,7 @@ switch($_GET['resource']) {
 	case "arping":
 		$resource = array('arping' => 'arping', 'ping' => 'ping');
 		$iface = ($USE_VLANS && !empty($_GET['vlan'])) ? $_GET['vlan'] : $IFACE_INTERNAL;
-		$cmd = "$SUDO $ARPING -i $iface -c $count $ipaddress 2>&1";
+		$cmd = (!empty($iface)) ? "$SUDO $ARPING -i $iface -c $count $ipaddress 2>&1" : '';
 		break;
 	case "":
 		$resource = array('ping' => 'ping', 'arping' => 'arping');
@@ -102,7 +102,12 @@ $descriptorspec = array(
 );
 $cwd = '/tmp';
 
-$process = proc_open($cmd, $descriptorspec, $pipes, $cwd, array());
+if(!empty($ipaddress) && (filter_var($ipaddress, FILTER_VALIDATE_IP) || filter_var($ipaddress, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME))) {
+	$process = proc_open($cmd, $descriptorspec, $pipes, $cwd, array());
+}
+else {
+	$process = "";
+}
 
 if (is_resource($process)) {
 

@@ -186,7 +186,7 @@ if (!empty($_POST)) {
 
 if (isset($active_until) && isset($userid)) {
 
-    $expires = empty($_POST['delete']) ? $expires : '0000-00-00 23:59:00';
+    $expires = empty($_POST['delete']) ? $expires : date("Y-m-d", strtotime("-1 day"))." 23:59:00";
 
     $sql = 'UPDATE users SET expires = :expires WHERE userid = :userid';
     $sth = $db->dbh->prepare($sql);

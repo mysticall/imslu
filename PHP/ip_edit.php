@@ -180,7 +180,7 @@ else {
             $radusergroup = $sth->fetch(PDO::FETCH_ASSOC);
         }
         else {
-            $radusergroup = null;
+            $radusergroup['groupname'] = null;
         }
         $ip['groupname'] = !empty($radusergroup['groupname']) ? $radusergroup['groupname'] : '';
 

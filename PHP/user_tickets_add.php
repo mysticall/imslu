@@ -124,7 +124,7 @@ function validateForm() {
               <label>"._('assign')."</label>
             </td>
             <td class=\"dd\">
-              <input type=\"text\" name=\"assign\" id=\"assign\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"assign\" id=\"assign\" value=\"\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b1\">
               <script type=\"text/javascript\">
                 Calendar.setup({
@@ -143,7 +143,7 @@ function validateForm() {
               <label>"._('end')."</label>
             </td>
             <td class=\"dd\">
-              <input type=\"text\" name=\"end\" id=\"end\" value=\"0000-00-00 00:00:00\">
+              <input type=\"text\" name=\"end\" id=\"end\" value=\"\">
               <img src=\"js/calendar/img.gif\" id=\"f_trigger_b2\">
               <script type=\"text/javascript\">
                 Calendar.setup({
